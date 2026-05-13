@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import GameShell from "./GameShell";
 
 const gameModules = import.meta.glob<{ default: React.ComponentType }>(
   "/src/games/**/*.tsx"
@@ -32,7 +33,9 @@ export default function GameRenderer({ component }: Props) {
 
   return (
     <Suspense fallback={<GameSkeleton />}>
-      <Game />
+      <GameShell>
+        <Game />
+      </GameShell>
     </Suspense>
   );
 }

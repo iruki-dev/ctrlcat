@@ -11,20 +11,17 @@ interface GameCallbacks {
  * Runs a requestAnimationFrame game loop tied to a canvas element.
  *
  * - When running is false the loop stops and cleans up automatically.
- * - width/height passed to draw() are the CSS (logical) dimensions,
- *   so game code doesn't need to think about device pixel ratio.
+ * - width/height passed to draw() are the LOGICAL game dimensions (canvas.width / dpr),
+ *   which always match the coordinate space the 2D context was scaled to by GameCanvas.
+ *   This is independent of the CSS display size — draw code never needs to worry about
+ *   how the canvas is visually scaled on screen.
  * - dt in update() is capped at 100ms to prevent spiral-of-death on tab switch.
- *
- * Usage:
- *   useGameLoop(canvasRef, { update, draw }, isPlaying);
  */
 export function useGameLoop(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
   callbacks: GameCallbacks,
   running: boolean
 ): void {
-  // Keep callbacks in a ref so the loop always uses the latest version
-  // without needing to restart when they change.
   const cbRef = useRef(callbacks);
   cbRef.current = callbacks;
 
@@ -39,9 +36,11 @@ export function useGameLoop(
     let lastTime = performance.now();
 
     function loop(now: number) {
-      // Read CSS size each frame so it stays correct if canvas is resized.
-      const w = canvas!.clientWidth;
-      const h = canvas!.clientHeight;
+      const dpr = window.devicePixelRatio ?? 1;
+      // Use buffer dimensions / dpr — these are the logical coordinates the context
+      // was scaled to in GameCanvas, regardless of the CSS display size.
+      const w = canvas!.width / dpr;
+      const h = canvas!.height / dpr;
 
       const dt = Math.min((now - lastTime) / 1000, 0.1);
       lastTime = now;

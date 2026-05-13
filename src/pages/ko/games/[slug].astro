@@ -39,7 +39,8 @@ if (koDocEntry) {
   currentSlug={game.slug}
   lang={lang}
 >
-  <div class="rounded-xl border border-game-border bg-game-surface/30 p-4 md:p-6 mb-8">
+  <!-- Game box: fixed viewport-relative height so it never grows with content -->
+  <div class="h-[min(75svh,85svw)] min-h-[300px] mb-8">
     <GameRenderer component={component} client:load />
   </div>
 
