@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { GameButton } from "../../components/games/ui/Button";
 import { GameInput } from "../../components/games/ui/Input";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
@@ -12,6 +12,57 @@ type Hint = { value: number; result: "too-low" | "too-high" | "correct" };
 
 function newSecret() {
   return Math.floor(Math.random() * MAX) + 1;
+}
+
+const HINT_CLASSES: Record<Hint["result"], { wrap: string; num: string; arrow: string; label: string }> = {
+  correct: {
+    wrap:  "border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950",
+    num:   "text-green-700 dark:text-green-300",
+    arrow: "text-green-600 dark:text-green-400",
+    label: "text-green-600 dark:text-green-400",
+  },
+  "too-low": {
+    wrap:  "border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950",
+    num:   "text-blue-700 dark:text-blue-300",
+    arrow: "text-blue-600 dark:text-blue-400",
+    label: "text-blue-600 dark:text-blue-400",
+  },
+  "too-high": {
+    wrap:  "border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950",
+    num:   "text-orange-700 dark:text-orange-300",
+    arrow: "text-orange-600 dark:text-orange-400",
+    label: "text-orange-600 dark:text-orange-400",
+  },
+};
+
+function AnimatedHintItem({ hint, index, isNew }: { hint: Hint; index: number; isNew: boolean }) {
+  const [visible, setVisible] = useState(!isNew);
+
+  useEffect(() => {
+    if (!isNew) return;
+    const id = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, [isNew]);
+
+  const c = HINT_CLASSES[hint.result];
+  const dirLabel = hint.result === "too-low" ? "Go higher" : hint.result === "too-high" ? "Go lower" : "Correct!";
+  const arrow    = hint.result === "too-low" ? "↑" : hint.result === "too-high" ? "↓" : null;
+
+  return (
+    <div
+      className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-sm font-bold ${c.wrap}`}
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(10px)",
+        transition: "opacity 0.22s ease-out, transform 0.22s ease-out",
+      }}
+    >
+      <span className={`w-5 text-xs font-normal opacity-60 ${c.num}`}>#{index + 1}</span>
+      <span className={`font-mono text-xl font-black tabular-nums ${c.num}`}>{hint.value}</span>
+      {arrow && <span className={`text-base font-black ${c.arrow}`}>{arrow}</span>}
+      <span className={`ml-auto text-xs uppercase tracking-widest font-bold ${c.label}`}>{dirLabel}</span>
+    </div>
+  );
 }
 
 export default function NumberGuesser() {
@@ -56,17 +107,14 @@ export default function NumberGuesser() {
 
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 animate-slide-up">
-      {/* Scoreboard */}
       <div className="grid grid-cols-3 gap-3">
         <ScoreDisplay label="Guess" value={tries} />
         <ScoreDisplay label="Left" value={triesLeft} highlight={triesLeft <= 2} />
         <ScoreDisplay label="Best" value={bestScore ?? "—"} />
       </div>
 
-      {/* Range hint visualization */}
       <RangeBar hints={hints} max={MAX} />
 
-      {/* Result or input */}
       {phase === "won" && (
         <div className="flex flex-col gap-4">
           <GameMessage type="success">
@@ -115,7 +163,6 @@ export default function NumberGuesser() {
         </div>
       )}
 
-      {/* History */}
       {hints.length > 0 && (
         <div className="flex flex-col gap-2">
           <div className="text-xs font-bold text-game-muted uppercase tracking-widest">
@@ -123,26 +170,12 @@ export default function NumberGuesser() {
           </div>
           <div className="flex flex-col-reverse gap-1.5">
             {hints.map((h, i) => (
-              <div
+              <AnimatedHintItem
                 key={i}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
-                  h.result === "correct"
-                    ? "border-green-200 bg-green-50 text-green-700"
-                    : h.result === "too-low"
-                      ? "border-blue-200 bg-blue-50 text-blue-700"
-                      : "border-orange-200 bg-orange-50 text-orange-700"
-                }`}
-              >
-                <span className="w-6 text-game-muted text-xs font-normal">#{i + 1}</span>
-                <span className="font-mono text-lg">{h.value}</span>
-                <span className="ml-auto text-xs uppercase tracking-widest">
-                  {h.result === "too-low"
-                    ? "↑ Too low"
-                    : h.result === "too-high"
-                      ? "↓ Too high"
-                      : "✓ Correct"}
-                </span>
-              </div>
+                hint={h}
+                index={i}
+                isNew={i === hints.length - 1}
+              />
             ))}
           </div>
         </div>
@@ -152,38 +185,101 @@ export default function NumberGuesser() {
 }
 
 function RangeBar({ hints, max }: { hints: Hint[]; max: number }) {
-  // Compute the current known range from hints
   let lo = 1;
   let hi = max;
   for (const h of hints) {
-    if (h.result === "too-low") lo = Math.max(lo, h.value + 1);
+    if (h.result === "too-low")  lo = Math.max(lo, h.value + 1);
     if (h.result === "too-high") hi = Math.min(hi, h.value - 1);
   }
   const loPercent = ((lo - 1) / max) * 100;
   const hiPercent = (hi / max) * 100;
+  const rangeWidth = hiPercent - loPercent;
 
   return (
-    <div className="rounded-xl border-2 border-game-border bg-game-surface p-4">
-      <div className="text-xs font-bold text-game-muted uppercase tracking-widest mb-3">
+    <div className="rounded-2xl border-2 border-game-border bg-game-surface p-4 flex flex-col gap-3">
+      <div className="text-xs font-bold text-game-muted uppercase tracking-widest">
         Possible range
       </div>
-      <div className="relative h-3 bg-game-bg rounded-full overflow-hidden">
+
+      {/* Bar */}
+      <div className="relative h-4 bg-game-bg rounded-full overflow-visible">
+        {/* Eliminated zones */}
         <div
-          className="absolute h-full bg-game-accent/30 rounded-full transition-all duration-500"
-          style={{ left: `${loPercent}%`, width: `${hiPercent - loPercent}%` }}
+          className="absolute inset-y-0 left-0 bg-game-border/60 rounded-l-full"
+          style={{ width: `${loPercent}%`, transition: "width 0.4s ease-out" }}
         />
         <div
-          className="absolute h-full w-1 bg-game-accent rounded-full transition-all duration-500"
-          style={{ left: `${loPercent}%` }}
+          className="absolute inset-y-0 right-0 bg-game-border/60 rounded-r-full"
+          style={{ left: `${hiPercent}%`, transition: "left 0.4s ease-out" }}
+        />
+
+        {/* Active range */}
+        <div
+          className="absolute inset-y-0 bg-game-accent/25 rounded-full"
+          style={{
+            left: `${loPercent}%`,
+            width: `${rangeWidth}%`,
+            transition: "left 0.4s ease-out, width 0.4s ease-out",
+          }}
+        />
+
+        {/* Past guess markers */}
+        {hints.map((h, i) => {
+          const pct = ((h.value - 1) / max) * 100;
+          const color =
+            h.result === "correct"
+              ? "#16a34a"
+              : h.result === "too-low"
+                ? "#2563eb"
+                : "#ea580c";
+          return (
+            <div
+              key={i}
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-1.5 h-5 rounded-full"
+              style={{
+                left: `${pct}%`,
+                backgroundColor: color,
+                opacity: 0.7,
+                transition: "left 0.3s ease-out",
+              }}
+            />
+          );
+        })}
+
+        {/* Range edge indicators */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-1 h-full rounded-full bg-game-accent"
+          style={{ left: `${loPercent}%`, transition: "left 0.4s ease-out" }}
         />
         <div
-          className="absolute h-full w-1 bg-game-secondary rounded-full transition-all duration-500"
-          style={{ left: `${hiPercent}%` }}
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-1 h-full rounded-full bg-game-secondary"
+          style={{ left: `${hiPercent}%`, transition: "left 0.4s ease-out" }}
         />
       </div>
-      <div className="flex justify-between text-xs text-game-muted mt-2">
-        <span className="text-game-accent font-bold">{lo}</span>
-        <span className="text-game-secondary font-bold">{hi}</span>
+
+      {/* Range labels */}
+      <div className="flex justify-between items-center">
+        <div className="flex flex-col items-start">
+          <span className="text-[10px] text-game-muted uppercase tracking-widest font-bold">Low</span>
+          <span
+            className="text-lg font-black tabular-nums text-game-accent"
+            style={{ transition: "all 0.3s ease-out" }}
+          >
+            {lo}
+          </span>
+        </div>
+        <div className="text-xs text-game-muted font-medium">
+          {hi - lo + 1} {hi - lo + 1 === 1 ? "number" : "numbers"} left
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="text-[10px] text-game-muted uppercase tracking-widest font-bold">High</span>
+          <span
+            className="text-lg font-black tabular-nums text-game-secondary"
+            style={{ transition: "all 0.3s ease-out" }}
+          >
+            {hi}
+          </span>
+        </div>
       </div>
     </div>
   );

@@ -6,11 +6,11 @@ interface Props {
 }
 
 const typeStyles: Record<MessageType, string> = {
-  info: "border-game-border bg-game-surface text-game-text-dim",
-  success: "border-green-200 bg-green-50 text-green-700",
-  warning: "border-yellow-200 bg-yellow-50 text-yellow-700",
-  error: "border-red-200 bg-red-50 text-red-700",
-  hint: "border-game-accent/40 bg-game-accent/10 text-game-accent",
+  info:    "border-game-border bg-game-surface text-game-text-dim",
+  success: "border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300",
+  warning: "border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300",
+  error:   "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300",
+  hint:    "border-game-accent/40 bg-game-accent/10 text-game-accent",
 };
 
 const typeIcon: Record<MessageType, string> = {

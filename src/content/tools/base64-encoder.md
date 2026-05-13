@@ -14,41 +14,39 @@ localizations:
     description: "텍스트나 데이터를 Base64로 인코딩하거나 Base64 문자열을 디코딩합니다. 브라우저에서 즉시 처리됩니다."
 ---
 
-## Base64가 뭔가요?
+## What is Base64?
 
-인터넷을 사용하다 보면 알파벳, 숫자, 몇 가지 특수문자만으로 이루어진 긴 문자열을 마주칠 때가 있습니다. 예를 들어 "SGVsbG8gV29ybGQ=" 같은 식입니다. 이게 바로 Base64로 인코딩된 텍스트입니다. 원문 "Hello World"를 64가지 안전한 문자만 사용하도록 변환한 결과입니다.
+Across the internet, you occasionally encounter long strings made up of only letters, numbers, and a few symbols — something like "SGVsbG8gV29ybGQ=". That is Base64-encoded text. The original phrase "Hello World" has been converted to use only 64 safe characters: uppercase A–Z, lowercase a–z, digits 0–9, plus (+) and slash (/).
 
-이름의 "64"는 사용하는 문자의 종류가 64가지라는 뜻입니다. 대문자 A~Z, 소문자 a~z, 숫자 0~9, 그리고 +와 /입니다. 왜 하필 이런 문자들만 쓸까요? 이메일, 웹, 데이터베이스 등 다양한 시스템을 거칠 때도 데이터가 망가지지 않도록 가장 안전한 문자들만 골라낸 것입니다.
+The name comes from those 64 characters. They were chosen because they survive unchanged as data travels through email servers, web systems, and databases — systems that historically handled other characters unpredictably.
 
-## 왜 필요한가요?
+## Why does it exist?
 
-인터넷이 발달하기 전, 컴퓨터들은 서로 다른 방식으로 데이터를 처리했습니다. 어떤 시스템은 특수문자를 다른 의미로 해석했고, 어떤 이메일 서버는 일부 바이트를 변형해서 전달했습니다. 그래서 파일이나 이미지를 이메일로 보내면 도착했을 때 깨지는 일이 자주 있었습니다.
+Before the internet became standardized, different computer systems treated data differently. Some email servers would silently alter certain bytes, causing files and images to arrive corrupted. Base64 was designed to solve this: by converting any data into those 64 safe characters, it can pass through any system without being modified.
 
-이 문제를 해결하기 위해 Base64가 만들어졌습니다. 어떤 데이터든 이 64가지 안전한 문자로 바꿔놓으면, 어떤 시스템을 거쳐도 변형 없이 그대로 전달됩니다.
+Today you will encounter Base64 mainly in web pages that embed images directly in HTML, JWT tokens (the strings that carry login state between a browser and a server), API responses that include file data, and anywhere someone has encoded text to obscure it at a glance.
 
-오늘날에는 주로 이런 상황에서 만납니다. 웹페이지에 이미지를 바로 포함시킬 때, JWT 토큰(로그인 정보를 담는 문자열)을 분석할 때, API 응답 안에 파일 데이터가 담겨 있을 때, 또는 누군가 Base64로 감춰놓은 텍스트를 해독하고 싶을 때입니다.
+## An important distinction
 
-## 중요한 점
+Base64 is not encryption. Anyone who receives an encoded string can decode it immediately — no key or password needed. It is packaging for safe transport, not a way to keep secrets. If you see a Base64 string and assume the content is protected, it is not.
 
-Base64는 암호화가 아닙니다. 인코딩된 문자열을 받은 누구든 즉시 원문으로 되돌릴 수 있습니다. 비밀 정보를 감추는 용도가 아니라, 데이터를 안전하게 전달하기 위한 포장지입니다. Base64로 된 텍스트를 보고 "암호화된 거겠지"라고 생각하는 경우가 많지만, 실제로는 전혀 그렇지 않습니다.
+The encoding also increases size by about 33%: every three bytes become four characters. A small overhead, accepted in exchange for reliable delivery.
 
-원본 데이터보다 약 33% 크기가 늘어나는 것도 특징입니다. 3바이트 데이터가 4글자로 변환됩니다. 용량 측면에서는 손해이지만, 안전한 전달을 위해 감수하는 비용입니다.
+## How to use this tool
 
-## 사용 방법
+To encode: select the Encode tab, paste or type your text, and click Encode. The result appears below.
 
-인코딩할 때는 위쪽 탭에서 Encode를 선택하고 텍스트를 입력한 뒤 Encode 버튼을 클릭합니다. 아래에 Base64 결과가 나옵니다.
+To decode: select the Decode tab, paste a Base64 string, and click Decode. The original text is restored.
 
-디코딩할 때는 Decode 탭을 선택하고 Base64 문자열을 붙여 넣은 뒤 Decode 버튼을 클릭합니다. 원문이 복원됩니다.
+The Swap button moves the result back into the input for chained operations. Copy saves the result to your clipboard.
 
-Swap 버튼을 누르면 결과를 입력창으로 옮겨와서 연속 작업을 할 수 있습니다. Copy 버튼으로 결과를 클립보드에 복사할 수 있습니다.
+## Frequently asked questions
 
-## 자주 묻는 질문
+**Why does the output sometimes end with "=="?**
+Base64 processes data in groups of three bytes. If the last group is short, it pads the gap with = signs. One = means one byte was missing; == means two were missing.
 
-**끝에 "=="가 붙는 이유는 뭔가요?**
-Base64는 3바이트씩 묶어서 처리합니다. 마지막 묶음이 딱 맞지 않으면 부족한 자리를 = 기호로 채웁니다. = 하나면 1바이트, ==이면 2바이트가 빠진 것입니다.
+**Can I decode a JWT token here?**
+JWT uses a variant called Base64url, where + is replaced with - and / is replaced with _. Before decoding, swap those characters back, then try decoding.
 
-**JWT 토큰도 여기서 디코딩할 수 있나요?**
-JWT는 Base64url이라는 변형된 형식을 씁니다. 일반 Base64와 거의 같지만, +가 -로, /가 _로 바뀌어 있습니다. 디코딩 전에 -를 +로, _를 /로 바꾼 뒤 시도하면 됩니다.
-
-**디코딩했는데 이상한 글자가 나와요.**
-Base64로 인코딩된 데이터가 이미지나 파일 같은 바이너리 데이터라면, 텍스트로 복원해도 의미 있는 글자가 아닌 깨진 문자가 나옵니다. 텍스트 데이터를 인코딩한 경우에만 읽을 수 있는 결과가 나옵니다.
+**The decoded output looks like garbled characters. What happened?**
+If the original data was a binary file (an image, for example), decoding it as text will produce unreadable characters. Base64 decoding only produces readable text when the original was text to begin with.

@@ -1,156 +1,57 @@
-# CLAUDE.md — ctrlcat development guide
+# CLAUDE.md — ctrlcat
 
-This file is loaded automatically by Claude Code in every session. It defines the development workflow for ctrlcat.dev.
-
----
-
-## Project overview
-
-ctrlcat is a static site with two completely independent sections:
-- `/tools/` — web utilities (zinc + cyan theme)
-- `/games/` — browser games (zinc + violet theme)
-
-Each section has a **sidebar** (collapsible on mobile, fixed on desktop) and renders content in a boxed card layer with documentation below.
-
-**Critical constraint:** Tools and games must never link to each other.
+> **메타 규칙:** 코드를 수정하면 관련 문서도 함께 업데이트합니다. 이 파일과 `.claude/` 하위 문서들이 코드를 직접 읽지 않고도 구조를 파악할 수 있는 근거입니다.
 
 ---
 
-## i18n system
+## 프로젝트
 
-Translations live in `src/i18n/`:
-- `en.ts` — English strings (source of truth, typed)
-- `ko.ts` — Korean strings (must satisfy `Translations` type)
-- `index.ts` — `t(lang)`, `localePath()`, `switchLocalePath()` helpers
+**ctrlcat.dev** — Astro 4.x 정적 사이트. Tools(`/tools/`) + Games(`/games/`) 두 섹션. GitHub Pages 배포.
 
-**Adding a new locale:**
-1. Add the locale string to `locales` array in `src/i18n/index.ts`
-2. Create `src/i18n/<locale>.ts` implementing the `Translations` type
-3. Create `src/pages/<locale>/` mirroring the existing `ko/` structure
-
-**Translating content titles/descriptions** — add to the content `.md` frontmatter:
-```yaml
-localizations:
-  ko:
-    title: "한국어 제목"
-    description: "한국어 설명"
-```
-
-**UI string translation** — edit `src/i18n/ko.ts` (and other locale files). Never hardcode user-visible strings directly in `.astro` files — always use `t(lang).key`.
-
-**Documentation body translation** — create a locale-specific doc file in the `docs` collection:
-- Path: `src/content/docs/tools/<slug>/ko.md` (for a KO tool doc)
-- Path: `src/content/docs/games/<slug>/ko.md` (for a KO game doc)
-- Required frontmatter: `kind`, `ref` (tool/game slug), `lang`
-- The KO slug page (`src/pages/ko/tools/[slug].astro`) auto-fetches this via `getEntry("docs", "tools/<slug>/ko")` and falls back to the English body if not found.
-
-**URL structure:**
-- English (default): `/tools/`, `/tools/word-counter/`, `/games/`
-- Korean: `/ko/tools/`, `/ko/tools/word-counter/`, `/ko/games/`
+Tools: cyan 테마 (`#0891b2`) · Games: violet 테마 (`#7c3aed`)
 
 ---
 
-## How to add a tool
+## 핵심 제약
 
-```
-/new-tool
-```
-
-This command handles everything. After running it, **do not touch**:
-- `src/layouts/`
-- `src/pages/`
-- `src/content/config.ts`
-- `tailwind.config.mjs`
-- `astro.config.mjs`
-
-Only two files are created per tool:
-1. `src/content/tools/<slug>.md` — metadata
-2. `src/tools/<slug>/<ComponentName>.tsx` — component
+- Tools ↔ Games 간 링크나 공유 컴포넌트는 없습니다
+- 이모지는 어디에도 쓰지 않습니다 (UI, 문서, 아이콘 모두)
+- 사용자에게 보이는 문자열은 `t(lang).key`로 처리합니다 — 하드코딩 없음
+- 색상은 Tailwind 토큰을 씁니다 — hex 직접 지정 없음
+- 전역 CSS는 추가하지 않습니다 (Tailwind 클래스만)
+- DB나 서버사이드 로직은 없습니다
+- 문서는 일반 사용자 대상 — 코드 블록·수식·알고리즘 설명 없음
 
 ---
 
-## How to add a game
+## 건드리지 않는 파일
 
-```
-/new-game
-```
+새 툴/게임을 추가할 때 이 파일들은 수정할 필요 없습니다:
 
-Only two files are created per game:
-1. `src/content/games/<slug>.md` — metadata
-2. `src/games/<slug>/<ComponentName>.tsx` — component
+`src/layouts/` · `src/pages/` · `src/content/config.ts` · `tailwind.config.mjs` · `astro.config.mjs`
 
 ---
 
-## UI rules
-
-### Tools
-- Import UI from `../../components/tools/ui/`
-- Use `bg-tool-*`, `text-tool-*`, `border-tool-*` Tailwind classes
-- Accent color: `#00d4aa` (teal)
-- Animations: `animate-fade-in` on mount
-
-### Games
-- Import UI from `../../components/games/ui/`
-- Use `bg-game-*`, `text-game-*`, `border-game-*` Tailwind classes
-- Accent color: `#c084fc` (purple), secondary: `#f472b6` (pink)
-- Use `border-2` for game UI borders (more prominent than tools)
-- Rounded corners: prefer `rounded-xl` / `rounded-2xl`
-
----
-
-## What NOT to do
-
-- Do not create new pages manually — routing is automatic via content collections
-- Do not add global CSS (use Tailwind classes only)
-- Do not add a database or server-side logic
-- Do not cross-link tools ↔ games
-- Do not modify `src/content/config.ts` unless adding a new field to the schema
-- Do not create shared components between tools and games realms
-
----
-
-## Build & dev commands
+## 빌드
 
 ```bash
-npm run dev      # dev server (localhost:4321)
-npm run build    # production build → dist/
-npm run preview  # serve dist/ locally
+npm run dev      # localhost:4321
+npm run build    # dist/ 생성
+npm run preview  # dist/ 서빙
 ```
 
-Build must pass before any commit. TypeScript errors are blocking.
+커밋 전에 빌드를 돌려봅니다. TypeScript 에러가 있으면 빌드가 막힙니다.
 
 ---
 
-## File naming rules
+## 상세 문서
 
-| What | Pattern |
+| 필요한 정보 | 파일 |
 |---|---|
-| Tool slug | kebab-case, matches `.md` filename |
-| Tool component | PascalCase, matches `component:` field |
-| Tool dir | `src/tools/<slug>/` |
-| Game slug | kebab-case, matches `.md` filename |
-| Game component | PascalCase, matches `component:` field |
-| Game dir | `src/games/<slug>/` |
-
-Example: tool "Base64 Encoder"
-- slug: `base64-encoder`
-- md: `src/content/tools/base64-encoder.md`
-- component field: `base64-encoder/Base64Encoder`
-- tsx: `src/tools/base64-encoder/Base64Encoder.tsx`
-
----
-
-## Content collection categories
-
-**Tools:** `text` · `math` · `color` · `data` · `image` · `developer` · `productivity` · `converter`
-
-**Games:** `puzzle` · `arcade` · `strategy` · `word` · `number` · `card` · `trivia`
-
----
-
-## Deployment
-
-- Hosting: GitHub Pages (custom domain: ctrlcat.dev)
-- Deploy: auto on push to `main` via `.github/workflows/deploy.yml`
-- Build output: `dist/` (Astro static build)
-- CNAME: `public/CNAME` → `ctrlcat.dev`
+| 파일 구조, 라우팅, 렌더링 파이프라인 | `.claude/architecture.md` |
+| 디자인 토큰, 아이콘 시스템, UI 규칙 | `.claude/design.md` |
+| 컬렉션 스키마, 현재 콘텐츠 목록 | `.claude/content.md` |
+| i18n 시스템 | `.claude/i18n.md` |
+| 툴 추가 절차 | `.claude/add-tool.md` |
+| 게임 추가 절차 | `.claude/add-game.md` |
+| 콘텐츠 문서 작성 규칙 | `.claude/docs-guide.md` |

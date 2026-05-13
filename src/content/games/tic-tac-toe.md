@@ -16,37 +16,35 @@ localizations:
     description: "무적의 AI와 틱택토를 플레이하세요. 무승부로 끌어낼 수 있을까요?"
 ---
 
-## 오래된 게임, 깊은 전략
+## A game with a solved ending
 
-틱택토는 기원전 이집트까지 거슬러 올라가는 세계에서 가장 오래된 게임 중 하나입니다. 3x3 격자에 두 사람이 번갈아 가며 자신의 표시를 놓고, 가로, 세로, 대각선으로 세 개를 먼저 연결하면 이기는 단순한 규칙입니다. 하지만 이 단순함 속에 완벽히 해결된 수학적 구조가 숨어 있습니다.
+Tic-tac-toe traces back thousands of years — variations of the game appeared in ancient Egypt and Rome. The rules are about as simple as a game can be: two players take turns placing their mark on a 3×3 grid, and the first to align three in a row wins. Despite that simplicity, the game is fully solved: if both players play perfectly, the result is always a draw.
 
-틱택토는 수학적으로 완전히 분석된 게임입니다. 두 사람이 모두 최선의 수를 두면 항상 무승부로 끝납니다. 이 때문에 "무의미한 게임"이라고 여기기도 하지만, 완벽한 플레이가 무엇인지 배우는 과정 자체가 흥미롭습니다.
+## Why the AI never loses
 
-## AI는 왜 절대 지지 않나요?
+This AI uses an algorithm called minimax. Before each move, it simulates every possible sequence of moves until the game ends, calculates the outcome, and picks the move that leads to the best result — assuming you also play your best.
 
-이 게임의 AI는 미니맥스라는 방법으로 움직입니다. AI는 자신이 수를 둘 수 있는 모든 칸에 대해 그 결과를 미리 시뮬레이션합니다. 그 수를 뒀을 때 상대방이 최선으로 응수하면 어떻게 되는지, 또 그에 대한 자신의 최선은 무엇인지를 게임이 끝날 때까지 계속 따져봅니다.
+Tic-tac-toe has few enough possible game states that the AI can consider all of them in a fraction of a second. It makes no mistakes. You cannot win; a draw is the best outcome you can achieve.
 
-틱택토는 가능한 경우의 수가 그리 많지 않아서, AI가 모든 경우를 아주 짧은 시간 안에 전부 계산할 수 있습니다. 결과적으로 AI는 항상 최선의 수를 두기 때문에 실수가 없습니다. 여러분이 이길 수 있는 방법은 없고, 잘 하면 무승부를 달성할 수 있습니다.
+## How to draw against a perfect opponent
 
-## 무승부를 달성하는 방법
+Start in a corner. Corner openings give you more future options than edge or center starts and make it harder for the AI to close off your winning paths. Center is also a strong first move.
 
-코너에서 시작하는 것이 가장 강한 첫 수입니다. 네 귀퉁이 중 하나에 X를 놓으면 이후에 더 많은 선택지가 생깁니다. 중앙도 좋은 출발점입니다. 반면 가장자리 가운데 칸(위, 아래, 좌, 우)으로 시작하는 것은 상대적으로 불리합니다.
+Once the game is in progress, two rules cover most situations: if you can complete a line of three, do it; if the AI is one move from completing a line, block it. Keeping both in mind simultaneously is the key challenge.
 
-플레이 중에는 두 가지 원칙을 지키면 됩니다. 내가 두 칸을 연결하면 나머지 한 칸에 두어 이기기, 상대가 두 칸을 연결하면 남은 칸을 막기. 이 두 가지를 빠뜨리지 않으면 AI에게도 지지 않을 수 있습니다.
+In some positions you can create a fork — a situation where you threaten to win in two different places at once. The AI can only block one, so the other wins. The AI also calculates these positions in advance and avoids letting them happen.
 
-어떤 경우에는 동시에 두 곳에서 이길 수 있는 위치를 만들 수도 있습니다. 이것을 포크라고 합니다. 두 곳을 동시에 위협하면 상대는 하나밖에 막을 수 없으니 반드시 이깁니다. AI도 이 상황을 미리 계산해서 피합니다.
+## Score
 
-## 점수
+Wins, draws, and losses all accumulate across rounds. A draw is the optimal result and worth aiming for. If the AI wins, trace back to where your play diverged — most losses come from one missed block or a fork you did not see coming.
 
-여러 판을 해도 점수가 누적됩니다. 무승부는 최선의 결과입니다. AI에게 지는 경우는 어딘가에서 실수가 있었다는 뜻이니, 어떤 수가 패인이었는지 생각해보는 것도 재미있습니다.
+## Frequently asked questions
 
-## 자주 묻는 질문
+**Why does tic-tac-toe stop being fun for adults?**
+Once both players know the optimal strategy, every game ends in a draw with no surprises. The interest in this AI version comes from learning that strategy well enough to hold the AI to a draw consistently.
 
-**어른이 되어서도 틱택토가 재미없다는 이유가 있나요?**
-두 사람이 모두 최적 전략을 알면 항상 무승부가 납니다. 그래서 어릴 때는 재미있다가도 전략을 터득하면 새로운 도전이 없어집니다. AI 상대로 처음 무승부를 달성했을 때의 성취감이 이 게임의 묘미입니다.
+**Can I make the AI make a mistake?**
+No. The AI always plays the move with the best possible outcome. Every mistake on the board will be yours.
 
-**AI가 실수를 하게 만들 수 있나요?**
-아닙니다. 이 AI는 항상 최선의 수를 두도록 설계되어 있어서 실수하지 않습니다. 여러분이 이기는 건 불가능하고, 최선의 결과는 무승부입니다.
-
-**모바일에서도 잘 되나요?**
-네. 화면을 탭하면 됩니다. 데스크톱과 동일하게 작동합니다.
+**Does it work on mobile?**
+Yes. Tap any cell to play. The game works the same way on phones and tablets as on a desktop.

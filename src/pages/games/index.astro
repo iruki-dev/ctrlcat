@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import GameLayout from "../../layouts/GameLayout.astro";
-import Icon from "../../components/Icon.astro";
+import GameIllustration from "../../components/GameIllustration.astro";
 import { t } from "../../i18n";
 
 const lang = "en";
@@ -57,7 +57,7 @@ const categories = [...new Set(allGames.map(g => g.data.category))].sort();
   </div>
 
   <!-- Grid -->
-  <div id="game-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+  <div id="game-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {allGames.map(game => {
       const diffColor = ["", "text-green-600", "text-lime-600", "text-yellow-600", "text-orange-600", "text-red-600"][game.data.difficulty ?? 0] ?? "";
       return (
@@ -66,39 +66,31 @@ const categories = [...new Set(allGames.map(g => g.data.category))].sort();
           data-category={game.data.category}
           data-title={game.data.title.toLowerCase()}
           data-tags={game.data.tags.join(" ").toLowerCase()}
-          class="game-card group flex flex-col gap-3 rounded-xl border border-game-border border-t-2 border-t-game-accent bg-game-surface p-4
-                 hover:shadow-md transition-all duration-150"
+          class="game-card group block rounded-2xl overflow-hidden border-2 border-game-border bg-game-surface
+                 hover:border-game-accent hover:shadow-xl transition-all duration-200"
         >
-          <div class="flex items-start justify-between gap-2">
-            <span class="text-game-accent"><Icon name={game.data.icon ?? ""} size={22} /></span>
-            {game.data.featured && (
-              <span class="shrink-0 text-2xs px-1.5 py-0.5 rounded border border-game-accent/30 text-game-accent bg-game-accent/5 font-medium uppercase tracking-wide">
-                {tr.games.featured}
-              </span>
-            )}
+          <!-- Illustration -->
+          <div class="flex items-center justify-center bg-white h-44">
+            <GameIllustration slug={game.slug} />
           </div>
-          <div class="flex-1">
-            <div class="font-semibold text-sm text-game-text group-hover:text-game-accent transition-colors">
+          <!-- Text -->
+          <div class="px-4 py-3 border-t border-game-border">
+            <div class="font-bold text-sm text-game-text group-hover:text-game-accent transition-colors">
               {game.data.title}
             </div>
-            <div class="text-xs text-game-text-dim mt-1 line-clamp-2 leading-relaxed">
-              {game.data.description}
+            <div class="flex items-center justify-between mt-1.5">
+              <div class="flex items-center gap-2 text-xs text-game-muted">
+                {game.data.difficulty && (
+                  <span class={`font-medium ${diffColor}`}>{tr.games.difficulty[game.data.difficulty]}</span>
+                )}
+                {game.data.playTime && (
+                  <span>{tr.games.playTime(game.data.playTime)}</span>
+                )}
+              </div>
+              <span class="text-xs font-semibold text-game-accent group-hover:underline shrink-0">
+                {tr.landing.playGame}
+              </span>
             </div>
-          </div>
-          <div class="mt-auto pt-3 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2 text-xs">
-              {game.data.difficulty && (
-                <span class={`font-medium ${diffColor}`}>
-                  {tr.games.difficulty[game.data.difficulty]}
-                </span>
-              )}
-              {game.data.playTime && (
-                <span class="text-game-muted">{tr.games.playTime(game.data.playTime)}</span>
-              )}
-            </div>
-            <span class="text-xs font-semibold text-game-accent group-hover:underline shrink-0">
-              {tr.landing.playGame}
-            </span>
           </div>
         </a>
       );

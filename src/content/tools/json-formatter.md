@@ -14,41 +14,39 @@ localizations:
     description: "JSON을 보기 좋게 정렬하거나 최소화하고 유효성을 검사합니다. 브라우저에서 즉시 처리됩니다."
 ---
 
-## JSON이 뭔가요?
+## What is JSON?
 
-웹사이트나 앱을 쓸 때 눈에 보이진 않지만, 서버와 앱 사이에는 끊임없이 데이터가 오갑니다. 날씨 앱이 기온을 보여줄 때, 쇼핑몰이 상품 목록을 불러올 때, 지도 앱이 주변 카페를 찾아줄 때, 이 모든 데이터가 JSON 형식으로 전달되는 경우가 많습니다.
+Behind every weather app, shopping site, and map service, servers are constantly sending data to your device. Much of that data travels in a format called JSON — JavaScript Object Notation. Despite the technical name, the structure is simple: it is a list of label-and-value pairs, like a very organized set of notes. A person's profile might include a name, an age, and a list of hobbies, all expressed together in one block.
 
-JSON은 JavaScript Object Notation의 약자입니다. 이름은 복잡해 보이지만, 실제로는 아주 단순한 구조입니다. 항목과 값을 쌍으로 묶은 목록입니다. 예를 들어 한 사람의 정보를 표현하면 이름은 "홍길동"이고, 나이는 30이고, 취미는 ["독서", "등산"]이라는 식입니다.
+## Why do you need a formatter?
 
-## 왜 포매터가 필요한가요?
+JSON data received from an API or system is almost always compressed onto a single line, with all whitespace removed to reduce file size. That is efficient for machines to read but nearly impossible for people to follow.
 
-API나 시스템에서 받아온 JSON 데이터는 대부분 한 줄에 모든 내용이 빽빽하게 들어차 있습니다. 공백을 제거해서 전송 크기를 줄이기 때문입니다. 사람이 읽기엔 매우 불편하죠.
+A JSON formatter spreads that compressed data across multiple lines and adds indentation so the structure becomes clear at a glance. It is a standard part of debugging and reviewing data.
 
-JSON 포매터는 이 압축된 데이터를 사람이 보기 편한 형태로 펼쳐줍니다. 들여쓰기를 추가하고 줄을 나눠서 구조를 한눈에 알아볼 수 있게 만듭니다. 디버깅이나 데이터 확인 작업에 필수적인 도구입니다.
+The reverse also applies. Well-formatted JSON can be minified back into a single line before it is sent in production, reducing the amount of data transferred.
 
-반대로 잘 정리된 JSON을 다시 한 줄로 압축하는 기능도 있습니다. 실제 서비스에서 데이터를 전송할 때는 불필요한 공백을 없애 파일 크기를 줄이는 것이 좋기 때문입니다.
+## Common JSON errors
 
-## 자주 만나는 JSON 오류
+JSON follows strict rules. Small mistakes break the whole document.
 
-JSON은 엄격한 규칙을 따릅니다. 조금만 틀려도 오류가 납니다.
+The most frequent mistake is a trailing comma — a comma after the last item in a list or object. This is valid in JavaScript but not in JSON. The second most common issue is using single quotes instead of double quotes: JSON requires double quotes around all strings. The third is including comments: JSON does not support them.
 
-가장 흔한 실수는 마지막 항목 뒤에 쉼표를 남기는 것입니다. JavaScript 코드에서는 허용되지만 JSON에서는 허용되지 않습니다. 두 번째로 흔한 실수는 큰따옴표 대신 작은따옴표를 쓰는 것입니다. JSON에서 문자열은 반드시 큰따옴표로 감싸야 합니다. 세 번째는 주석을 추가하는 것입니다. JSON은 주석을 지원하지 않습니다.
+The Validate button in this tool checks your input against these rules and reports exactly what went wrong when the format is invalid.
 
-이 도구의 Validate 버튼을 누르면 입력한 JSON이 올바른 형식인지 확인하고, 오류가 있다면 어떤 문제인지 알려줍니다.
+## How to use this tool
 
-## 사용 방법
+Paste your JSON into the left panel. Format produces clean, indented output. Minify compresses it to one line. Validate checks the structure without changing the content.
 
-왼쪽 입력창에 JSON 데이터를 붙여 넣습니다. Format 버튼을 누르면 들여쓰기가 정리된 형태로, Minify 버튼을 누르면 한 줄로 압축된 형태로 오른쪽에 결과가 나옵니다. Validate 버튼은 내용은 바꾸지 않고 형식이 올바른지만 확인합니다.
+You can choose between 2-space and 4-space indentation. The Copy button saves the result to your clipboard.
 
-들여쓰기 칸 수는 2칸과 4칸 중 선택할 수 있습니다. 작업이 끝나면 Copy 버튼으로 결과를 바로 복사할 수 있습니다.
+## Frequently asked questions
 
-## 자주 묻는 질문
+**What is the difference between JSON and XML?**
+Both are formats for structured data. JSON is more compact and easier to read; XML requires opening and closing tags around everything, which makes the same data significantly longer. Most modern web APIs use JSON.
 
-**JSON과 XML의 차이가 뭔가요?**
-둘 다 데이터를 구조화하는 형식이지만, JSON이 훨씬 가볍고 읽기 쉽습니다. XML은 시작 태그와 끝 태그를 모두 써야 해서 같은 데이터를 표현할 때 훨씬 길어집니다. 요즘 대부분의 웹 API는 JSON을 씁니다.
+**Is there a size limit?**
+Processing happens inside your browser, so the practical limit is your browser's available memory. Files up to a few megabytes are handled without issue. For very large files, a dedicated command-line tool will be faster.
 
-**크기 제한이 있나요?**
-브라우저의 메모리 한도 내에서 처리됩니다. 일반적인 용도라면 몇 메가바이트 크기도 문제없습니다. 수십 메가바이트 이상의 대형 파일은 전용 도구를 쓰는 것이 좋습니다.
-
-**내 데이터가 서버에 저장되나요?**
-아닙니다. 모든 처리는 브라우저 안에서만 이루어집니다. 입력한 데이터는 외부로 전송되지 않습니다.
+**Is my data sent to a server?**
+No. Everything runs locally in your browser. Nothing you paste here leaves your device.

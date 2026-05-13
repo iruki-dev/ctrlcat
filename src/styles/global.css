@@ -4,7 +4,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Base resets ── */
+/* ── Color tokens: light mode ──────────────────────────────────────────── */
+:root {
+  /* Tool realm */
+  --tool-bg:           248 250 252;   /* slate-50   #f8fafc */
+  --tool-surface:      255 255 255;   /* white      #ffffff */
+  --tool-surface-2:    241 245 249;   /* slate-100  #f1f5f9 */
+  --tool-border:       226 232 240;   /* slate-200  #e2e8f0 */
+  --tool-border-dim:   241 245 249;   /* slate-100  #f1f5f9 */
+  --tool-accent:       8   145 178;   /* cyan-600   #0891b2 */
+  --tool-accent-light: 224 247 250;   /* cyan-50    #e0f7fa */
+  --tool-accent-dim:   14  116 144;   /* cyan-700   #0e7490 */
+  --tool-muted:        148 163 184;   /* slate-400  #94a3b8 */
+  --tool-text:         15  23  42;    /* slate-900  #0f172a */
+  --tool-text-dim:     71  85  105;   /* slate-600  #475569 */
+
+  /* Game realm */
+  --game-bg:           248 250 252;   /* slate-50   #f8fafc */
+  --game-surface:      255 255 255;   /* white      #ffffff */
+  --game-surface-2:    245 243 255;   /* violet-50  #f5f3ff */
+  --game-border:       226 232 240;   /* slate-200  #e2e8f0 */
+  --game-border-dim:   241 245 249;   /* slate-100  #f1f5f9 */
+  --game-accent:       124 58  237;   /* violet-600 #7c3aed */
+  --game-accent-light: 237 233 254;   /* violet-100 #ede9fe */
+  --game-accent-dim:   109 40  217;   /* violet-700 #6d28d9 */
+  --game-secondary:    219 39  119;   /* pink-600   #db2777 */
+  --game-muted:        148 163 184;   /* slate-400  #94a3b8 */
+  --game-text:         15  23  42;    /* slate-900  #0f172a */
+  --game-text-dim:     71  85  105;   /* slate-600  #475569 */
+}
+
+/* ── Color tokens: dark mode ───────────────────────────────────────────── */
+.dark {
+  color-scheme: dark;
+
+  /* Tool realm */
+  --tool-bg:           15  23  42;    /* slate-900  #0f172a */
+  --tool-surface:      30  41  59;    /* slate-800  #1e293b */
+  --tool-surface-2:    51  65  85;    /* slate-700  #334155 */
+  --tool-border:       51  65  85;    /* slate-700  #334155 */
+  --tool-border-dim:   30  41  59;    /* slate-800  #1e293b */
+  --tool-accent:       34  211 238;   /* cyan-400   #22d3ee */
+  --tool-accent-light: 8   47  73;    /* dark cyan tint     */
+  --tool-accent-dim:   6   182 212;   /* cyan-500   #06b6d4 */
+  --tool-muted:        100 116 139;   /* slate-500  #64748b */
+  --tool-text:         241 245 249;   /* slate-100  #f1f5f9 */
+  --tool-text-dim:     148 163 184;   /* slate-400  #94a3b8 */
+
+  /* Game realm */
+  --game-bg:           9   5   22;    /* deep violet bg     */
+  --game-surface:      20  13  38;    /* dark violet surface*/
+  --game-surface-2:    30  20  55;    /* violet surface-2   */
+  --game-border:       50  30  90;    /* violet border      */
+  --game-border-dim:   20  13  38;    /* same as surface    */
+  --game-accent:       167 139 250;   /* violet-400 #a78bfa */
+  --game-accent-light: 30  20  55;    /* dark accent tint   */
+  --game-accent-dim:   139 92  246;   /* violet-500 #8b5cf6 */
+  --game-secondary:    244 114 182;   /* pink-400   #f472b6 */
+  --game-muted:        107 114 128;   /* gray-500   #6b7280 */
+  --game-text:         245 243 255;   /* violet-50  #f5f3ff */
+  --game-text-dim:     167 139 250;   /* violet-400 #a78bfa */
+}
+
+/* ── Base resets ────────────────────────────────────────────────────────── */
 @layer base {
   *,
   *::before,
@@ -31,22 +93,31 @@
   }
 }
 
-/* ── Default scrollbar thumb ── */
+/* ── Scrollbar thumb colors ─────────────────────────────────────────────── */
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
 }
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
 
-/* ── Tool realm scrollbar ── */
 .realm-tool ::-webkit-scrollbar-thumb {
   background: #bae6fd;
 }
+.dark .realm-tool ::-webkit-scrollbar-thumb,
+.dark:is(.realm-tool) ::-webkit-scrollbar-thumb {
+  background: #164e63;
+}
 
-/* ── Game realm scrollbar ── */
 .realm-game ::-webkit-scrollbar-thumb {
   background: #ddd6fe;
 }
+.dark .realm-game ::-webkit-scrollbar-thumb,
+.dark:is(.realm-game) ::-webkit-scrollbar-thumb {
+  background: #3b1d8a;
+}
 
-/* ── Utility: hide scrollbar but keep scroll ── */
+/* ── Utility ────────────────────────────────────────────────────────────── */
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -55,4 +126,41 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* ── Typography: dark mode overrides ────────────────────────────────────── */
+.dark .prose-game {
+  --tw-prose-body:          rgb(var(--game-text-dim));
+  --tw-prose-headings:      rgb(var(--game-text));
+  --tw-prose-lead:          rgb(var(--game-muted));
+  --tw-prose-links:         rgb(var(--game-accent));
+  --tw-prose-bold:          rgb(var(--game-text));
+  --tw-prose-counters:      rgb(var(--game-muted));
+  --tw-prose-bullets:       rgb(var(--game-border));
+  --tw-prose-hr:            rgb(var(--game-border));
+  --tw-prose-quotes:        rgb(var(--game-text-dim));
+  --tw-prose-quote-borders: rgb(var(--game-border));
+  --tw-prose-captions:      rgb(var(--game-muted));
+  --tw-prose-code:          rgb(var(--game-accent));
+  --tw-prose-pre-bg:        rgb(var(--game-surface));
+  --tw-prose-th-borders:    rgb(var(--game-border));
+  --tw-prose-td-borders:    rgb(var(--game-border-dim));
+}
+
+.dark .prose-tool {
+  --tw-prose-body:          rgb(var(--tool-text-dim));
+  --tw-prose-headings:      rgb(var(--tool-text));
+  --tw-prose-lead:          rgb(var(--tool-muted));
+  --tw-prose-links:         rgb(var(--tool-accent));
+  --tw-prose-bold:          rgb(var(--tool-text));
+  --tw-prose-counters:      rgb(var(--tool-muted));
+  --tw-prose-bullets:       rgb(var(--tool-border));
+  --tw-prose-hr:            rgb(var(--tool-border));
+  --tw-prose-quotes:        rgb(var(--tool-text-dim));
+  --tw-prose-quote-borders: rgb(var(--tool-border));
+  --tw-prose-captions:      rgb(var(--tool-muted));
+  --tw-prose-code:          rgb(var(--tool-accent));
+  --tw-prose-pre-bg:        rgb(var(--tool-surface));
+  --tw-prose-th-borders:    rgb(var(--tool-border));
+  --tw-prose-td-borders:    rgb(var(--tool-border-dim));
 }

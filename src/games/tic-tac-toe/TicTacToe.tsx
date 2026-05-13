@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { GameButton } from "../../components/games/ui/Button";
 import { GameMessage } from "../../components/games/ui/GameMessage";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
@@ -52,6 +52,232 @@ function bestAiMove(board: Board): number {
     }
   }
   return move;
+}
+
+// SVG board constants
+const BS = 300; // board size
+const CELL = BS / 3; // 100
+const INSET = 18; // grid line inset from edge
+const MARK_R = 30; // O radius
+const X_OFF = 27; // X arm half-length
+
+// Colors use CSS variables so dark mode updates automatically
+const BG        = "rgb(var(--game-surface-2))";
+const GRID      = "rgb(var(--game-border))";
+const X_CLR     = "rgb(var(--game-accent-dim))";
+const O_CLR     = "rgb(var(--game-accent))";
+const WIN_CLR   = "rgb(var(--game-accent) / 0.5)";
+const WIN_CELL_FILL = "rgb(var(--game-accent) / 0.07)";
+
+function cellCenter(i: number) {
+  return {
+    x: (i % 3) * CELL + CELL / 2,
+    y: Math.floor(i / 3) * CELL + CELL / 2,
+  };
+}
+
+function getWinLineCoords(line: [number, number, number]) {
+  const a = cellCenter(line[0]);
+  const c = cellCenter(line[2]);
+  const dx = c.x - a.x;
+  const dy = c.y - a.y;
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  const ext = 22;
+  return {
+    x1: a.x - (dx / len) * ext,
+    y1: a.y - (dy / len) * ext,
+    x2: c.x + (dx / len) * ext,
+    y2: c.y + (dy / len) * ext,
+  };
+}
+
+// Animated X mark
+function XMark({ cx, cy, color }: { cx: number; cy: number; color: string }) {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    let id = requestAnimationFrame(() => {
+      setStep(1);
+      setTimeout(() => setStep(2), 90);
+    });
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  return (
+    <g>
+      <line
+        x1={cx - X_OFF} y1={cy - X_OFF}
+        x2={cx + X_OFF} y2={cy + X_OFF}
+        stroke={color}
+        strokeWidth="5.5"
+        strokeLinecap="round"
+        pathLength="1"
+        strokeDasharray="1"
+        strokeDashoffset={step >= 1 ? 0 : 1}
+        style={{ transition: "stroke-dashoffset 0.22s ease-out" }}
+      />
+      <line
+        x1={cx + X_OFF} y1={cy - X_OFF}
+        x2={cx - X_OFF} y2={cy + X_OFF}
+        stroke={color}
+        strokeWidth="5.5"
+        strokeLinecap="round"
+        pathLength="1"
+        strokeDasharray="1"
+        strokeDashoffset={step >= 2 ? 0 : 1}
+        style={{ transition: "stroke-dashoffset 0.22s ease-out" }}
+      />
+    </g>
+  );
+}
+
+// Animated O mark
+function OMark({ cx, cy, color }: { cx: number; cy: number; color: string }) {
+  const [drawn, setDrawn] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  return (
+    <circle
+      cx={cx} cy={cy} r={MARK_R}
+      fill="none"
+      stroke={color}
+      strokeWidth="5.5"
+      strokeLinecap="round"
+      pathLength="1"
+      strokeDasharray="1"
+      strokeDashoffset={drawn ? 0 : 1}
+      transform={`rotate(-90 ${cx} ${cy})`}
+      style={{ transition: "stroke-dashoffset 0.3s ease-out" }}
+    />
+  );
+}
+
+// Animated win line
+function WinLine({ x1, y1, x2, y2 }: { x1: number; y1: number; x2: number; y2: number }) {
+  const [drawn, setDrawn] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  return (
+    <line
+      x1={x1} y1={y1} x2={x2} y2={y2}
+      stroke={WIN_CLR}
+      strokeWidth="7"
+      strokeLinecap="round"
+      pathLength="1"
+      strokeDasharray="1"
+      strokeDashoffset={drawn ? 0 : 1}
+      style={{ transition: "stroke-dashoffset 0.38s ease-out" }}
+    />
+  );
+}
+
+function Board({
+  board,
+  winLine,
+  onCellClick,
+  gameOver,
+}: {
+  board: Board;
+  winLine: [number, number, number] | null;
+  onCellClick: (i: number) => void;
+  gameOver: boolean;
+}) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const winCoords = winLine ? getWinLineCoords(winLine) : null;
+
+  return (
+    <svg
+      width={BS}
+      height={BS}
+      viewBox={`0 0 ${BS} ${BS}`}
+      className="w-full max-w-[320px] mx-auto block"
+      style={{ touchAction: "manipulation" }}
+    >
+      {/* Background */}
+      <rect width={BS} height={BS} rx="20" fill={BG} />
+
+      {/* Win cell highlights */}
+      {winLine?.map((i) => {
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        return (
+          <rect
+            key={`wh-${i}`}
+            x={col * CELL + 4}
+            y={row * CELL + 4}
+            width={CELL - 8}
+            height={CELL - 8}
+            rx="12"
+            fill={WIN_CELL_FILL}
+          />
+        );
+      })}
+
+      {/* Grid lines */}
+      <line x1={CELL}     y1={INSET}      x2={CELL}     y2={BS - INSET} stroke={GRID} strokeWidth="2.5" strokeLinecap="round" />
+      <line x1={CELL * 2} y1={INSET}      x2={CELL * 2} y2={BS - INSET} stroke={GRID} strokeWidth="2.5" strokeLinecap="round" />
+      <line x1={INSET}    y1={CELL}       x2={BS - INSET} y2={CELL}     stroke={GRID} strokeWidth="2.5" strokeLinecap="round" />
+      <line x1={INSET}    y1={CELL * 2}   x2={BS - INSET} y2={CELL * 2} stroke={GRID} strokeWidth="2.5" strokeLinecap="round" />
+
+      {/* Hover ghost mark */}
+      {hovered !== null && !board[hovered] && !gameOver && (
+        <text
+          x={cellCenter(hovered).x}
+          y={cellCenter(hovered).y + 14}
+          textAnchor="middle"
+          fontSize="40"
+          fontWeight="900"
+          style={{ pointerEvents: "none", fontFamily: "system-ui, sans-serif",
+                   fill: "rgb(var(--game-accent) / 0.18)" }}
+        >
+          X
+        </text>
+      )}
+
+      {/* Marks */}
+      {board.map((cell, i) => {
+        if (!cell) return null;
+        const { x, y } = cellCenter(i);
+        const isWin = winLine?.includes(i) ?? false;
+        if (cell === "X") {
+          return <XMark key={i} cx={x} cy={y} color={isWin ? "#a855f7" : X_CLR} />;
+        }
+        return <OMark key={i} cx={x} cy={y} color={isWin ? "#a855f7" : O_CLR} />;
+      })}
+
+      {/* Win line */}
+      {winCoords && <WinLine {...winCoords} />}
+
+      {/* Click targets (on top) */}
+      {board.map((cell, i) => {
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        return (
+          <rect
+            key={`hit-${i}`}
+            x={col * CELL + 2}
+            y={row * CELL + 2}
+            width={CELL - 4}
+            height={CELL - 4}
+            rx="12"
+            fill="transparent"
+            style={{ cursor: cell || gameOver ? "default" : "pointer" }}
+            onMouseEnter={() => { if (!cell && !gameOver) setHovered(i); }}
+            onMouseLeave={() => setHovered(null)}
+            onClick={() => { if (!cell && !gameOver) onCellClick(i); }}
+          />
+        );
+      })}
+    </svg>
+  );
 }
 
 export default function TicTacToe() {
@@ -113,42 +339,19 @@ export default function TicTacToe() {
 
   return (
     <div className="max-w-sm mx-auto flex flex-col gap-6 animate-slide-up">
-      {/* Scoreboard */}
       <div className="grid grid-cols-3 gap-3">
         <ScoreDisplay label="You (X)" value={xWins} size="sm" />
         <ScoreDisplay label="Draws" value={draws} size="sm" />
         <ScoreDisplay label="AI (O)" value={oWins} size="sm" />
       </div>
 
-      {/* Board */}
-      <div className="grid grid-cols-3 gap-2.5">
-        {board.map((cell, i) => {
-          const isWin = winLine?.includes(i) ?? false;
-          return (
-            <button
-              key={i}
-              onClick={() => handleClick(i)}
-              disabled={!!cell || gameOver}
-              className={`h-24 rounded-2xl border-2 text-4xl font-black transition-all duration-150
-                ${
-                  isWin
-                    ? cell === "X"
-                      ? "border-game-accent bg-game-accent/10 scale-105"
-                      : "border-game-secondary bg-game-secondary/10 scale-105"
-                    : cell
-                      ? "border-game-border bg-game-surface"
-                      : "border-game-border bg-game-surface hover:border-game-accent/50 hover:bg-game-surface-2 active:scale-95"
-                }`}
-            >
-              <span className={cell === "X" ? "text-game-accent" : "text-game-secondary"}>
-                {cell}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <Board
+        board={board}
+        winLine={winLine}
+        onCellClick={handleClick}
+        gameOver={gameOver}
+      />
 
-      {/* Status */}
       {gameOver && result ? (
         <div className="flex flex-col gap-3">
           <GameMessage

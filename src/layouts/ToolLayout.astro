@@ -46,11 +46,18 @@ allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
     <link rel="icon" href="/favicon-tool.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Dark mode: apply before first paint to prevent flash -->
+    <script is:inline>
+      (function () {
+        var s = localStorage.getItem("ctrlcat-theme");
+        var dark = s === "dark" || (!s && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.classList.add("dark");
+      })();
+    </script>
   </head>
 
   <body class="bg-tool-bg text-tool-text font-sans min-h-screen flex">
 
-    <!-- Sidebar -->
     <ToolSidebar
       tools={allTools}
       currentSlug={currentSlug}
@@ -58,7 +65,6 @@ allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
       url={Astro.url}
     />
 
-    <!-- Main area (offset for sidebar on lg) -->
     <div class="flex-1 lg:ml-64 flex flex-col min-h-screen">
 
       <!-- Mobile top bar -->
@@ -91,9 +97,32 @@ allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
             <span class="text-tool-text-dim truncate max-w-36">{title}</span>
           </div>
         )}
+        <!-- Theme toggle (mobile) -->
+        <button
+          class="theme-toggle ml-auto w-8 h-8 flex items-center justify-center rounded-md
+                 text-tool-muted hover:text-tool-text hover:bg-tool-surface transition-colors"
+          aria-label="Toggle dark mode"
+          title="Toggle dark mode"
+        >
+          <svg class="theme-icon-light" width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <svg class="theme-icon-dark hidden" width="16" height="16" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
       </header>
 
-      <!-- Page header (desktop breadcrumb + title) -->
       {showHeader && (
         <div class="border-b border-tool-border-dim bg-tool-bg">
           <div class="px-6 py-5 max-w-4xl">
@@ -113,12 +142,10 @@ allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
         </div>
       )}
 
-      <!-- Content -->
       <main class="flex-1 px-4 md:px-6 py-6 max-w-4xl w-full">
         <slot />
       </main>
 
-      <!-- Footer -->
       <footer class="border-t border-tool-border-dim px-6 py-5 flex flex-wrap items-center justify-between gap-3
                      text-xs text-tool-muted">
         <div class="flex items-center gap-4">
@@ -133,4 +160,26 @@ allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
 
     </div>
   </body>
+
+  <script is:inline>
+    (function () {
+      function syncIcons() {
+        var dark = document.documentElement.classList.contains("dark");
+        document.querySelectorAll(".theme-icon-light").forEach(function (el) {
+          el.classList.toggle("hidden", dark);
+        });
+        document.querySelectorAll(".theme-icon-dark").forEach(function (el) {
+          el.classList.toggle("hidden", !dark);
+        });
+      }
+      syncIcons();
+      document.querySelectorAll(".theme-toggle").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var dark = document.documentElement.classList.toggle("dark");
+          localStorage.setItem("ctrlcat-theme", dark ? "dark" : "light");
+          syncIcons();
+        });
+      });
+    })();
+  </script>
 </html>

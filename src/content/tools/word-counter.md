@@ -14,43 +14,41 @@ localizations:
     description: "단어, 글자, 문장, 단락 수와 예상 읽기 시간을 즉시 확인하세요. 무료, 회원가입 불필요."
 ---
 
-## 단어 수가 왜 중요할까요?
+## Why word count matters
 
-글을 쓸 때 단어 수는 생각보다 많은 상황에서 기준이 됩니다. 소셜 미디어 플랫폼마다 글자 수 제한이 있고, 학교 과제에는 분량 기준이 있으며, 취업 지원서를 쓸 때도 "500자 이내"라는 조건을 마주칩니다. 단어 수를 세는 일은 단순한 숫자 확인이 아니라, 내가 쓴 글이 요구 사항에 맞는지 확인하는 실용적인 도구입니다.
+Writing has limits — and those limits show up everywhere. Social platforms cut you off at a character count. School assignments specify a word range. Job applications ask for a summary within 200 words. Word count is not just a number; it is how you know whether your writing fits the space it is intended for.
 
-재미있는 사실이 있습니다. 헤밍웨이의 소설 "노인과 바다"는 약 27,000 단어이고, 오스틴의 "오만과 편견"은 122,000 단어입니다. 반면 트위터 한 트윗은 280자, 인스타그램 캡션은 2,200자 이내여야 합니다. 이처럼 글을 쓰는 공간에 따라 "적당한 분량"의 기준은 완전히 다릅니다.
+Some context: Hemingway's The Old Man and the Sea is about 27,000 words. Jane Austen's Pride and Prejudice is 122,000. A tweet is 280 characters. A good email is under 200 words. The "right length" varies completely depending on where the writing appears.
 
-## 어디에 써먹을 수 있나요?
+## Where this is useful
 
-**소셜 미디어 글쓰기** — 플랫폼마다 제한이 다릅니다. 트위터는 280자, 링크드인 포스트는 3,000자, 유튜브 설명란은 5,000자입니다. 텍스트를 붙여 넣고 몇 자인지 바로 확인할 수 있습니다.
+**Social media** — Each platform has its own limits. Twitter is 280 characters. A LinkedIn post can run to 3,000. A YouTube description can hold 5,000 but only the first 100 or so appear in search results. Paste your text here before you post and know exactly where you stand.
 
-**학교 과제와 리포트** — "A4 3장 분량"이나 "1,500단어 이상"이라는 조건을 충족했는지 한눈에 확인할 수 있습니다. 교수님이 분량을 확인하는 건 내용의 충실함을 기대하기 때문이니, 단어 수를 채우는 것 자체보다 내용을 다듬는 데 집중하는 게 좋습니다.
+**School assignments and essays** — When the requirement says "minimum 1,500 words" or "no more than two pages," this tells you whether you are there yet without opening a word processor.
 
-**이메일과 비즈니스 문서** — 업무 이메일은 짧을수록 읽힐 확률이 높습니다. 200단어 이내의 이메일은 긴 이메일보다 회신율이 훨씬 높다는 연구 결과가 있습니다. 내가 쓴 이메일이 너무 길어지진 않았는지 확인해보세요.
+**Emails and business writing** — Short emails get read and answered more often than long ones. If you find your draft running past 300 words, it might be worth cutting.
 
-**블로그와 글쓰기** — 검색 결과에 잘 노출되는 블로그 글의 평균 길이는 약 1,500~2,500단어입니다. 너무 짧으면 정보가 부족해 보이고, 너무 길면 읽기 부담스러울 수 있습니다.
+**Blogs and articles** — Blog posts that rank well in search results tend to run between 1,500 and 2,500 words — enough to cover a topic thoroughly without padding.
 
-**번역과 견적** — 번역가나 편집자에게 작업을 의뢰할 때 단어 수가 비용 산정의 기준이 됩니다. 미리 파악해두면 도움이 됩니다.
+**Translation and editing quotes** — Translators and editors typically price by word count. Know your count before you send a project out for a quote.
 
-## 읽는 시간은 어떻게 계산하나요?
+## How reading and speaking time are estimated
 
-이 도구는 성인 평균 독서 속도인 분당 238단어를 기준으로 예상 읽기 시간을 계산합니다. 소리 내어 읽을 때는 분당 150단어를 기준으로 합니다. 물론 개인마다 읽는 속도는 다르고, 내용의 난이도에 따라서도 크게 달라집니다.
+Reading time assumes an adult silent reading speed of around 238 words per minute — roughly the pace you would use for a news article. Speaking time uses 150 words per minute, which matches the pace of a clear, well-paced spoken presentation. A 10-minute talk works out to about 1,500 words.
 
-"빠른 독서"라는 기술을 훈련하면 분당 700~1,000단어까지 읽는 것도 가능하다고 하지만, 이해도가 떨어질 수 있습니다. 집중해서 꼼꼼히 읽을 때는 분당 100~150단어 정도가 자연스러운 속도입니다.
+Both are averages. Dense technical material takes longer; light narrative text goes faster.
 
-## 사용 방법
+## How to use this tool
 
-텍스트를 입력창에 붙여 넣거나 직접 입력하면 단어, 글자, 공백 제외 글자, 줄 수, 문장 수, 단락 수, 예상 읽기 시간이 실시간으로 표시됩니다. 따로 버튼을 누를 필요 없이 입력하는 즉시 결과가 업데이트됩니다.
+Paste or type text into the input area and the counts update immediately — no button needed. Words, characters (with and without spaces), lines, sentences, paragraphs, and estimated times all appear at once. The word frequency list at the bottom shows which words you are using most often, which can help spot repetition.
 
-입력창 하단에는 내 글에서 가장 자주 등장한 단어 목록도 볼 수 있습니다. 특정 단어를 반복해서 쓰고 있진 않은지 확인하는 데 유용합니다.
+## Frequently asked questions
 
-## 자주 묻는 질문
+**How does this count words?**
+Each group of characters separated by whitespace counts as one word. "Hello, world!" is two words. For Korean text, the count is by eojeol (space-separated units), which may differ from the number of morphemes or dictionary entries.
 
-**단어는 어떻게 세나요?**
-공백으로 구분된 덩어리를 한 단어로 셉니다. "Hello, world!"는 두 단어입니다. 영어 기준이므로 한국어는 어절(띄어쓰기 단위)로 셉니다. 한국어는 조사가 단어에 붙어 있어 영어와 단어 수 기준이 다르다는 점을 참고하세요.
+**The count is slightly different from my word processor. Why?**
+Different applications handle edge cases differently — hyphenated words, numbers, abbreviations. The difference is usually small.
 
-**결과가 워드프로세서와 다를 수 있나요?**
-프로그램마다 단어를 세는 방식이 조금씩 다릅니다. 특히 숫자, 하이픈이 들어간 단어, 줄임말 처리 방식에 차이가 있을 수 있습니다. 하지만 대부분의 경우 몇 단어 이내의 오차 범위입니다.
-
-**개인 정보가 저장되나요?**
-입력한 텍스트는 서버로 전송되지 않습니다. 모든 처리는 브라우저 내에서 이루어지며, 탭을 닫으면 내용도 사라집니다.
+**Is the text stored anywhere?**
+No. All processing happens locally in your browser. Nothing is sent to a server. Closing the tab removes the text.

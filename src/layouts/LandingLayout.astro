@@ -27,8 +27,15 @@ const description = lang === "ko"
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script is:inline>
+      (function () {
+        var s = localStorage.getItem("ctrlcat-theme");
+        var dark = s === "dark" || (!s && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (dark) document.documentElement.classList.add("dark");
+      })();
+    </script>
   </head>
-  <body class="bg-white text-slate-900 font-sans min-h-screen">
+  <body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans min-h-screen">
     <slot />
   </body>
 </html>

@@ -14,37 +14,33 @@ localizations:
     description: "HEX, RGB, HSL 색상 형식을 즉시 변환합니다. 색상 휠로 색상을 선택하고 CSS나 디자인 도구에 사용할 값을 복사하세요."
 ---
 
-## 색을 숫자로 표현하는 세 가지 방법
+## Three ways to write a color
 
-화면에 보이는 모든 색깔은 숫자로 이루어져 있습니다. 디자이너가 Figma에서 파란색을 고르면 그 색은 수치로 저장되고, 개발자는 그 수치를 받아서 웹사이트에 적용합니다. 이때 같은 색을 서로 다른 방식으로 표현하는 세 가지 형식이 존재합니다.
+Every color on a screen is a number. When a designer picks a blue in Figma, it is saved as a value, and the developer uses that value to apply it to a website. Three different formats exist to express the same color, and this tool converts between them instantly.
 
-재미있는 역사가 있습니다. 컴퓨터 화면이 처음 등장했을 때, 색을 표현하는 표준이 제각각이었습니다. 어떤 시스템은 0~255 범위의 숫자를 썼고, 어떤 시스템은 16진수를 썼습니다. 웹이 보급되면서 표준이 필요해졌고, 오늘날의 HEX, RGB, HSL 형식이 정착되었습니다.
+## Understanding HEX, RGB, and HSL
 
-## 세 가지 형식 이해하기
+HEX is the format you see most often in design tools. It starts with a # followed by six characters — letters A–F and digits 0–9. Copy a color code from Figma or Adobe, and it will usually be in this format. White is #ffffff; black is #000000.
 
-HEX는 디자인 도구에서 가장 흔하게 보이는 형식입니다. # 뒤에 여섯 자리 숫자와 알파벳으로 구성됩니다. Figma나 Adobe 같은 디자인 도구에서 색상 코드를 복사하면 보통 이 형식으로 나옵니다. 예를 들어 흰색은 #ffffff이고, 검은색은 #000000입니다.
+RGB stands for Red, Green, Blue. Each channel runs from 0 to 255. A screen mixes those three beams of light to produce every visible color. All three at 0 gives black (no light); all three at 255 gives white (maximum light).
 
-RGB는 빨강, 초록, 파랑의 영어 첫 글자를 딴 이름입니다. 각각 0~255 사이의 숫자로 표현됩니다. 화면은 이 세 가지 색의 빛을 섞어서 모든 색을 만들어 냅니다. 세 값이 모두 0이면 검은색(빛 없음), 모두 255면 흰색(빛 최대)입니다.
+HSL stands for Hue, Saturation, Lightness — the format closest to how people naturally think about color. Hue is a position on the color wheel, from 0° (red) through yellow, green, cyan, blue, and violet, back to red at 360°. Saturation controls how vivid the color appears. Lightness controls brightness. HSL makes it straightforward to create variations: a lighter or darker version of a color is a matter of adjusting a single number.
 
-HSL은 색조, 채도, 밝기의 약자입니다. 사람의 직관에 가장 가까운 방식입니다. 색조는 빨간색부터 시작해 360도를 돌며 무지개 색상 순서로 배치됩니다. 채도는 색이 얼마나 선명한지, 밝기는 얼마나 밝은지를 나타냅니다. HSL은 비슷한 색의 배리에이션을 만들 때 매우 편리합니다. 파란색의 밝은 버전, 어두운 버전을 만들고 싶다면 HSL에서 밝기 수치만 조절하면 됩니다.
+## When you need to convert
 
-## 실제로 언제 변환이 필요할까요?
+The most common situation is a mismatch between tools. A designer delivers colors as HEX values, but the codebase uses RGB. A paint picked in Photoshop needs to go into a CSS stylesheet. A color you spotted with browser developer tools is in HEX, but your current software only accepts HSL.
 
-디자이너가 Figma에서 작업하고 개발자에게 색상 코드를 전달할 때, 형식이 맞지 않는 경우가 있습니다. 포토샵에서 RGB 값으로 작업한 색을 웹 CSS에 HEX로 입력해야 하는 상황, 또는 어떤 사이트의 색깔이 마음에 들어서 브라우저 개발자 도구로 HEX 코드를 알아냈는데 작업 중인 도구가 RGB 입력만 받는 상황이 대표적입니다.
+## How to use this tool
 
-이 변환기는 한 형식을 입력하면 나머지 두 형식을 즉시 보여줍니다. 색상 선택기(색상 휠)를 사용하면 수치를 직접 입력하지 않고도 원하는 색을 시각적으로 고를 수 있습니다.
+Type or paste a value in any of the three fields and the other two update instantly. You can also open the color picker (the swatch button) to choose a color visually. The Copy button next to each field saves that value to your clipboard.
 
-## 사용 방법
+## Frequently asked questions
 
-HEX 입력창에 코드를 직접 입력하거나, 색상 선택기 아이콘을 클릭해서 시각적으로 색을 고릅니다. RGB나 HSL 칸에서 숫자를 바꾸면 나머지 형식이 실시간으로 업데이트됩니다. 각 형식 옆의 Copy 버튼으로 원하는 형식의 값을 바로 복사할 수 있습니다.
+**The same color shows different HEX codes in different tools. Why?**
+Color spaces differ slightly across monitors and applications. Two surfaces that appear identical to the eye may have subtly different numeric representations depending on the color profile in use.
 
-## 자주 묻는 질문
+**How do I add transparency?**
+HEX supports an eight-character format where the last two characters set opacity — for example #ff000080 is red at 50% opacity. In RGB, use rgba(255, 0, 0, 0.5), where the last value is 0 (fully transparent) to 1 (fully opaque). This tool covers the standard six-character HEX, RGB, and HSL formats.
 
-**같은 색인데 HEX 코드가 다를 때가 있어요.**
-색 공간에 따라 약간의 차이가 생길 수 있습니다. 모니터마다 색 표현 방식이 다르고, 디자인 도구마다 색을 처리하는 방식이 조금씩 다릅니다. 완전히 같아 보이는 색이라도 기기에 따라 다르게 표시될 수 있습니다.
-
-**투명도는 어떻게 표현하나요?**
-HEX에 두 자리를 더한 8자리 형식을 쓰면 됩니다. 예를 들어 #ff000080은 빨간색 50% 투명도입니다. RGB에서는 rgba(255, 0, 0, 0.5)처럼 마지막 숫자로 투명도를 0~1 사이로 지정합니다. 이 도구는 기본 6자리 HEX와 RGB, HSL을 지원합니다.
-
-**디자인을 배우고 싶은데 어떤 형식부터 익혀야 하나요?**
-HEX부터 시작하는 것을 권장합니다. 디자인 도구와 개발 환경 모두에서 가장 널리 쓰이는 형식이기 때문입니다. HSL은 색 팔레트를 직접 만들거나 색상 시스템을 설계할 때 배우면 큰 도움이 됩니다.
+**Which format should I learn first?**
+Start with HEX — it is the most widely understood format across both design tools and code. Learn HSL when you want to build a palette or work with color systems, where adjusting hue and lightness independently is very useful.

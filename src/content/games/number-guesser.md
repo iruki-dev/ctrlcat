@@ -16,37 +16,37 @@ localizations:
     description: "1부터 100 사이의 숫자를 최소 횟수로 맞춰보세요. 이진 탐색 직관을 키워주는 무료 브라우저 게임."
 ---
 
-## 어떤 게임인가요?
+## How the game works
 
-1부터 100 사이에서 컴퓨터가 하나의 숫자를 비밀리에 고릅니다. 여러분은 숫자를 하나씩 불러가며 맞춰야 합니다. 매번 "더 높아요" 또는 "더 낮아요" 힌트가 주어지고, 7번 안에 맞추면 성공입니다.
+The computer picks a secret number between 1 and 100. You guess one number at a time and get a hint after each attempt: "higher" or "lower." You have 7 guesses to find the answer.
 
-단순해 보이지만, 이 게임에는 꽤 깊은 이야기가 숨어 있습니다. 7번이라는 제한은 임의로 정한 숫자가 아닙니다. 수학적으로 정확히 이 수가 필요하고 충분한 이유가 있습니다.
+It sounds simple, but the 7-guess limit is not arbitrary. There is a mathematical reason that number is exactly right.
 
-## 7번으로 100가지를 맞출 수 있는 이유
+## Why 7 guesses is enough
 
-가장 좋은 전략은 매번 남은 범위의 정중앙을 찍는 것입니다. 첫 번째 추측으로 50을 부릅니다. "더 높아요"라고 하면 이제 51~100 사이에 답이 있고, "더 낮아요"라고 하면 1~49 사이입니다. 한 번의 추측으로 가능성이 절반으로 줄어듭니다.
+The best strategy is to always guess the midpoint of the remaining range. Start with 50. If the answer is higher, the range narrows to 51–100. If it is lower, the range becomes 1–49. One guess cuts the possibilities in half.
 
-이 전략을 계속 쓰면 몇 번 만에 범위가 좁아질지 계산해보면, 딱 7번이면 100개 중에서 어떤 숫자든 찾아낼 수 있습니다. 이것은 컴퓨터 과학에서 이진 탐색이라고 부르는 방법과 정확히 같습니다. 탐색 범위를 계속 절반으로 줄여가는 전략입니다.
+Keep applying this strategy, and 7 guesses is always enough to find any number from 1 to 100. This is the same method computer scientists call binary search — halving the search space at each step.
 
-이 원리는 일상에서도 자주 씁니다. 두꺼운 책에서 특정 페이지를 찾을 때 처음부터 한 장씩 넘기지 않고 중간을 펼쳐보는 것, 키 순서대로 줄 세운 사람들 중에서 특정 키를 가진 사람을 찾을 때 중간 사람부터 확인하는 것이 모두 같은 원리입니다.
+You see the same principle in everyday life: flipping to the middle of a thick book to find a page, or checking the center of a sorted list to find a name.
 
-## 전략 팁
+## Strategy tips
 
-항상 50에서 시작하세요. 1~100의 정중앙이 50이기 때문에 가장 많은 정보를 얻을 수 있습니다. 이후에는 화면의 범위 바를 보면서 남은 가능 범위의 가운데 숫자를 계속 선택하세요.
+Always start with 50. It is the midpoint of the full range and gives you the most information from your first guess. After each hint, aim for the middle of the remaining range shown on screen.
 
-예를 들어 힌트를 통해 범위가 63~74로 좁혀졌다면, 다음 추측은 (63+74)를 2로 나눈 68이 됩니다. 범위가 홀수개면 어느 쪽을 고르든 큰 차이는 없습니다.
+For example, if hints have narrowed the range to 63–74, your next guess should be around 68 (the midpoint of 63 and 74). When the range has an odd number of values, either middle choice works equally well.
 
-## 점수와 기록
+## Scoring
 
-적은 횟수일수록 좋은 점수입니다. 1번에 맞추는 것은 순수한 운이지만, 7번 이내에는 전략적으로 항상 성공할 수 있습니다. 최고 기록은 브라우저 탭을 닫거나 새로 고침할 때까지 유지됩니다.
+Fewer guesses is better. Getting it in one is pure luck. Getting it in 7 is always achievable with the right strategy. Your best score carries over between rounds and stays until you close or refresh the tab.
 
-## 자주 묻는 질문
+## Frequently asked questions
 
-**숫자가 정말 무작위로 정해지나요?**
-네. 매 라운드마다 브라우저의 난수 생성기가 균등하게 1~100 중 하나를 선택합니다. 어떤 패턴도 없고, 이전 게임 결과에 영향을 받지 않습니다.
+**Is the number truly random?**
+Yes. The browser's random number generator picks a number evenly distributed across 1–100 at the start of each round. There is no pattern and no influence from previous games.
 
-**왜 7번인가요? 10번이나 5번이면 안 되나요?**
-100가지 숫자에서 절반씩 줄여가는 최소 횟수가 수학적으로 7입니다. 6번으로는 어떤 전략을 써도 일부 경우에 맞출 수 없고, 8번은 필요 이상으로 넉넉합니다.
+**Why 7 and not 6 or 8?**
+With the halving strategy, 7 guesses covers every possible number from 1 to 100. Six would leave some numbers unreachable no matter how well you play. Eight would give you more room than you need.
 
-**같은 숫자를 두 번 불러도 되나요?**
-기술적으로는 가능하지만, 아무 정보도 얻지 못한 채 기회를 낭비하게 됩니다. 화면의 기록 패널과 범위 바를 활용하면 이미 시도한 숫자를 피할 수 있습니다.
+**Can I guess the same number twice?**
+Technically yes, but you will waste a guess with no new information. Use the hint history and the range bar on screen to track what you have already tried.

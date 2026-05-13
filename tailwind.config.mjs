@@ -1,42 +1,44 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./src/**/*.{astro,html,js,jsx,md,mdx,ts,tsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        // ── Tools realm (light, cyan accent) ─────────────────────
+        // ── Tools realm ──────────────────────────────────────────
+        // All values are CSS-variable-backed so dark mode works via .dark class.
         tool: {
-          bg: "#f8fafc",         // slate-50  – page background
-          surface: "#ffffff",     // white     – cards, panels
-          "surface-2": "#f1f5f9", // slate-100 – sidebar, hover bg
-          border: "#e2e8f0",      // slate-200 – default border
-          "border-dim": "#f1f5f9",// slate-100 – subtle separator
-          accent: "#0891b2",      // cyan-600  – primary action
-          "accent-light": "#e0f7fa",// cyan-50 – accent tint bg
-          "accent-dim": "#0e7490",// cyan-700  – hover
-          muted: "#94a3b8",       // slate-400 – placeholder, meta
-          text: "#0f172a",        // slate-900 – primary text
-          "text-dim": "#475569",  // slate-600 – secondary text
+          bg:             "rgb(var(--tool-bg) / <alpha-value>)",
+          surface:        "rgb(var(--tool-surface) / <alpha-value>)",
+          "surface-2":    "rgb(var(--tool-surface-2) / <alpha-value>)",
+          border:         "rgb(var(--tool-border) / <alpha-value>)",
+          "border-dim":   "rgb(var(--tool-border-dim) / <alpha-value>)",
+          accent:         "rgb(var(--tool-accent) / <alpha-value>)",
+          "accent-light": "rgb(var(--tool-accent-light) / <alpha-value>)",
+          "accent-dim":   "rgb(var(--tool-accent-dim) / <alpha-value>)",
+          muted:          "rgb(var(--tool-muted) / <alpha-value>)",
+          text:           "rgb(var(--tool-text) / <alpha-value>)",
+          "text-dim":     "rgb(var(--tool-text-dim) / <alpha-value>)",
         },
-        // ── Games realm (light, violet accent) ───────────────────
+        // ── Games realm ───────────────────────────────────────────
         game: {
-          bg: "#f8fafc",
-          surface: "#ffffff",
-          "surface-2": "#f5f3ff", // violet-50
-          border: "#e2e8f0",
-          "border-dim": "#f1f5f9",
-          accent: "#7c3aed",      // violet-600
-          "accent-light": "#ede9fe",// violet-100
-          "accent-dim": "#6d28d9",// violet-700
-          secondary: "#db2777",   // pink-600
-          muted: "#94a3b8",
-          text: "#0f172a",
-          "text-dim": "#475569",
+          bg:             "rgb(var(--game-bg) / <alpha-value>)",
+          surface:        "rgb(var(--game-surface) / <alpha-value>)",
+          "surface-2":    "rgb(var(--game-surface-2) / <alpha-value>)",
+          border:         "rgb(var(--game-border) / <alpha-value>)",
+          "border-dim":   "rgb(var(--game-border-dim) / <alpha-value>)",
+          accent:         "rgb(var(--game-accent) / <alpha-value>)",
+          "accent-light": "rgb(var(--game-accent-light) / <alpha-value>)",
+          "accent-dim":   "rgb(var(--game-accent-dim) / <alpha-value>)",
+          secondary:      "rgb(var(--game-secondary) / <alpha-value>)",
+          muted:          "rgb(var(--game-muted) / <alpha-value>)",
+          text:           "rgb(var(--game-text) / <alpha-value>)",
+          "text-dim":     "rgb(var(--game-text-dim) / <alpha-value>)",
         },
-        // ── Shared landing ────────────────────────────────────────
+        // ── Landing / shared ──────────────────────────────────────
         brand: {
-          tool: "#0891b2",   // cyan-600
-          game: "#7c3aed",   // violet-600
+          tool: "#0891b2",
+          game: "#7c3aed",
         },
       },
       fontFamily: {

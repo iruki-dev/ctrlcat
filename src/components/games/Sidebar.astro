@@ -108,23 +108,49 @@ function getTitle(game: CollectionEntry<"games">) {
     ))}
   </nav>
 
-  <!-- Language switcher -->
+  <!-- Footer: language switcher + theme toggle -->
   <div class="px-3 py-3 border-t border-game-border-dim shrink-0">
-    <div class="flex items-center gap-1 text-xs">
-      <span class="text-game-muted mr-1 text-xs">Lang</span>
-      {(["en", "ko"] as Locale[]).map((l) => (
-        <a
-          href={switchLocalePath(url, l)}
-          class:list={[
-            "px-2 py-0.5 rounded transition-colors",
-            l === lang
-              ? "bg-game-surface text-game-text font-medium"
-              : "text-game-muted hover:text-game-text-dim",
-          ]}
-        >
-          {l === "en" ? "EN" : "한국어"}
-        </a>
-      ))}
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-1 text-xs">
+        <span class="text-game-muted mr-1 text-xs">Lang</span>
+        {(["en", "ko"] as Locale[]).map((l) => (
+          <a
+            href={switchLocalePath(url, l)}
+            class:list={[
+              "px-2 py-0.5 rounded transition-colors",
+              l === lang
+                ? "bg-game-surface text-game-text font-medium"
+                : "text-game-muted hover:text-game-text-dim",
+            ]}
+          >
+            {l === "en" ? "EN" : "한국어"}
+          </a>
+        ))}
+      </div>
+      <!-- Theme toggle -->
+      <button
+        class="theme-toggle w-7 h-7 flex items-center justify-center rounded-md
+               text-game-muted hover:text-game-text hover:bg-game-surface transition-colors"
+        aria-label="Toggle dark mode"
+        title="Toggle dark mode"
+      >
+        <svg class="theme-icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <svg class="theme-icon-dark hidden" width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
     </div>
   </div>
 </aside>

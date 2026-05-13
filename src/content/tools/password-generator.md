@@ -14,41 +14,41 @@ localizations:
     description: "강력하고 안전한 비밀번호를 생성합니다. 브라우저의 암호학적 난수 생성기를 사용하며, 비밀번호는 저장되지 않습니다."
 ---
 
-## 왜 강한 비밀번호가 필요한가요?
+## Why strong passwords matter
 
-2024년 한 해에만 수십억 건의 계정 정보가 유출되었습니다. 해커들은 유출된 비밀번호 목록을 갖고 있으며, 자동화된 프로그램으로 하루에 수백만 번씩 로그인을 시도합니다. "password123"이나 "qwerty"같은 비밀번호는 순식간에 뚫립니다.
+Billions of account credentials have been exposed in data breaches over recent years. Attackers use those lists along with automated tools that attempt millions of logins per hour. Passwords like "password123" or "qwerty" are cracked in seconds — they appear at the top of every leaked database.
 
-흥미로운 점은, 해커들이 처음부터 모든 조합을 다 시도하지는 않는다는 것입니다. 사람들이 가장 많이 쓰는 비밀번호 목록부터 시작합니다. 생일, 이름, 반려동물 이름 같은 개인 정보도 소셜 미디어를 통해 쉽게 수집합니다. 따라서 의미 있는 단어나 숫자가 아닌, 완전히 무작위로 만든 비밀번호가 훨씬 안전합니다.
+Attackers do not start by trying every possible combination. They start with the most commonly used passwords, then add personal information gathered from social media: birthdays, names, and pet names. A password that means something to you is a password that is easier to guess.
 
-## 길이가 핵심입니다
+## Length is what matters most
 
-비밀번호 강도에서 가장 중요한 요소는 특수문자가 아니라 길이입니다. 12자리 비밀번호는 8자리 비밀번호보다 몇 배 강한 게 아니라, 천 배 이상 강합니다.
+The single biggest factor in password strength is length, not special characters. A 12-character password is not a few times stronger than an 8-character one — it is exponentially harder to break.
 
-이 도구는 비밀번호를 만들 때 엔트로피라는 수치를 보여줍니다. 비밀번호가 얼마나 예측하기 어려운지 나타내는 지표입니다. 일반 계정에는 80비트 이상, 은행이나 이메일처럼 중요한 계정에는 100비트 이상을 권장합니다. 16자리 이상, 대소문자와 숫자를 섞은 비밀번호라면 대부분의 경우 충분히 안전합니다.
+This tool shows an entropy figure as you adjust the settings. Entropy measures unpredictability: the higher the number, the harder the password is to guess by brute force. For most accounts, 80 bits of entropy is solid. For email or banking, aim for 100 bits or more. A 16-character password mixing uppercase, lowercase, and digits easily clears that bar.
 
-## 이 도구는 어떻게 난수를 만드나요?
+## How the randomness works
 
-일반적인 컴퓨터 프로그램의 난수 생성과 다르게, 이 도구는 브라우저에 내장된 암호학적 난수 생성기를 사용합니다. 운영체제 수준의 무작위 소음에서 값을 가져오는 방식으로, 패턴이나 예측이 불가능합니다. 패스워드 매니저나 암호화 소프트웨어에서도 같은 방식을 씁니다.
+Most everyday random numbers follow patterns that a determined attacker can predict given enough data. This tool uses the browser's cryptographic random number generator, which draws from hardware-level noise in your device — truly unpredictable, the same source used by password managers and encryption software.
 
-생성된 비밀번호는 서버에 저장되거나 전송되지 않습니다. 브라우저 안에서만 처리되며, 탭을 닫으면 사라집니다.
+Generated passwords are never sent anywhere. Everything happens inside your browser and disappears when you close the tab.
 
-## 권장 설정
+## Recommended settings
 
-보안이 중요한 계정이라면 16자리 이상, 대문자와 소문자, 숫자를 모두 포함하는 것을 권장합니다. 일부 오래된 사이트에서는 특수문자를 제한하기도 하므로, 특수문자를 포함했다가 오류가 나면 특수문자를 빼고 대신 길이를 더 늘리세요.
+For important accounts: 16 characters or longer, mixing uppercase, lowercase, and digits. Some older websites reject special characters in passwords; if that happens, remove them and increase the length instead.
 
-숫자만 사용하는 PIN이 필요할 때는 숫자만 선택한 뒤 원하는 자릿수를 설정하면 됩니다.
+For a numeric PIN, select digits only and set the length you need.
 
-## 사용 방법
+## How to use this tool
 
-슬라이더로 비밀번호 길이를 조절하고, 포함할 문자 종류를 체크한 뒤 Generate Password 버튼을 클릭합니다. 결과가 마음에 들지 않으면 Regenerate 버튼으로 새로 만들 수 있습니다. Copy 버튼으로 바로 클립보드에 복사됩니다.
+Use the slider to set the length, check the character types you want, and click Generate Password. If you want a different result, Regenerate creates a new one immediately. Copy saves it to your clipboard.
 
-## 자주 묻는 질문
+## Frequently asked questions
 
-**비밀번호를 어디에 저장해야 하나요?**
-메모장이나 포스트잇에 적어두는 것은 위험합니다. 비밀번호 관리 앱(Bitwarden, 1Password, Apple 키체인 등)을 사용하면 안전하게 저장하고 필요할 때 자동으로 입력할 수 있습니다.
+**Where should I store the generated password?**
+Use a password manager — Bitwarden, 1Password, or the one built into your browser or phone. It stores passwords securely and fills them in automatically.
 
-**같은 비밀번호를 여러 사이트에 써도 되나요?**
-절대 권장하지 않습니다. 사이트 하나가 해킹당하면, 그 비밀번호로 다른 모든 사이트에도 접속이 시도됩니다. 이를 크리덴셜 스터핑이라고 하며, 대규모 계정 탈취의 주요 방법입니다.
+**Can I reuse a password across multiple sites?**
+No. If one site is breached and that password is exposed, attackers immediately try it on every other site you might use. This technique — credential stuffing — is responsible for a large share of account takeovers.
 
-**이중 인증(2FA)도 설정하는 게 좋을까요?**
-강력히 권장합니다. 비밀번호가 유출되더라도 이중 인증이 설정되어 있으면 로그인을 막을 수 있습니다. 문자 메시지보다 인증 앱을 사용하는 것이 더 안전합니다.
+**Should I also set up two-factor authentication?**
+Yes, whenever a site offers it. Even if a password leaks, 2FA stops an attacker from completing the login. An authenticator app is more secure than SMS codes.
