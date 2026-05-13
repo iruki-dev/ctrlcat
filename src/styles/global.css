@@ -1,0 +1,58 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base resets ── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+  }
+}
+
+/* ── Default scrollbar thumb ── */
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+/* ── Tool realm scrollbar ── */
+.realm-tool ::-webkit-scrollbar-thumb {
+  background: #bae6fd;
+}
+
+/* ── Game realm scrollbar ── */
+.realm-game ::-webkit-scrollbar-thumb {
+  background: #ddd6fe;
+}
+
+/* ── Utility: hide scrollbar but keep scroll ── */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

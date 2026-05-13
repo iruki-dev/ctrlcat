@@ -1,0 +1,49 @@
+---
+import { getCollection, render } from "astro:content";
+import ToolLayout from "../../layouts/ToolLayout.astro";
+import ToolRenderer from "../../components/tools/ToolRenderer";
+
+export async function getStaticPaths() {
+  const tools = await getCollection("tools", ({ data }) => data.status === "published");
+  return tools.map((tool) => ({
+    params: { slug: tool.slug },
+    props: { tool },
+  }));
+}
+
+const lang = "en";
+const { tool } = Astro.props;
+const { title, description, icon, category, component } = tool.data;
+const { Content, headings } = await render(tool);
+const hasDoc = headings.length > 0;
+---
+
+<ToolLayout
+  title={title}
+  description={description}
+  icon={icon}
+  category={category}
+  currentSlug={tool.slug}
+  lang={lang}
+>
+  <!-- Tool box -->
+  <div class="rounded-xl border border-tool-border bg-tool-surface/30 p-4 md:p-6 mb-8">
+    <ToolRenderer component={component} client:load />
+  </div>
+
+  <!-- Documentation -->
+  {hasDoc && (
+    <article class="prose prose-tool max-w-none
+                    prose-headings:font-semibold prose-headings:tracking-tight
+                    prose-h2:text-base prose-h2:mt-8 prose-h2:mb-3
+                    prose-h3:text-sm prose-h3:mt-6 prose-h3:mb-2
+                    prose-p:text-sm prose-p:leading-relaxed
+                    prose-li:text-sm prose-li:leading-relaxed
+                    prose-table:text-sm prose-th:font-semibold
+                    prose-code:text-xs prose-code:px-1 prose-code:py-0.5 prose-code:rounded
+                    prose-code:bg-tool-surface-2 prose-code:border prose-code:border-tool-border-dim
+                    prose-code:before:content-none prose-code:after:content-none">
+      <Content />
+    </article>
+  )}
+</ToolLayout>

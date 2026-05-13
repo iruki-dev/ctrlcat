@@ -1,0 +1,60 @@
+---
+import { getCollection, getEntry, render } from "astro:content";
+import GameLayout from "../../../layouts/GameLayout.astro";
+import GameRenderer from "../../../components/games/GameRenderer";
+
+export async function getStaticPaths() {
+  const games = await getCollection("games", ({ data }) => data.status === "published");
+  return games.map((game) => ({ params: { slug: game.slug }, props: { game } }));
+}
+
+const lang = "ko";
+const { game } = Astro.props;
+const title = game.data.localizations?.[lang]?.title ?? game.data.title;
+const description = game.data.localizations?.[lang]?.description ?? game.data.description;
+const { icon, category, component, difficulty, playTime } = game.data;
+
+const koDocEntry = await getEntry("docs", `games/${game.slug}/ko`);
+let DocContent: any = null;
+let hasDoc = false;
+
+if (koDocEntry) {
+  const { Content, headings } = await render(koDocEntry);
+  DocContent = Content;
+  hasDoc = headings.length > 0;
+} else {
+  const { Content, headings } = await render(game);
+  DocContent = Content;
+  hasDoc = headings.length > 0;
+}
+---
+
+<GameLayout
+  title={title}
+  description={description}
+  icon={icon}
+  category={category}
+  difficulty={difficulty}
+  playTime={playTime}
+  currentSlug={game.slug}
+  lang={lang}
+>
+  <div class="rounded-xl border border-game-border bg-game-surface/30 p-4 md:p-6 mb-8">
+    <GameRenderer component={component} client:load />
+  </div>
+
+  {hasDoc && (
+    <article class="prose prose-game max-w-none
+                    prose-headings:font-semibold prose-headings:tracking-tight
+                    prose-h2:text-base prose-h2:mt-8 prose-h2:mb-3
+                    prose-h3:text-sm prose-h3:mt-6 prose-h3:mb-2
+                    prose-p:text-sm prose-p:leading-relaxed
+                    prose-li:text-sm prose-li:leading-relaxed
+                    prose-table:text-sm prose-th:font-semibold
+                    prose-code:text-xs prose-code:px-1 prose-code:py-0.5 prose-code:rounded
+                    prose-code:bg-game-surface-2 prose-code:border prose-code:border-game-border-dim
+                    prose-code:before:content-none prose-code:after:content-none">
+      <DocContent />
+    </article>
+  )}
+</GameLayout>

@@ -1,0 +1,59 @@
+---
+import { getCollection, getEntry, render } from "astro:content";
+import ToolLayout from "../../../layouts/ToolLayout.astro";
+import ToolRenderer from "../../../components/tools/ToolRenderer";
+
+export async function getStaticPaths() {
+  const tools = await getCollection("tools", ({ data }) => data.status === "published");
+  return tools.map((tool) => ({ params: { slug: tool.slug }, props: { tool } }));
+}
+
+const lang = "ko";
+const { tool } = Astro.props;
+const title = tool.data.localizations?.[lang]?.title ?? tool.data.title;
+const description = tool.data.localizations?.[lang]?.description ?? tool.data.description;
+const { icon, category, component } = tool.data;
+
+// Try to fetch locale-specific docs; fall back to main EN body
+const koDocEntry = await getEntry("docs", `tools/${tool.slug}/ko`);
+let DocContent: any = null;
+let hasDoc = false;
+
+if (koDocEntry) {
+  const { Content, headings } = await render(koDocEntry);
+  DocContent = Content;
+  hasDoc = headings.length > 0;
+} else {
+  const { Content, headings } = await render(tool);
+  DocContent = Content;
+  hasDoc = headings.length > 0;
+}
+---
+
+<ToolLayout
+  title={title}
+  description={description}
+  icon={icon}
+  category={category}
+  currentSlug={tool.slug}
+  lang={lang}
+>
+  <div class="rounded-xl border border-tool-border bg-tool-surface/30 p-4 md:p-6 mb-8">
+    <ToolRenderer component={component} client:load />
+  </div>
+
+  {hasDoc && (
+    <article class="prose prose-tool max-w-none
+                    prose-headings:font-semibold prose-headings:tracking-tight
+                    prose-h2:text-base prose-h2:mt-8 prose-h2:mb-3
+                    prose-h3:text-sm prose-h3:mt-6 prose-h3:mb-2
+                    prose-p:text-sm prose-p:leading-relaxed
+                    prose-li:text-sm prose-li:leading-relaxed
+                    prose-table:text-sm prose-th:font-semibold
+                    prose-code:text-xs prose-code:px-1 prose-code:py-0.5 prose-code:rounded
+                    prose-code:bg-tool-surface-2 prose-code:border prose-code:border-tool-border-dim
+                    prose-code:before:content-none prose-code:after:content-none">
+      <DocContent />
+    </article>
+  )}
+</ToolLayout>

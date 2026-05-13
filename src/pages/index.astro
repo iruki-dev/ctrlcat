@@ -1,0 +1,269 @@
+---
+import { getCollection } from "astro:content";
+import LandingLayout from "../layouts/LandingLayout.astro";
+import Icon from "../components/Icon.astro";
+import { t, localePath } from "../i18n";
+
+const lang = "en";
+const tr = t(lang);
+
+const allTools = await getCollection("tools", ({ data }) => data.status === "published");
+allTools.sort((a, b) => (b.data.featured ? 1 : 0) - (a.data.featured ? 1 : 0) || a.data.title.localeCompare(b.data.title));
+const featuredTools = allTools.slice(0, 8);
+
+const allGames = await getCollection("games", ({ data }) => data.status === "published");
+allGames.sort((a, b) => (b.data.featured ? 1 : 0) - (a.data.featured ? 1 : 0) || a.data.title.localeCompare(b.data.title));
+const featuredGames = allGames.slice(0, 8);
+
+const toolCategories = [...new Set(allTools.map(t => t.data.category))].sort();
+const gameCategories = [...new Set(allGames.map(g => g.data.category))].sort();
+---
+
+<LandingLayout lang={lang}>
+
+  <!-- ── Header ── -->
+  <header class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 h-14 flex items-center gap-6">
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-2 font-bold text-base tracking-tight shrink-0">
+        <svg width="22" height="22" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="32" rx="8" fill="#09090b"/>
+          <path d="M9 21 L16 12 L23 21" stroke="#f8fafc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="text-slate-900">ctrl</span><span class="text-cyan-600">cat</span>
+      </a>
+      <!-- Nav -->
+      <nav class="flex items-center gap-1">
+        <a href="/tools/"
+           class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-cyan-600 hover:bg-cyan-50 rounded-md transition-colors">
+          Tools
+        </a>
+        <a href="/games/"
+           class="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-violet-600 hover:bg-violet-50 rounded-md transition-colors">
+          Games
+        </a>
+      </nav>
+      <!-- Lang -->
+      <div class="ml-auto flex items-center gap-2 text-xs">
+        <span class="px-2 py-1 rounded bg-slate-100 text-slate-700 font-medium">EN</span>
+        <a href="/ko/" class="px-2 py-1 rounded text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors">한국어</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Hero ── -->
+  <section class="bg-slate-50 border-b border-slate-200 py-12 px-4">
+    <div class="max-w-3xl mx-auto text-center">
+      <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-2 tracking-tight">
+        {tr.landing.heroTitle}
+      </h1>
+      <p class="text-slate-500 text-sm mb-8">{tr.landing.heroSub}</p>
+
+      <!-- Search -->
+      <div class="relative max-w-xl mx-auto mb-6">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg select-none">⌕</span>
+        <input
+          id="home-search"
+          type="search"
+          placeholder={tr.landing.searchPlaceholder}
+          class="w-full bg-white border border-slate-300 rounded-xl pl-11 pr-4 py-3
+                 text-slate-900 placeholder:text-slate-400 shadow-sm
+                 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition-all"
+        />
+      </div>
+
+      <!-- Category pills -->
+      <div class="flex flex-wrap justify-center gap-2">
+        {toolCategories.map(cat => (
+          <a href={`/tools/?cat=${cat}`}
+             class="px-3 py-1 rounded-full text-xs font-medium bg-white border border-slate-200
+                    text-slate-600 hover:border-cyan-300 hover:text-cyan-700 hover:bg-cyan-50 transition-colors shadow-sm">
+            {tr.tools.categories_map[cat as keyof typeof tr.tools.categories_map] ?? cat}
+          </a>
+        ))}
+        <span class="px-2 py-1 text-slate-300 text-xs self-center">|</span>
+        {gameCategories.map(cat => (
+          <a href={`/games/?cat=${cat}`}
+             class="px-3 py-1 rounded-full text-xs font-medium bg-white border border-slate-200
+                    text-slate-600 hover:border-violet-300 hover:text-violet-700 hover:bg-violet-50 transition-colors shadow-sm">
+            {tr.games.categories_map[cat as keyof typeof tr.games.categories_map] ?? cat}
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Tools section ── -->
+  <section class="max-w-6xl mx-auto px-4 py-10" id="section-tools">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-bold text-slate-900">{tr.landing.featuredTools}</h2>
+      <a href="/tools/"
+         class="text-sm text-cyan-600 hover:text-cyan-700 font-medium transition-colors">
+        {tr.landing.viewAllTools}
+      </a>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" id="home-tool-grid">
+      {featuredTools.map(tool => (
+        <a
+          href={`/tools/${tool.slug}/`}
+          data-title={tool.data.title.toLowerCase()}
+          data-tags={tool.data.tags.join(" ").toLowerCase()}
+          data-kind="tool"
+          class="home-card group flex flex-col rounded-xl border border-slate-200 border-t-2 border-t-cyan-500 bg-white p-4
+                 hover:shadow-md hover:border-t-cyan-600 transition-all duration-150"
+        >
+          <div class="mb-3 text-cyan-600"><Icon name={tool.data.icon ?? ""} size={28} /></div>
+          <div class="font-semibold text-sm text-slate-900 group-hover:text-cyan-700 transition-colors mb-1">
+            {tool.data.title}
+          </div>
+          <div class="text-xs text-slate-500 line-clamp-2 leading-relaxed flex-1">
+            {tool.data.description}
+          </div>
+          <div class="mt-3 text-xs font-semibold text-cyan-600 group-hover:text-cyan-700 transition-colors">
+            {tr.landing.useTool}
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Divider -->
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="border-t border-slate-100" />
+  </div>
+
+  <!-- ── Games section ── -->
+  <section class="max-w-6xl mx-auto px-4 py-10" id="section-games">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="text-lg font-bold text-slate-900">{tr.landing.featuredGames}</h2>
+      <a href="/games/"
+         class="text-sm text-violet-600 hover:text-violet-700 font-medium transition-colors">
+        {tr.landing.viewAllGames}
+      </a>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" id="home-game-grid">
+      {featuredGames.map(game => (
+        <a
+          href={`/games/${game.slug}/`}
+          data-title={game.data.title.toLowerCase()}
+          data-tags={game.data.tags.join(" ").toLowerCase()}
+          data-kind="game"
+          class="home-card group flex flex-col rounded-xl border border-slate-200 border-t-2 border-t-violet-500 bg-white p-4
+                 hover:shadow-md hover:border-t-violet-600 transition-all duration-150"
+        >
+          <div class="mb-3 text-violet-600"><Icon name={game.data.icon ?? ""} size={28} /></div>
+          <div class="font-semibold text-sm text-slate-900 group-hover:text-violet-700 transition-colors mb-1">
+            {game.data.title}
+          </div>
+          <div class="text-xs text-slate-500 line-clamp-2 leading-relaxed flex-1">
+            {game.data.description}
+          </div>
+          {game.data.playTime && (
+            <div class="mt-1 text-2xs text-slate-400">~{game.data.playTime} min</div>
+          )}
+          <div class="mt-3 text-xs font-semibold text-violet-600 group-hover:text-violet-700 transition-colors">
+            {tr.landing.playGame}
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer class="bg-slate-50 border-t border-slate-200 mt-6">
+    <div class="max-w-6xl mx-auto px-4 py-10">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+        <!-- Brand -->
+        <div class="col-span-2 md:col-span-1">
+          <div class="font-bold text-base text-slate-900 mb-2">
+            ctrl<span class="text-cyan-600">cat</span>
+          </div>
+          <p class="text-xs text-slate-500 leading-relaxed">{tr.landing.footerTagline}</p>
+        </div>
+        <!-- Tools links -->
+        <div>
+          <div class="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-3">Tools</div>
+          <ul class="space-y-2">
+            {allTools.slice(0, 5).map(tool => (
+              <li>
+                <a href={`/tools/${tool.slug}/`}
+                   class="text-xs text-slate-500 hover:text-cyan-600 transition-colors">
+                  {tool.data.title}
+                </a>
+              </li>
+            ))}
+            <li>
+              <a href="/tools/" class="text-xs text-cyan-600 hover:text-cyan-700 font-medium transition-colors">
+                All tools →
+              </a>
+            </li>
+          </ul>
+        </div>
+        <!-- Games links -->
+        <div>
+          <div class="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-3">Games</div>
+          <ul class="space-y-2">
+            {allGames.slice(0, 5).map(game => (
+              <li>
+                <a href={`/games/${game.slug}/`}
+                   class="text-xs text-slate-500 hover:text-violet-600 transition-colors">
+                  {game.data.title}
+                </a>
+              </li>
+            ))}
+            <li>
+              <a href="/games/" class="text-xs text-violet-600 hover:text-violet-700 font-medium transition-colors">
+                All games →
+              </a>
+            </li>
+          </ul>
+        </div>
+        <!-- Site -->
+        <div>
+          <div class="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-3">Site</div>
+          <ul class="space-y-2">
+            <li><a href="/ko/" class="text-xs text-slate-500 hover:text-slate-700 transition-colors">한국어</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-200 pt-6 text-center text-xs text-slate-400">
+        © {new Date().getFullYear()} ctrlcat.dev — Free web tools and games
+      </div>
+    </div>
+  </footer>
+
+  <!-- No-results banner (hidden by default) -->
+  <div id="home-no-results" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-sm px-4 py-2 rounded-lg shadow-lg z-50">
+    No results found
+  </div>
+
+</LandingLayout>
+
+<script>
+  const searchInput = document.getElementById("home-search") as HTMLInputElement;
+  const toolSection = document.getElementById("section-tools")!;
+  const gameSection = document.getElementById("section-games")!;
+  const noResults = document.getElementById("home-no-results")!;
+  const allCards = document.querySelectorAll<HTMLAnchorElement>(".home-card");
+
+  searchInput?.addEventListener("input", () => {
+    const q = searchInput.value.toLowerCase().trim();
+    if (!q) {
+      allCards.forEach(c => c.style.display = "");
+      toolSection.style.display = "";
+      gameSection.style.display = "";
+      noResults.classList.add("hidden");
+      return;
+    }
+    let toolVisible = 0, gameVisible = 0;
+    allCards.forEach(card => {
+      const match = card.dataset.title?.includes(q) || card.dataset.tags?.includes(q);
+      card.style.display = match ? "" : "none";
+      if (match && card.dataset.kind === "tool") toolVisible++;
+      if (match && card.dataset.kind === "game") gameVisible++;
+    });
+    toolSection.style.display = toolVisible > 0 ? "" : "none";
+    gameSection.style.display = gameVisible > 0 ? "" : "none";
+    noResults.classList.toggle("hidden", toolVisible + gameVisible > 0);
+  });
+</script>

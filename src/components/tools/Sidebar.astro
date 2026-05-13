@@ -1,0 +1,185 @@
+---
+import type { CollectionEntry } from "astro:content";
+import type { Locale } from "../../i18n";
+import { t, localePath, switchLocalePath } from "../../i18n";
+import Icon from "../Icon.astro";
+
+interface Props {
+  tools: CollectionEntry<"tools">[];
+  currentSlug?: string;
+  lang: Locale;
+  url: URL;
+}
+
+const { tools, currentSlug, lang, url } = Astro.props;
+const tr = t(lang);
+
+// Group by category preserving category order
+const categoryOrder = ["text", "math", "color", "data", "image", "developer", "productivity", "converter"];
+const grouped = categoryOrder.reduce<Record<string, CollectionEntry<"tools">[]>>((acc, cat) => {
+  const items = tools.filter(tool => tool.data.category === cat);
+  if (items.length > 0) acc[cat] = items;
+  return acc;
+}, {});
+
+function getTitle(tool: CollectionEntry<"tools">) {
+  return (tool.data.localizations?.[lang]?.title) ?? tool.data.title;
+}
+---
+
+<aside
+  id="tool-sidebar"
+  class="fixed top-0 left-0 h-full w-64 bg-tool-bg border-r border-tool-border-dim z-50
+         flex flex-col
+         -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out"
+>
+  <!-- Logo -->
+  <div class="flex items-center gap-2 px-4 h-14 border-b border-tool-border-dim shrink-0">
+    <a
+      href={localePath("/tools/", lang)}
+      class="flex items-center gap-1.5 font-bold text-base tracking-tight hover:opacity-80 transition-opacity"
+    >
+      <span class="text-tool-text">ctrl</span><span class="text-tool-accent">cat</span>
+      <span class="text-tool-muted text-xs font-normal ml-0.5">tools</span>
+    </a>
+  </div>
+
+  <!-- Search -->
+  <div class="px-3 py-3 border-b border-tool-border-dim shrink-0">
+    <div class="relative">
+      <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-tool-muted text-xs select-none">⌕</span>
+      <input
+        id="sidebar-search"
+        type="search"
+        placeholder={tr.tools.search}
+        class="w-full bg-tool-surface border border-tool-border text-tool-text text-sm rounded-md pl-7 pr-3 py-1.5
+               placeholder:text-tool-muted focus:outline-none focus:ring-1 focus:ring-tool-accent focus:border-tool-accent
+               transition-colors"
+      />
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="flex-1 overflow-y-auto py-2 scrollbar-hide">
+
+    <!-- All Tools -->
+    <a
+      href={localePath("/tools/", lang)}
+      class:list={[
+        "flex items-center gap-2 mx-2 px-2 py-1.5 rounded-md text-sm transition-colors",
+        !currentSlug
+          ? "bg-tool-surface text-tool-text font-medium"
+          : "text-tool-muted hover:text-tool-text hover:bg-tool-surface",
+      ]}
+    >
+      <span class="opacity-60">≡</span>
+      {tr.nav.allTools}
+    </a>
+
+    <div class="mx-2 my-2 border-t border-tool-border-dim" />
+
+    <!-- Category groups -->
+    {Object.entries(grouped).map(([cat, items]) => (
+      <div class="mb-1" data-sidebar-group>
+        <button
+          class="sidebar-cat-toggle w-full flex items-center justify-between px-2 py-1 text-2xs font-semibold uppercase tracking-widest text-tool-muted hover:text-tool-text-dim transition-colors"
+          aria-expanded="true"
+        >
+          <span>{tr.tools.categories_map[cat as keyof typeof tr.tools.categories_map] ?? cat}</span>
+          <span class="toggle-icon opacity-40 transition-transform">▾</span>
+        </button>
+        <div class="sidebar-cat-items">
+          {items.map(tool => (
+            <a
+              href={localePath(`/tools/${tool.slug}/`, lang)}
+              data-sidebar-item
+              data-title={getTitle(tool).toLowerCase()}
+              data-tags={tool.data.tags.join(" ").toLowerCase()}
+              class:list={[
+                "flex items-center gap-2 mx-0 px-2 py-1 rounded-md text-sm transition-colors",
+                tool.slug === currentSlug
+                  ? "bg-tool-surface text-tool-accent font-medium"
+                  : "text-tool-muted hover:text-tool-text hover:bg-tool-surface/60",
+              ]}
+            >
+              <span class="shrink-0 text-tool-muted"><Icon name={tool.data.icon ?? ""} size={16} /></span>
+              <span class="truncate">{getTitle(tool)}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
+  </nav>
+
+  <!-- Footer: language switcher -->
+  <div class="px-3 py-3 border-t border-tool-border-dim shrink-0">
+    <div class="flex items-center gap-1 text-xs">
+      <span class="text-tool-muted mr-1 text-xs">Lang</span>
+      {(["en", "ko"] as Locale[]).map((l) => (
+        <a
+          href={switchLocalePath(url, l)}
+          class:list={[
+            "px-2 py-0.5 rounded transition-colors",
+            l === lang
+              ? "bg-tool-surface text-tool-text font-medium"
+              : "text-tool-muted hover:text-tool-text-dim",
+          ]}
+        >
+          {l === "en" ? "EN" : "한국어"}
+        </a>
+      ))}
+    </div>
+  </div>
+</aside>
+
+<!-- Mobile overlay -->
+<div
+  id="tool-sidebar-overlay"
+  class="fixed inset-0 bg-black/60 z-40 hidden lg:hidden backdrop-blur-sm"
+/>
+
+<script>
+  // ── Sidebar toggle (mobile) ──
+  const sidebar = document.getElementById("tool-sidebar")!;
+  const overlay = document.getElementById("tool-sidebar-overlay")!;
+  const menuBtn = document.getElementById("sidebar-menu-btn");
+
+  function openSidebar() {
+    sidebar.classList.remove("-translate-x-full");
+    overlay.classList.remove("hidden");
+  }
+  function closeSidebar() {
+    sidebar.classList.add("-translate-x-full");
+    overlay.classList.add("hidden");
+  }
+
+  menuBtn?.addEventListener("click", openSidebar);
+  overlay.addEventListener("click", closeSidebar);
+
+  // ── Category collapse ──
+  document.querySelectorAll<HTMLButtonElement>(".sidebar-cat-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const items = btn.nextElementSibling as HTMLElement;
+      const icon = btn.querySelector<HTMLElement>(".toggle-icon");
+      const collapsed = items.style.display === "none";
+      items.style.display = collapsed ? "" : "none";
+      if (icon) icon.style.transform = collapsed ? "" : "rotate(-90deg)";
+      btn.setAttribute("aria-expanded", String(collapsed));
+    });
+  });
+
+  // ── Sidebar search ──
+  const searchInput = document.getElementById("sidebar-search") as HTMLInputElement;
+  const allItems = document.querySelectorAll<HTMLAnchorElement>("[data-sidebar-item]");
+
+  searchInput?.addEventListener("input", () => {
+    const q = searchInput.value.toLowerCase().trim();
+    allItems.forEach((item) => {
+      const match =
+        !q ||
+        item.dataset.title?.includes(q) ||
+        item.dataset.tags?.includes(q);
+      item.style.display = match ? "" : "none";
+    });
+  });
+</script>
