@@ -13,6 +13,26 @@ const title = lang === "ko"
 const description = lang === "ko"
   ? "계정 불필요. 텍스트, 수학, 색상, 퍼즐, 숫자 게임 등 다양한 무료 웹 툴과 게임."
   : "No accounts, no tracking. Free web tools and games — text, math, color, puzzles, number games and more.";
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const enURL = new URL(Astro.url.pathname.replace(/^\/ko(\/|$)/, "/"), Astro.site);
+const koURL = new URL(Astro.url.pathname.startsWith("/ko") ? Astro.url.pathname : "/ko" + Astro.url.pathname, Astro.site);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ctrlcat.dev",
+  "description": description,
+  "url": "https://ctrlcat.dev/",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://ctrlcat.dev/tools/?q={search_term_string}",
+    },
+    "query-input": "required name=search_term_string",
+  },
+};
 ---
 
 <!doctype html>
@@ -22,11 +42,23 @@ const description = lang === "ko"
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="alternate" hreflang="en" href={enURL} />
+    <link rel="alternate" hreflang="ko" href={koURL} />
+    <link rel="alternate" hreflang="x-default" href={enURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="ctrlcat.dev" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <script is:inline>
       (function () {
         var s = localStorage.getItem("ctrlcat-theme");
@@ -35,7 +67,7 @@ const description = lang === "ko"
       })();
     </script>
   </head>
-  <body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans min-h-screen">
+  <body class="bg-white dark:bg-[#161616] text-slate-900 dark:text-slate-100 font-sans min-h-screen">
     <slot />
   </body>
 </html>

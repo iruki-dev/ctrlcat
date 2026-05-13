@@ -13,7 +13,6 @@ interface Props {
   category?: string;
   currentSlug?: string;
   lang?: Locale;
-  /** Set false on listing pages to suppress the page header */
   showHeader?: boolean;
 }
 
@@ -29,9 +28,29 @@ const {
 
 const tr = t(lang);
 const pageTitle = `${title} — ${tr.tools.siteTitle}`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const enURL = new URL(Astro.url.pathname.replace(/^\/ko\//, "/"), Astro.site);
+const koURL = new URL("/ko" + Astro.url.pathname.replace(/^\/ko\//, "/"), Astro.site);
 
 const allTools = await getCollection("tools", ({ data }) => data.status === "published");
 allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
+
+const jsonLd = currentSlug ? {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": title,
+  "description": description,
+  "url": canonicalURL.href,
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+} : {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": pageTitle,
+  "description": description,
+  "url": canonicalURL.href,
+};
 ---
 
 <!doctype html>
@@ -41,11 +60,23 @@ allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="alternate" hreflang="en" href={enURL} />
+    <link rel="alternate" hreflang="ko" href={koURL} />
+    <link rel="alternate" hreflang="x-default" href={enURL} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
+    <meta property="og:type" content={currentSlug ? "article" : "website"} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="ctrlcat.dev" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
     <link rel="icon" href="/favicon-tool.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <!-- Dark mode: apply before first paint to prevent flash -->
     <script is:inline>
       (function () {
@@ -56,7 +87,7 @@ allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
     </script>
   </head>
 
-  <body class="bg-tool-bg text-tool-text font-sans min-h-screen flex">
+  <body class="bg-tool-bg text-tool-text font-tool min-h-screen flex">
 
     <ToolSidebar
       tools={allTools}
@@ -67,26 +98,26 @@ allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
 
     <div class="flex-1 lg:ml-64 flex flex-col min-h-screen">
 
-      <!-- Mobile top bar -->
+      <!-- Mobile top bar — Carbon shell header style -->
       <header class="lg:hidden sticky top-0 z-30 h-12 flex items-center gap-3 px-4
-                     border-b border-tool-border-dim bg-tool-bg/95 backdrop-blur-md shrink-0">
+                     border-b border-tool-border bg-tool-surface shrink-0">
         <button
           id="sidebar-menu-btn"
           aria-label="Open navigation"
-          class="w-8 h-8 flex items-center justify-center rounded-md text-tool-muted
-                 hover:text-tool-text hover:bg-tool-surface transition-colors"
+          class="w-8 h-8 flex items-center justify-center text-tool-muted
+                 hover:text-tool-text hover:bg-tool-surface-2 transition-colors"
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-            <rect y="2" width="16" height="1.5" rx="0.75"/>
-            <rect y="7.25" width="16" height="1.5" rx="0.75"/>
-            <rect y="12.5" width="16" height="1.5" rx="0.75"/>
+            <rect y="2" width="16" height="1.5" rx="0"/>
+            <rect y="7.25" width="16" height="1.5" rx="0"/>
+            <rect y="12.5" width="16" height="1.5" rx="0"/>
           </svg>
         </button>
         <a href="/" class="flex items-center gap-1.5 font-bold text-sm">
           <svg width="18" height="18" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="32" height="32" rx="8" fill="#09090b"/>
-            <path d="M9 18 L16 9 L23 18" stroke="#00d4aa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="10" y1="24" x2="22" y2="24" stroke="#00d4aa" stroke-width="2.5" stroke-linecap="round"/>
+            <rect width="32" height="32" rx="0" fill="#161616"/>
+            <path d="M9 18 L16 9 L23 18" stroke="#78a9ff" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter"/>
+            <line x1="10" y1="24" x2="22" y2="24" stroke="#78a9ff" stroke-width="2.5" stroke-linecap="square"/>
           </svg>
           <span class="text-tool-text">ctrl</span><span class="text-tool-accent">cat</span>
           <span class="text-tool-muted font-normal text-xs ml-1">tools</span>
@@ -97,19 +128,18 @@ allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
             <span class="text-tool-text-dim truncate max-w-36">{title}</span>
           </div>
         )}
-        <!-- Theme toggle (mobile) -->
         <button
-          class="theme-toggle ml-auto w-8 h-8 flex items-center justify-center rounded-md
-                 text-tool-muted hover:text-tool-text hover:bg-tool-surface transition-colors"
+          class="theme-toggle ml-auto w-8 h-8 flex items-center justify-center
+                 text-tool-muted hover:text-tool-text hover:bg-tool-surface-2 transition-colors"
           aria-label="Toggle dark mode"
           title="Toggle dark mode"
         >
           <svg class="theme-icon-light" width="16" height="16" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
           </svg>
           <svg class="theme-icon-dark hidden" width="16" height="16" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
             <circle cx="12" cy="12" r="5"/>
             <line x1="12" y1="1" x2="12" y2="3"/>
             <line x1="12" y1="21" x2="12" y2="23"/>
@@ -123,19 +153,24 @@ allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
         </button>
       </header>
 
+      <!-- Page header — Carbon page header pattern -->
       {showHeader && (
-        <div class="border-b border-tool-border-dim bg-tool-bg">
-          <div class="px-6 py-5 max-w-4xl">
+        <div class="border-b border-tool-border bg-tool-surface">
+          <div class="px-6 py-6 max-w-4xl">
             {category && (
-              <div class="text-2xs text-tool-muted uppercase tracking-widest font-medium mb-2">
+              <p class="text-xs text-tool-muted uppercase tracking-widest font-medium mb-2">
                 {tr.tools.categories_map[category as keyof typeof tr.tools.categories_map] ?? category}
-              </div>
+              </p>
             )}
-            <div class="flex items-center gap-3">
-              {icon && <span class="text-tool-accent shrink-0"><Icon name={icon} size={24} /></span>}
+            <div class="flex items-start gap-4">
+              {icon && (
+                <span class="text-tool-accent shrink-0 mt-0.5">
+                  <Icon name={icon} size={24} />
+                </span>
+              )}
               <div>
-                <h1 class="text-xl font-bold text-tool-text">{title}</h1>
-                <p class="text-sm text-tool-text-dim mt-0.5">{description}</p>
+                <h1 class="text-2xl font-semibold text-tool-text leading-tight">{title}</h1>
+                <p class="text-sm text-tool-text-dim mt-1 leading-relaxed">{description}</p>
               </div>
             </div>
           </div>
@@ -146,7 +181,7 @@ allTools.sort((a, b) => a.data.title.localeCompare(b.data.title));
         <slot />
       </main>
 
-      <footer class="border-t border-tool-border-dim px-6 py-5 flex flex-wrap items-center justify-between gap-3
+      <footer class="border-t border-tool-border bg-tool-surface px-6 py-4 flex flex-wrap items-center justify-between gap-3
                      text-xs text-tool-muted">
         <div class="flex items-center gap-4">
           <a href="/" class="font-semibold text-tool-text-dim hover:text-tool-text transition-colors">

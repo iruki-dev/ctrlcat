@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -6,64 +6,64 @@
 
 /* ── Color tokens: light mode ──────────────────────────────────────────── */
 :root {
-  /* Tool realm */
-  --tool-bg:           248 250 252;   /* slate-50   #f8fafc */
-  --tool-surface:      255 255 255;   /* white      #ffffff */
-  --tool-surface-2:    241 245 249;   /* slate-100  #f1f5f9 */
-  --tool-border:       226 232 240;   /* slate-200  #e2e8f0 */
-  --tool-border-dim:   241 245 249;   /* slate-100  #f1f5f9 */
-  --tool-accent:       8   145 178;   /* cyan-600   #0891b2 */
-  --tool-accent-light: 224 247 250;   /* cyan-50    #e0f7fa */
-  --tool-accent-dim:   14  116 144;   /* cyan-700   #0e7490 */
-  --tool-muted:        148 163 184;   /* slate-400  #94a3b8 */
-  --tool-text:         15  23  42;    /* slate-900  #0f172a */
-  --tool-text-dim:     71  85  105;   /* slate-600  #475569 */
+  /* Tool realm — Carbon Design System */
+  --tool-bg:           244 244 244;   /* Gray-10  #f4f4f4 */
+  --tool-surface:      255 255 255;   /* White    #ffffff */
+  --tool-surface-2:    224 224 224;   /* Gray-20  #e0e0e0 */
+  --tool-border:       198 198 198;   /* Gray-30  #c6c6c6 */
+  --tool-border-dim:   224 224 224;   /* Gray-20  #e0e0e0 */
+  --tool-accent:       15  98  254;   /* Blue-60  #0f62fe */
+  --tool-accent-light: 237 245 255;   /* Blue-10  #edf5ff */
+  --tool-accent-dim:   0   67  206;   /* Blue-70  #0043ce */
+  --tool-muted:        141 141 141;   /* Gray-50  #8d8d8d */
+  --tool-text:         22  22  22;    /* Gray-100 #161616 */
+  --tool-text-dim:     82  82  82;    /* Gray-70  #525252 */
 
-  /* Game realm */
-  --game-bg:           248 250 252;   /* slate-50   #f8fafc */
-  --game-surface:      255 255 255;   /* white      #ffffff */
-  --game-surface-2:    245 243 255;   /* violet-50  #f5f3ff */
-  --game-border:       226 232 240;   /* slate-200  #e2e8f0 */
-  --game-border-dim:   241 245 249;   /* slate-100  #f1f5f9 */
-  --game-accent:       124 58  237;   /* violet-600 #7c3aed */
-  --game-accent-light: 237 233 254;   /* violet-100 #ede9fe */
-  --game-accent-dim:   109 40  217;   /* violet-700 #6d28d9 */
-  --game-secondary:    219 39  119;   /* pink-600   #db2777 */
-  --game-muted:        148 163 184;   /* slate-400  #94a3b8 */
-  --game-text:         15  23  42;    /* slate-900  #0f172a */
-  --game-text-dim:     71  85  105;   /* slate-600  #475569 */
+  /* Game realm — Material Design 3 */
+  --game-bg:           255 251 254;   /* MD3 background  #fffbfe */
+  --game-surface:      255 255 255;   /* White           #ffffff */
+  --game-surface-2:    231 224 236;   /* MD3 surf-var    #e7e0ec */
+  --game-border:       121 116 126;   /* MD3 outline     #79747e */
+  --game-border-dim:   231 224 236;   /* MD3 surf-var    #e7e0ec */
+  --game-accent:       124 58  237;   /* violet-600      #7c3aed */
+  --game-accent-light: 234 221 255;   /* MD3 prim-cont   #eaddff */
+  --game-accent-dim:   109 40  217;   /* violet-700      #6d28d9 */
+  --game-secondary:    219 39  119;   /* pink-600        #db2777 */
+  --game-muted:        121 116 126;   /* MD3 outline     #79747e */
+  --game-text:         28  27  31;    /* MD3 on-surface  #1c1b1f */
+  --game-text-dim:     73  69  78;    /* MD3 on-surf-var #49454e */
 }
 
 /* ── Color tokens: dark mode ───────────────────────────────────────────── */
 .dark {
   color-scheme: dark;
 
-  /* Tool realm */
-  --tool-bg:           15  23  42;    /* slate-900  #0f172a */
-  --tool-surface:      30  41  59;    /* slate-800  #1e293b */
-  --tool-surface-2:    51  65  85;    /* slate-700  #334155 */
-  --tool-border:       51  65  85;    /* slate-700  #334155 */
-  --tool-border-dim:   30  41  59;    /* slate-800  #1e293b */
-  --tool-accent:       34  211 238;   /* cyan-400   #22d3ee */
-  --tool-accent-light: 8   47  73;    /* dark cyan tint     */
-  --tool-accent-dim:   6   182 212;   /* cyan-500   #06b6d4 */
-  --tool-muted:        100 116 139;   /* slate-500  #64748b */
-  --tool-text:         241 245 249;   /* slate-100  #f1f5f9 */
-  --tool-text-dim:     148 163 184;   /* slate-400  #94a3b8 */
+  /* Tool realm dark — Carbon G100 theme */
+  --tool-bg:           22  22  22;    /* Gray-100 #161616 */
+  --tool-surface:      38  38  38;    /* Gray-90  #262626 */
+  --tool-surface-2:    57  57  57;    /* Gray-80  #393939 */
+  --tool-border:       82  82  82;    /* Gray-70  #525252 */
+  --tool-border-dim:   38  38  38;    /* Gray-90  #262626 */
+  --tool-accent:       120 169 255;   /* Blue-40  #78a9ff */
+  --tool-accent-light: 0   29  108;   /* dark blue tint   */
+  --tool-accent-dim:   105 141 255;   /* Blue-30  #699dff */
+  --tool-muted:        141 141 141;   /* Gray-50  #8d8d8d */
+  --tool-text:         244 244 244;   /* Gray-10  #f4f4f4 */
+  --tool-text-dim:     198 198 198;   /* Gray-30  #c6c6c6 */
 
-  /* Game realm */
-  --game-bg:           9   5   22;    /* deep violet bg     */
-  --game-surface:      20  13  38;    /* dark violet surface*/
-  --game-surface-2:    30  20  55;    /* violet surface-2   */
-  --game-border:       50  30  90;    /* violet border      */
-  --game-border-dim:   20  13  38;    /* same as surface    */
-  --game-accent:       167 139 250;   /* violet-400 #a78bfa */
-  --game-accent-light: 30  20  55;    /* dark accent tint   */
-  --game-accent-dim:   139 92  246;   /* violet-500 #8b5cf6 */
-  --game-secondary:    244 114 182;   /* pink-400   #f472b6 */
-  --game-muted:        107 114 128;   /* gray-500   #6b7280 */
-  --game-text:         245 243 255;   /* violet-50  #f5f3ff */
-  --game-text-dim:     167 139 250;   /* violet-400 #a78bfa */
+  /* Game realm dark — MD3 dark scheme */
+  --game-bg:           28  27  31;    /* MD3 dark bg     #1c1b1f */
+  --game-surface:      37  35  42;    /* MD3 dark surf   #25232a */
+  --game-surface-2:    73  69  78;    /* MD3 dark sv     #49454e */
+  --game-border:       147 143 153;   /* MD3 dark outl   #938f99 */
+  --game-border-dim:   37  35  42;    /* same as surface */
+  --game-accent:       208 188 255;   /* MD3 dark prim   #d0bcff */
+  --game-accent-light: 79  55  138;   /* MD3 dark prim-c #4f3789 */
+  --game-accent-dim:   179 157 255;   /* lighter variant */
+  --game-secondary:    244 114 182;   /* pink-400        #f472b6 */
+  --game-muted:        147 143 153;   /* MD3 dark outl   #938f99 */
+  --game-text:         230 225 229;   /* MD3 dark on-s   #e6e1e5 */
+  --game-text-dim:     202 196 208;   /* MD3 dark on-sv  #cac4d0 */
 }
 
 /* ── Base resets ────────────────────────────────────────────────────────── */
@@ -98,23 +98,23 @@
   background: #cbd5e1;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #525252;
 }
 
 .realm-tool ::-webkit-scrollbar-thumb {
-  background: #bae6fd;
+  background: #a8c7fa;
 }
 .dark .realm-tool ::-webkit-scrollbar-thumb,
 .dark:is(.realm-tool) ::-webkit-scrollbar-thumb {
-  background: #164e63;
+  background: #393939;
 }
 
 .realm-game ::-webkit-scrollbar-thumb {
-  background: #ddd6fe;
+  background: #c4b5fd;
 }
 .dark .realm-game ::-webkit-scrollbar-thumb,
 .dark:is(.realm-game) ::-webkit-scrollbar-thumb {
-  background: #3b1d8a;
+  background: #49454e;
 }
 
 /* ── Utility ────────────────────────────────────────────────────────────── */

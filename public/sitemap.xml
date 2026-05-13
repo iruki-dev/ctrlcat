@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Landing pages -->
+  <url>
+    <loc>https://ctrlcat.dev/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/"/>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/ko/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Tools listing -->
+  <url>
+    <loc>https://ctrlcat.dev/tools/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/ko/tools/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Tools -->
+  <url>
+    <loc>https://ctrlcat.dev/tools/base64-encoder/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/base64-encoder/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/base64-encoder/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/ko/tools/base64-encoder/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/base64-encoder/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/base64-encoder/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/tools/color-converter/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/color-converter/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/color-converter/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/ko/tools/color-converter/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/color-converter/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/color-converter/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/tools/json-formatter/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/json-formatter/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/json-formatter/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/ko/tools/json-formatter/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/json-formatter/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/json-formatter/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/tools/password-generator/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/password-generator/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/password-generator/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/ko/tools/password-generator/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/password-generator/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/password-generator/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/tools/word-counter/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/word-counter/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/word-counter/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/ko/tools/word-counter/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/tools/word-counter/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/tools/word-counter/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Games listing -->
+  <url>
+    <loc>https://ctrlcat.dev/games/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/games/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/games/"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/ko/games/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/games/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/games/"/>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Games -->
+  <url>
+    <loc>https://ctrlcat.dev/games/number-guesser/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/games/number-guesser/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/games/number-guesser/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/ko/games/number-guesser/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/games/number-guesser/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/games/number-guesser/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/games/snake/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/games/snake/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/games/snake/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/ko/games/snake/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/games/snake/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/games/snake/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/games/tic-tac-toe/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/games/tic-tac-toe/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/games/tic-tac-toe/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://ctrlcat.dev/ko/games/tic-tac-toe/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://ctrlcat.dev/games/tic-tac-toe/"/>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://ctrlcat.dev/ko/games/tic-tac-toe/"/>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+</urlset>

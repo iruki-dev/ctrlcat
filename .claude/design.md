@@ -1,41 +1,55 @@
 # 디자인 시스템 — 토큰 · 아이콘 · UI 규칙
 
+## 디자인 원칙
+
+- **Tools**: **Carbon Design System** (IBM) — 구조적이고 생산적인 UI. IBM Plex Sans, 직각 코너, 좌측 액센트 바, 플랫 타일.
+- **Games**: **Material Design 3** (Google) — 표현적이고 역동적인 UI. Roboto, 둥근 모서리, 고도(elevation) 카드, 필 칩.
+
+## 폰트
+
+| 영역 | 폰트 | Tailwind 클래스 |
+|---|---|---|
+| Tools | IBM Plex Sans | `font-tool` |
+| Games | Roboto | `font-game` |
+| 공용 | Inter | `font-sans` |
+| 모노 | IBM Plex Mono | `font-mono` |
+
 ## Tailwind 색상 토큰
 
 `tailwind.config.mjs`에 정의되어 있습니다. 컴포넌트에서 hex를 직접 쓰는 대신 이 토큰을 씁니다.
 
-### Tools 토큰
+### Tools 토큰 — Carbon Design System
 
-| 토큰 | 값 | 용도 |
+| 토큰 | 값 (라이트) | 용도 |
 |---|---|---|
-| `tool-bg` | `#f8fafc` | 페이지 배경 |
+| `tool-bg` | `#f4f4f4` (Gray-10) | 페이지 배경 |
 | `tool-surface` | `#ffffff` | 카드, 패널 |
-| `tool-surface-2` | `#f1f5f9` | 사이드바, 호버 bg |
-| `tool-border` | `#e2e8f0` | 기본 테두리 |
-| `tool-border-dim` | `#f1f5f9` | 섬세한 구분선 |
-| `tool-accent` | `#0891b2` | 주요 액션, 하이라이트 |
-| `tool-accent-light` | `#e0f7fa` | 액션 틴트 bg |
-| `tool-accent-dim` | `#0e7490` | 호버 |
-| `tool-muted` | `#94a3b8` | 플레이스홀더, 메타 |
-| `tool-text` | `#0f172a` | 주 텍스트 |
-| `tool-text-dim` | `#475569` | 보조 텍스트 |
+| `tool-surface-2` | `#e0e0e0` (Gray-20) | 호버 bg, 입력 prefix |
+| `tool-border` | `#c6c6c6` (Gray-30) | 기본 테두리 |
+| `tool-border-dim` | `#e0e0e0` (Gray-20) | 섬세한 구분선 |
+| `tool-accent` | `#0f62fe` (Blue-60) | 주요 액션, 활성 상태 |
+| `tool-accent-light` | `#edf5ff` (Blue-10) | 활성 항목 배경 틴트 |
+| `tool-accent-dim` | `#0043ce` (Blue-70) | 호버 |
+| `tool-muted` | `#8d8d8d` (Gray-50) | 플레이스홀더, 메타 |
+| `tool-text` | `#161616` (Gray-100) | 주 텍스트 |
+| `tool-text-dim` | `#525252` (Gray-70) | 보조 텍스트 |
 
-### Games 토큰
+### Games 토큰 — Material Design 3
 
-| 토큰 | 값 | 용도 |
+| 토큰 | 값 (라이트) | 용도 |
 |---|---|---|
-| `game-bg` | `#f8fafc` | 페이지 배경 |
+| `game-bg` | `#fffbfe` (MD3 background) | 페이지 배경 |
 | `game-surface` | `#ffffff` | 카드, 패널 |
-| `game-surface-2` | `#f5f3ff` | 사이드바, 호버 bg |
-| `game-border` | `#e2e8f0` | 기본 테두리 |
-| `game-border-dim` | `#f1f5f9` | 섬세한 구분선 |
-| `game-accent` | `#7c3aed` | 주요 액션 |
-| `game-accent-light` | `#ede9fe` | 액션 틴트 bg |
-| `game-accent-dim` | `#6d28d9` | 호버 |
-| `game-secondary` | `#db2777` | 보조 액션 (O 말 색 등) |
-| `game-muted` | `#94a3b8` | 플레이스홀더, 메타 |
-| `game-text` | `#0f172a` | 주 텍스트 |
-| `game-text-dim` | `#475569` | 보조 텍스트 |
+| `game-surface-2` | `#e7e0ec` (MD3 surface-variant) | 사이드바, 칩 bg |
+| `game-border` | `#79747e` (MD3 outline) | 기본 테두리 |
+| `game-border-dim` | `#e7e0ec` | 섬세한 구분선 |
+| `game-accent` | `#7c3aed` (violet-600) | 주요 액션 |
+| `game-accent-light` | `#eaddff` (MD3 primary-container) | 활성 칩/항목 bg |
+| `game-accent-dim` | `#6d28d9` (violet-700) | 호버 |
+| `game-secondary` | `#db2777` (pink-600) | 보조 액션 |
+| `game-muted` | `#79747e` (MD3 outline) | 플레이스홀더, 메타 |
+| `game-text` | `#1c1b1f` (MD3 on-surface) | 주 텍스트 |
+| `game-text-dim` | `#49454e` (MD3 on-surface-variant) | 보조 텍스트 |
 
 ### 공용 토큰
 
@@ -134,44 +148,49 @@
 
 ## UI 컴포넌트 규칙
 
-### Tools
+### Tools — Carbon Design System
 
 - 임포트 경로: `../../components/tools/ui/`
 - 클래스: `bg-tool-*`, `text-tool-*`, `border-tool-*`
-- 테두리: `border border-tool-border` (1px)
-- 라운드: `rounded-xl`
-- 마운트 애니메이션: `animate-fade-in`
+- 테두리: `border border-tool-border` (1px, 직각)
+- 라운드: **없음** (Carbon 원칙: 직각 코너)
+- 버튼: 직각, 플랫, `bg-tool-accent text-white`
+- 입력: 전체 테두리 + 포커스 2px ring
+- 활성 네비: `border-l-[3px] border-l-tool-accent bg-tool-accent-light`
 
-### Games
+### Games — Material Design 3
 
 - 임포트 경로: `../../components/games/ui/`
 - 클래스: `bg-game-*`, `text-game-*`, `border-game-*`
-- 테두리: `border-2 border-game-border` (2px)
-- 라운드: `rounded-xl` / `rounded-2xl`
+- 라운드: `rounded-3xl` (카드), `rounded-full` (버튼/칩), `rounded-[28px]` (네비 항목)
+- 버튼: `rounded-full`, 채워진 스타일, shadow-md-1
+- 카드: `shadow-md-1 hover:shadow-md-3` (MD3 고도)
+- 활성 네비: `rounded-[28px] bg-game-accent-light text-game-accent`
+- 필터: MD3 Filter Chips (`rounded-full`, selected: `border-2 border-game-accent bg-game-accent-light`)
 
 ---
 
 ## 카드 디자인 패턴
 
-### 게임 카드 (리스팅·홈페이지)
+### 게임 카드 (리스팅·홈페이지) — MD3 Elevated Card
 
 ```
-rounded-2xl overflow-hidden border-2 border-game-border bg-game-surface
-hover:border-game-accent hover:shadow-xl transition-all duration-200
+rounded-3xl overflow-hidden bg-game-surface shadow-md-1
+hover:shadow-md-3 transition-shadow duration-200
 ```
 
 구조:
-1. **일러스트** `h-44 flex items-center justify-center bg-white` → `<GameIllustration slug={...}/>`
-2. **텍스트** `px-4 py-3 border-t border-game-border` → 제목 + 난이도/시간 + "Play →"
+1. **미디어** `h-44 flex items-center justify-center bg-game-accent-light/30` → `<GameIllustration slug={...}/>`
+2. **콘텐츠** `px-5 py-4` → h2 제목 + 난이도 칩 + 시간 + "Play →"
 
-### 툴 카드 (리스팅 페이지)
+### 툴 카드 (리스팅 페이지) — Carbon Tile
 
 ```
-rounded-xl border border-tool-border border-t-2 border-t-tool-accent bg-tool-surface
-hover:shadow-md transition-all duration-150
+bg-tool-surface p-5 hover:bg-tool-accent-light transition-colors
+(그리드 gap-px bg-tool-border border border-tool-border 안에 배치)
 ```
 
-구조: `<Icon>` + featured 배지 → 제목 + 설명 → "Use Tool →"
+구조: `<Icon>` + featured 배지 → 제목 + 설명 → 태그 + "Use Tool →"
 
 ---
 

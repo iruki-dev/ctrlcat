@@ -23,66 +23,78 @@ function getTitle(game: typeof allGames[number]) {
   lang={lang}
   showHeader={false}
 >
-  <div class="mb-6">
-    <h1 class="text-lg font-bold text-game-text">{tr.games.pageTitle}</h1>
-    <p class="text-sm text-game-text-dim mt-0.5">{tr.games.pageSubtitle}</p>
+  <!-- MD3 page heading -->
+  <div class="mb-8">
+    <h1 class="text-[1.75rem] font-bold text-game-text leading-snug">{tr.games.pageTitle}</h1>
+    <p class="text-sm text-game-text-dim mt-1.5 leading-relaxed">{tr.games.pageSubtitle}</p>
   </div>
 
-  <div class="flex flex-col sm:flex-row gap-3 mb-6">
-    <div class="relative flex-1 max-w-xs">
-      <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-game-muted text-xs">⌕</span>
-      <input
-        id="game-search"
-        type="search"
-        placeholder={tr.games.search}
-        class="w-full bg-game-surface border border-game-border rounded-md pl-7 pr-3 py-1.5
-               text-game-text text-sm placeholder:text-game-muted
-               focus:outline-none focus:ring-1 focus:ring-game-accent focus:border-game-accent transition-colors"
-      />
-    </div>
-    <div class="flex gap-1.5 flex-wrap">
-      <button data-filter="all" class="filter-btn px-2.5 py-1 text-xs rounded-md border border-game-accent text-game-accent bg-game-accent/10 font-medium">
-        {tr.games.all}
+  <!-- MD3 search field -->
+  <div class="relative max-w-sm mb-5">
+    <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-game-muted w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+    </svg>
+    <input
+      id="game-search"
+      type="search"
+      placeholder={tr.games.search}
+      class="w-full bg-game-surface border border-game-border rounded-full pl-11 pr-4 py-2.5
+             text-game-text text-sm placeholder:text-game-muted
+             focus:outline-none focus:ring-2 focus:ring-game-accent focus:border-game-accent transition-colors"
+    />
+  </div>
+
+  <!-- MD3 Filter Chips -->
+  <div class="flex gap-2 flex-wrap mb-6">
+    <button
+      data-filter="all"
+      class="filter-chip px-4 py-2 rounded-full text-xs font-medium border-2 border-game-accent bg-game-accent-light text-game-accent transition-colors"
+    >
+      {tr.games.all}
+    </button>
+    {categories.map(cat => (
+      <button
+        data-filter={cat}
+        class="filter-chip px-4 py-2 rounded-full text-xs font-medium border border-game-border-dim bg-game-surface text-game-text-dim
+               hover:bg-game-surface-2 hover:border-game-border transition-colors capitalize"
+      >
+        {tr.games.categories_map[cat as keyof typeof tr.games.categories_map] ?? cat}
       </button>
-      {categories.map(cat => (
-        <button data-filter={cat} class="filter-btn px-2.5 py-1 text-xs rounded-md border border-game-border text-game-muted hover:border-game-accent hover:text-game-accent font-medium transition-colors">
-          {tr.games.categories_map[cat as keyof typeof tr.games.categories_map] ?? cat}
-        </button>
-      ))}
-    </div>
+    ))}
   </div>
 
-  <div id="game-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  <!-- MD3 Card grid -->
+  <div id="game-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
     {allGames.map(game => {
-      const diffColor = ["","text-green-600","text-lime-600","text-yellow-600","text-orange-600","text-red-600"][game.data.difficulty ?? 0] ?? "";
+      const diffColor = ["", "text-green-600 dark:text-green-400", "text-lime-600 dark:text-lime-400", "text-yellow-600 dark:text-yellow-400", "text-orange-600 dark:text-orange-400", "text-red-600 dark:text-red-400"][game.data.difficulty ?? 0] ?? "";
       return (
         <a
           href={`/ko/games/${game.slug}/`}
           data-category={game.data.category}
           data-title={getTitle(game).toLowerCase()}
           data-tags={game.data.tags.join(" ").toLowerCase()}
-          class="game-card group block rounded-2xl overflow-hidden border-2 border-game-border bg-game-surface
-                 hover:border-game-accent hover:shadow-xl transition-all duration-200"
+          class="game-card group block rounded-3xl overflow-hidden
+                 bg-game-surface shadow-md-1
+                 hover:shadow-md-3 transition-shadow duration-200 focus:outline-none
+                 focus:ring-2 focus:ring-game-accent focus:ring-offset-2"
         >
-          <!-- Illustration -->
-          <div class="flex items-center justify-center bg-white h-44">
+          <div class="flex items-center justify-center bg-game-accent-light/30 h-44">
             <GameIllustration slug={game.slug} />
           </div>
-          <!-- Text -->
-          <div class="px-4 py-3 border-t border-game-border">
-            <div class="font-bold text-sm text-game-text group-hover:text-game-accent transition-colors">
+          <div class="px-5 py-4">
+            <h2 class="font-bold text-sm text-game-text group-hover:text-game-accent transition-colors leading-snug">
               {getTitle(game)}
-            </div>
-            <div class="flex items-center justify-between mt-1.5">
-              <div class="flex items-center gap-2 text-xs text-game-muted">
-                {game.data.difficulty && (
-                  <span class={`font-medium ${diffColor}`}>{tr.games.difficulty[game.data.difficulty]}</span>
-                )}
-                {game.data.playTime && (
-                  <span>{tr.games.playTime(game.data.playTime)}</span>
-                )}
-              </div>
-              <span class="text-xs font-semibold text-game-accent group-hover:underline shrink-0">
+            </h2>
+            <div class="flex items-center gap-3 mt-2">
+              {game.data.difficulty && (
+                <span class={`text-xs font-semibold px-2 py-0.5 rounded-full bg-game-surface-2 ${diffColor}`}>
+                  {tr.games.difficulty[game.data.difficulty]}
+                </span>
+              )}
+              {game.data.playTime && (
+                <span class="text-xs text-game-muted">{tr.games.playTime(game.data.playTime)}</span>
+              )}
+              <span class="text-xs font-semibold text-game-accent group-hover:underline ml-auto shrink-0">
                 {tr.landing.playGame}
               </span>
             </div>
@@ -98,9 +110,11 @@ function getTitle(game: typeof allGames[number]) {
 <script>
   const search = document.getElementById("game-search") as HTMLInputElement;
   const empty = document.getElementById("game-empty")!;
-  const filterBtns = document.querySelectorAll<HTMLButtonElement>(".filter-btn");
+  const grid = document.getElementById("game-grid")!;
+  const filterChips = document.querySelectorAll<HTMLButtonElement>(".filter-chip");
   const cards = document.querySelectorAll<HTMLElement>(".game-card");
   let activeCategory = "all";
+
   function update() {
     let visible = 0;
     const q = search.value.toLowerCase().trim();
@@ -110,14 +124,20 @@ function getTitle(game: typeof allGames[number]) {
       if (ok) visible++;
     });
     empty.classList.toggle("hidden", visible > 0);
+    grid.classList.toggle("hidden", visible === 0);
   }
+
   search.addEventListener("input", update);
-  filterBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      filterBtns.forEach(b => { b.classList.remove("border-game-accent","text-game-accent","bg-game-accent/10"); b.classList.add("border-game-border","text-game-muted"); });
-      btn.classList.add("border-game-accent","text-game-accent","bg-game-accent/10");
-      btn.classList.remove("border-game-border","text-game-muted");
-      activeCategory = btn.dataset.filter!;
+
+  filterChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      filterChips.forEach((c) => {
+        c.classList.remove("border-2", "border-game-accent", "bg-game-accent-light", "text-game-accent");
+        c.classList.add("border", "border-game-border-dim", "bg-game-surface", "text-game-text-dim");
+      });
+      chip.classList.add("border-2", "border-game-accent", "bg-game-accent-light", "text-game-accent");
+      chip.classList.remove("border", "border-game-border-dim", "bg-game-surface", "text-game-text-dim");
+      activeCategory = chip.dataset.filter!;
       update();
     });
   });

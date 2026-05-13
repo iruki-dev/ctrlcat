@@ -8,21 +8,23 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
 }
 
+/* Material Design 3 button tokens */
 const variantClass: Record<Variant, string> = {
   primary:
-    "bg-game-accent text-game-bg font-bold hover:bg-game-accent-dim active:scale-95 shadow-lg shadow-game-accent/20",
+    "bg-game-accent text-white font-bold hover:bg-game-accent-dim active:bg-game-accent-dim shadow-md-1 hover:shadow-md-2",
   secondary:
-    "border-2 border-game-border text-game-text hover:border-game-accent hover:text-game-accent",
-  ghost: "text-game-text-dim hover:text-game-accent hover:bg-game-surface",
+    "bg-game-accent-light text-game-accent font-semibold hover:bg-game-accent/20 active:bg-game-accent/25",
+  ghost:
+    "text-game-accent hover:bg-game-accent/[.08] active:bg-game-accent/[.12]",
   danger:
-    "border-2 border-red-700 text-red-400 hover:bg-red-900/20 hover:border-red-500",
+    "bg-red-600 text-white font-bold hover:bg-red-700 active:bg-red-800 shadow-md-1",
 };
 
 const sizeClass: Record<Size, string> = {
-  sm: "px-3 py-1.5 text-sm rounded-lg",
-  md: "px-5 py-2.5 text-sm rounded-xl",
-  lg: "px-7 py-3 text-base rounded-xl",
-  xl: "px-10 py-4 text-lg rounded-2xl",
+  sm: "px-4 py-1.5 text-sm rounded-full h-8",
+  md: "px-6 py-2.5 text-sm rounded-full h-10",
+  lg: "px-8 py-3 text-base rounded-full h-12",
+  xl: "px-10 py-4 text-lg rounded-full h-14",
 };
 
 export function GameButton({
@@ -35,7 +37,7 @@ export function GameButton({
   return (
     <button
       {...props}
-      className={`inline-flex items-center justify-center gap-2 transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed ${variantClass[variant]} ${sizeClass[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-game-accent focus:ring-offset-2 ${variantClass[variant]} ${sizeClass[size]} ${className}`}
     >
       {children}
     </button>
