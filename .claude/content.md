@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (5개)
+## 현재 툴 (6개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -56,6 +56,7 @@ lang: string            # ko 등
 | `json-formatter` | JSON Formatter | developer | `json-formatter` | `json-formatter/JsonFormatter` |
 | `password-generator` | Password Generator | productivity | `password-generator` | `password-generator/PasswordGenerator` |
 | `color-converter` | Color Converter | color | `color-converter` | `color-converter/ColorConverter` |
+| `url-encoder-decoder` | URL Encoder / Decoder | developer | `url-encoder-decoder` | `url-encoder-decoder/UrlEncoderDecoder` |
 
 ---
 
@@ -69,7 +70,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (8개)
+## 현재 한국어 문서 (9개)
 
 | 경로 | 대상 |
 |---|---|
@@ -81,5 +82,6 @@ lang: string            # ko 등
 | `docs/games/number-guesser/ko.md` | Number Guesser |
 | `docs/games/tic-tac-toe/ko.md` | Tic-Tac-Toe vs AI |
 | `docs/games/snake/ko.md` | Snake |
+| `docs/tools/url-encoder-decoder/ko.md` | URL Encoder / Decoder |
 
 모든 툴·게임에 한국어 문서가 있습니다.
