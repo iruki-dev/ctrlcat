@@ -60,17 +60,18 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (3개)
+## 현재 게임 (4개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
 | `number-guesser` | Number Guesser | number | 2 | 2 | `number-guesser` |
 | `tic-tac-toe` | Tic-Tac-Toe vs AI | strategy | 3 | 1 | `tic-tac-toe` |
 | `snake` | Snake | arcade | 2 | 5 | `snake` |
+| `2048` | 2048 | puzzle | 3 | 5 | `2048` |
 
 ---
 
-## 현재 한국어 문서 (9개)
+## 현재 한국어 문서 (10개)
 
 | 경로 | 대상 |
 |---|---|
@@ -83,5 +84,6 @@ lang: string            # ko 등
 | `docs/games/tic-tac-toe/ko.md` | Tic-Tac-Toe vs AI |
 | `docs/games/snake/ko.md` | Snake |
 | `docs/tools/url-encoder-decoder/ko.md` | URL Encoder / Decoder |
+| `docs/games/2048/ko.md` | 2048 |
 
 모든 툴·게임에 한국어 문서가 있습니다.

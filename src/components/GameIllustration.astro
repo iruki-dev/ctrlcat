@@ -101,3 +101,31 @@ const { slug } = Astro.props;
     <line x1="166" y1="112" x2="140" y2="138" stroke="#c084fc" stroke-width="5" stroke-linecap="round"/>
   </svg>
 )}
+
+{slug === "2048" && (
+  <svg viewBox="0 0 200 160" width="200" height="160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <!-- board -->
+    <rect x="34" y="14" width="132" height="132" rx="14" fill="#faf5ff" stroke="#ede9fe" stroke-width="3"/>
+    <!-- empty cells -->
+    <rect x="44" y="24" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="76" y="24" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="108" y="24" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="140" y="24" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="44" y="56" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="76" y="56" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="140" y="56" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="44" y="88" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="108" y="88" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="140" y="88" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="76" y="120" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="108" y="120" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <rect x="140" y="120" width="26" height="26" rx="6" fill="#ede9fe"/>
+    <!-- filled tiles -->
+    <rect x="108" y="56" width="26" height="26" rx="6" fill="#c084fc"/>
+    <text x="121" y="74" text-anchor="middle" font-family="Roboto, Inter, sans-serif" font-size="13" font-weight="700" fill="#faf5ff">2</text>
+    <rect x="76" y="88" width="26" height="26" rx="6" fill="#f472b6"/>
+    <text x="89" y="106" text-anchor="middle" font-family="Roboto, Inter, sans-serif" font-size="13" font-weight="700" fill="#faf5ff">4</text>
+    <rect x="44" y="120" width="26" height="26" rx="6" fill="#8b5cf6"/>
+    <text x="57" y="138" text-anchor="middle" font-family="Roboto, Inter, sans-serif" font-size="11" font-weight="700" fill="#faf5ff">16</text>
+  </svg>
+)}
