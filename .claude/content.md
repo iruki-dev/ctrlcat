@@ -61,7 +61,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (4개)
+## 현재 게임 (5개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -69,10 +69,11 @@ lang: string            # ko 등
 | `tic-tac-toe` | Tic-Tac-Toe vs AI | strategy | 3 | 1 | `tic-tac-toe` |
 | `snake` | Snake | arcade | 2 | 5 | `snake` |
 | `2048` | 2048 | puzzle | 3 | 5 | `2048` |
+| `minesweeper` | Minesweeper | puzzle | 3 | 5 | `minesweeper` |
 
 ---
 
-## 현재 한국어 문서 (11개)
+## 현재 한국어 문서 (12개)
 
 | 경로 | 대상 |
 |---|---|
@@ -87,5 +88,6 @@ lang: string            # ko 등
 | `docs/tools/url-encoder-decoder/ko.md` | URL Encoder / Decoder |
 | `docs/games/2048/ko.md` | 2048 |
 | `docs/tools/jwt-decoder/ko.md` | JWT Decoder |
+| `docs/games/minesweeper/ko.md` | Minesweeper |
 
 모든 툴·게임에 한국어 문서가 있습니다.
