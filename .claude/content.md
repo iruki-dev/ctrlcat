@@ -62,7 +62,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (5개)
+## 현재 게임 (6개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -71,10 +71,11 @@ lang: string            # ko 등
 | `snake` | Snake | arcade | 2 | 5 | `snake` |
 | `2048` | 2048 | puzzle | 3 | 5 | `2048` |
 | `minesweeper` | Minesweeper | puzzle | 3 | 5 | `minesweeper` |
+| `memory-match` | Memory Match | card | 1 | 3 | `memory-match` |
 
 ---
 
-## 현재 한국어 문서 (13개)
+## 현재 한국어 문서 (14개)
 
 | 경로 | 대상 |
 |---|---|
@@ -91,5 +92,6 @@ lang: string            # ko 등
 | `docs/tools/jwt-decoder/ko.md` | JWT Decoder |
 | `docs/games/minesweeper/ko.md` | Minesweeper |
 | `docs/tools/markdown-previewer/ko.md` | Markdown Previewer |
+| `docs/games/memory-match/ko.md` | Memory Match |
 
 모든 툴·게임에 한국어 문서가 있습니다.
