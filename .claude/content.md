@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (9개)
+## 현재 툴 (10개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -60,6 +60,7 @@ lang: string            # ko 등
 | `jwt-decoder` | JWT Decoder | developer | `jwt-decoder` | `jwt-decoder/JwtDecoder` |
 | `markdown-previewer` | Markdown Previewer | text | `markdown-previewer` | `markdown-previewer/MarkdownPreviewer` |
 | `unit-converter` | Unit Converter | converter | `unit-converter` | `unit-converter/UnitConverter` |
+| `regex-tester` | Regex Tester | developer | `regex-tester` | `regex-tester/RegexTester` |
 
 ---
 
@@ -77,7 +78,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (16개)
+## 현재 한국어 문서 (17개)
 
 | 경로 | 대상 |
 |---|---|
@@ -97,5 +98,6 @@ lang: string            # ko 등
 | `docs/games/memory-match/ko.md` | Memory Match |
 | `docs/tools/unit-converter/ko.md` | Unit Converter |
 | `docs/games/word-guess/ko.md` | Word Guess |
+| `docs/tools/regex-tester/ko.md` | Regex Tester |
 
 모든 툴·게임에 한국어 문서가 있습니다.
