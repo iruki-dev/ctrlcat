@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (8개)
+## 현재 툴 (9개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -59,6 +59,7 @@ lang: string            # ko 등
 | `url-encoder-decoder` | URL Encoder / Decoder | developer | `url-encoder-decoder` | `url-encoder-decoder/UrlEncoderDecoder` |
 | `jwt-decoder` | JWT Decoder | developer | `jwt-decoder` | `jwt-decoder/JwtDecoder` |
 | `markdown-previewer` | Markdown Previewer | text | `markdown-previewer` | `markdown-previewer/MarkdownPreviewer` |
+| `unit-converter` | Unit Converter | converter | `unit-converter` | `unit-converter/UnitConverter` |
 
 ---
 
@@ -75,7 +76,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (14개)
+## 현재 한국어 문서 (15개)
 
 | 경로 | 대상 |
 |---|---|
@@ -93,5 +94,6 @@ lang: string            # ko 등
 | `docs/games/minesweeper/ko.md` | Minesweeper |
 | `docs/tools/markdown-previewer/ko.md` | Markdown Previewer |
 | `docs/games/memory-match/ko.md` | Memory Match |
+| `docs/tools/unit-converter/ko.md` | Unit Converter |
 
 모든 툴·게임에 한국어 문서가 있습니다.
