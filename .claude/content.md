@@ -63,7 +63,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (6개)
+## 현재 게임 (7개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -73,10 +73,11 @@ lang: string            # ko 등
 | `2048` | 2048 | puzzle | 3 | 5 | `2048` |
 | `minesweeper` | Minesweeper | puzzle | 3 | 5 | `minesweeper` |
 | `memory-match` | Memory Match | card | 1 | 3 | `memory-match` |
+| `word-guess` | Word Guess | word | 3 | 4 | `word-guess` |
 
 ---
 
-## 현재 한국어 문서 (15개)
+## 현재 한국어 문서 (16개)
 
 | 경로 | 대상 |
 |---|---|
@@ -95,5 +96,6 @@ lang: string            # ko 등
 | `docs/tools/markdown-previewer/ko.md` | Markdown Previewer |
 | `docs/games/memory-match/ko.md` | Memory Match |
 | `docs/tools/unit-converter/ko.md` | Unit Converter |
+| `docs/games/word-guess/ko.md` | Word Guess |
 
 모든 툴·게임에 한국어 문서가 있습니다.
