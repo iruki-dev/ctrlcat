@@ -66,7 +66,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (9개)
+## 현재 게임 (10개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -79,10 +79,11 @@ lang: string            # ko 등
 | `word-guess` | Word Guess | word | 3 | 4 | `word-guess` |
 | `sudoku` | Sudoku | number | 4 | 10 | `sudoku` |
 | `klondike-solitaire` | Klondike Solitaire | card | 2 | 8 | `klondike-solitaire` |
+| `hangman` | Hangman | word | 2 | 3 | `hangman` |
 
 ---
 
-## 현재 한국어 문서 (21개)
+## 현재 한국어 문서 (22개)
 
 | 경로 | 대상 |
 |---|---|
@@ -107,5 +108,6 @@ lang: string            # ko 등
 | `docs/tools/qr-code-generator/ko.md` | QR Code Generator |
 | `docs/games/klondike-solitaire/ko.md` | Klondike Solitaire |
 | `docs/tools/image-compressor/ko.md` | Image Compressor |
+| `docs/games/hangman/ko.md` | Hangman |
 
 모든 툴·게임에 한국어 문서가 있습니다.

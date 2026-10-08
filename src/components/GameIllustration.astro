@@ -260,3 +260,28 @@ const { slug } = Astro.props;
     <rect x="159" y="97" width="20" height="32" rx="3" fill="#8b5cf6"/>
   </svg>
 )}
+
+{slug === "hangman" && (
+  <svg viewBox="0 0 200 160" width="200" height="160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="0" y="0" width="200" height="160" rx="16" fill="#faf5ff"/>
+    <rect x="18" y="122" width="66" height="9" rx="4.5" fill="#c084fc"/>
+    <rect x="32" y="28" width="9" height="94" rx="4.5" fill="#8b5cf6"/>
+    <rect x="32" y="28" width="58" height="9" rx="4.5" fill="#8b5cf6"/>
+    <rect x="83" y="37" width="5" height="13" rx="2.5" fill="#f472b6"/>
+    <circle cx="85.5" cy="60" r="10" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2.5"/>
+    <rect x="83" y="70" width="5" height="27" rx="2.5" fill="#c084fc"/>
+    <path d="M85.5 78l-11 9" stroke="#c084fc" stroke-width="5" stroke-linecap="round"/>
+    <path d="M85.5 78l11 9" stroke="#c084fc" stroke-width="5" stroke-linecap="round"/>
+    <path d="M85.5 97l-10 17" stroke="#c084fc" stroke-width="5" stroke-linecap="round"/>
+    <path d="M85.5 97l10 17" stroke="#c084fc" stroke-width="5" stroke-linecap="round"/>
+    <rect x="118" y="46" width="26" height="32" rx="6" fill="#ffffff" stroke="#ede9fe" stroke-width="2"/>
+    <rect x="125" y="55" width="12" height="5" rx="2.5" fill="#f472b6"/>
+    <rect x="125" y="64" width="12" height="5" rx="2.5" fill="#f472b6"/>
+    <rect x="152" y="46" width="26" height="32" rx="6" fill="#c084fc"/>
+    <rect x="159" y="55" width="12" height="14" rx="3" fill="#8b5cf6"/>
+    <rect x="118" y="122" width="26" height="6" rx="3" fill="#c084fc"/>
+    <rect x="152" y="122" width="26" height="6" rx="3" fill="#ede9fe"/>
+    <rect x="118" y="94" width="26" height="6" rx="3" fill="#f472b6"/>
+    <rect x="152" y="94" width="26" height="6" rx="3" fill="#ede9fe"/>
+  </svg>
+)}
