@@ -206,3 +206,15 @@ const { name, class: className = "", size = 20 } = Astro.props;
     <path d="M19.5 6.5l2 .8-2.6 7"/>
   </svg>
 )}
+
+{name === "image-compressor" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class={className}>
+    <rect x="3" y="5" width="12" height="12" rx="1.5"/>
+    <circle cx="7" cy="9" r="1.2"/>
+    <path d="M3 14l3.5-3 3 2.5L12 11l3 3"/>
+    <path d="M19 4v4"/>
+    <path d="M19 20v-4"/>
+    <path d="M17 6.5l2-2 2 2"/>
+    <path d="M17 17.5l2 2 2-2"/>
+  </svg>
+)}

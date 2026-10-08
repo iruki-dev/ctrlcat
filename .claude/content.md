@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (11개)
+## 현재 툴 (12개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -62,6 +62,7 @@ lang: string            # ko 등
 | `unit-converter` | Unit Converter | converter | `unit-converter` | `unit-converter/UnitConverter` |
 | `regex-tester` | Regex Tester | developer | `regex-tester` | `regex-tester/RegexTester` |
 | `qr-code-generator` | QR Code Generator | productivity | `qr-code-generator` | `qr-code-generator/QrCodeGenerator` |
+| `image-compressor` | Image Compressor | image | `image-compressor` | `image-compressor/ImageCompressor` |
 
 ---
 
@@ -81,7 +82,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (20개)
+## 현재 한국어 문서 (21개)
 
 | 경로 | 대상 |
 |---|---|
@@ -105,5 +106,6 @@ lang: string            # ko 등
 | `docs/games/sudoku/ko.md` | Sudoku |
 | `docs/tools/qr-code-generator/ko.md` | QR Code Generator |
 | `docs/games/klondike-solitaire/ko.md` | Klondike Solitaire |
+| `docs/tools/image-compressor/ko.md` | Image Compressor |
 
 모든 툴·게임에 한국어 문서가 있습니다.
