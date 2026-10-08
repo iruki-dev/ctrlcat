@@ -65,7 +65,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (8개)
+## 현재 게임 (9개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -77,10 +77,11 @@ lang: string            # ko 등
 | `memory-match` | Memory Match | card | 1 | 3 | `memory-match` |
 | `word-guess` | Word Guess | word | 3 | 4 | `word-guess` |
 | `sudoku` | Sudoku | number | 4 | 10 | `sudoku` |
+| `klondike-solitaire` | Klondike Solitaire | card | 2 | 8 | `klondike-solitaire` |
 
 ---
 
-## 현재 한국어 문서 (19개)
+## 현재 한국어 문서 (20개)
 
 | 경로 | 대상 |
 |---|---|
@@ -103,5 +104,6 @@ lang: string            # ko 등
 | `docs/tools/regex-tester/ko.md` | Regex Tester |
 | `docs/games/sudoku/ko.md` | Sudoku |
 | `docs/tools/qr-code-generator/ko.md` | QR Code Generator |
+| `docs/games/klondike-solitaire/ko.md` | Klondike Solitaire |
 
 모든 툴·게임에 한국어 문서가 있습니다.
