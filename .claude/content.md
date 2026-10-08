@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (10개)
+## 현재 툴 (11개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -61,6 +61,7 @@ lang: string            # ko 등
 | `markdown-previewer` | Markdown Previewer | text | `markdown-previewer` | `markdown-previewer/MarkdownPreviewer` |
 | `unit-converter` | Unit Converter | converter | `unit-converter` | `unit-converter/UnitConverter` |
 | `regex-tester` | Regex Tester | developer | `regex-tester` | `regex-tester/RegexTester` |
+| `qr-code-generator` | QR Code Generator | productivity | `qr-code-generator` | `qr-code-generator/QrCodeGenerator` |
 
 ---
 
@@ -79,7 +80,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (18개)
+## 현재 한국어 문서 (19개)
 
 | 경로 | 대상 |
 |---|---|
@@ -101,5 +102,6 @@ lang: string            # ko 등
 | `docs/games/word-guess/ko.md` | Word Guess |
 | `docs/tools/regex-tester/ko.md` | Regex Tester |
 | `docs/games/sudoku/ko.md` | Sudoku |
+| `docs/tools/qr-code-generator/ko.md` | QR Code Generator |
 
 모든 툴·게임에 한국어 문서가 있습니다.
