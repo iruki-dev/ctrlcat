@@ -316,3 +316,38 @@ const { slug } = Astro.props;
     <path d="M164 95h9" stroke="#f472b6" stroke-width="4" stroke-linecap="round"/>
   </svg>
 )}
+
+{slug === "connect-four" && (
+  <svg viewBox="0 0 200 160" width="200" height="160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="0" y="0" width="200" height="160" rx="16" fill="#faf5ff" />
+    <circle cx="124" cy="22" r="9" fill="#c084fc" />
+    <rect x="30" y="40" width="140" height="106" rx="14" fill="#8b5cf6" />
+    <g fill="#ede9fe">
+      <circle cx="52" cy="62" r="9" />
+      <circle cx="76" cy="62" r="9" />
+      <circle cx="100" cy="62" r="9" />
+      <circle cx="124" cy="62" r="9" />
+      <circle cx="148" cy="62" r="9" />
+      <circle cx="52" cy="86" r="9" />
+      <circle cx="76" cy="86" r="9" />
+      <circle cx="100" cy="86" r="9" />
+      <circle cx="124" cy="86" r="9" />
+      <circle cx="148" cy="86" r="9" />
+      <circle cx="100" cy="110" r="9" />
+      <circle cx="124" cy="110" r="9" />
+      <circle cx="148" cy="110" r="9" />
+    </g>
+    <g fill="#f472b6">
+      <circle cx="52" cy="110" r="9" />
+      <circle cx="76" cy="110" r="9" />
+      <circle cx="148" cy="134" r="9" />
+    </g>
+    <g fill="#c084fc">
+      <circle cx="52" cy="134" r="9" />
+      <circle cx="76" cy="134" r="9" />
+      <circle cx="100" cy="134" r="9" />
+      <circle cx="124" cy="134" r="9" />
+    </g>
+    <path d="M52 134 H124" stroke="#faf5ff" stroke-width="3" stroke-linecap="round" fill="none" />
+  </svg>
+)}
