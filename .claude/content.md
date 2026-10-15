@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (12개)
+## 현재 툴 (13개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -63,6 +63,7 @@ lang: string            # ko 등
 | `regex-tester` | Regex Tester | developer | `regex-tester` | `regex-tester/RegexTester` |
 | `qr-code-generator` | QR Code Generator | productivity | `qr-code-generator` | `qr-code-generator/QrCodeGenerator` |
 | `image-compressor` | Image Compressor | image | `image-compressor` | `image-compressor/ImageCompressor` |
+| `csv-to-json-converter` | CSV to JSON Converter | data | `csv-to-json-converter` | `csv-to-json-converter/CsvToJsonConverter` |
 
 ---
 
@@ -83,7 +84,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (22개)
+## 현재 한국어 문서 (23개)
 
 | 경로 | 대상 |
 |---|---|
@@ -109,5 +110,6 @@ lang: string            # ko 등
 | `docs/games/klondike-solitaire/ko.md` | Klondike Solitaire |
 | `docs/tools/image-compressor/ko.md` | Image Compressor |
 | `docs/games/hangman/ko.md` | Hangman |
+| `docs/tools/csv-to-json-converter/ko.md` | CSV to JSON Converter |
 
 모든 툴·게임에 한국어 문서가 있습니다.
