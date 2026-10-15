@@ -67,7 +67,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (10개)
+## 현재 게임 (11개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -81,10 +81,11 @@ lang: string            # ko 등
 | `sudoku` | Sudoku | number | 4 | 10 | `sudoku` |
 | `klondike-solitaire` | Klondike Solitaire | card | 2 | 8 | `klondike-solitaire` |
 | `hangman` | Hangman | word | 2 | 3 | `hangman` |
+| `whack-a-mole` | Whack-a-Mole | arcade | 2 | 2 | `whack-a-mole` |
 
 ---
 
-## 현재 한국어 문서 (23개)
+## 현재 한국어 문서 (24개)
 
 | 경로 | 대상 |
 |---|---|
@@ -111,5 +112,6 @@ lang: string            # ko 등
 | `docs/tools/image-compressor/ko.md` | Image Compressor |
 | `docs/games/hangman/ko.md` | Hangman |
 | `docs/tools/csv-to-json-converter/ko.md` | CSV to JSON Converter |
+| `docs/games/whack-a-mole/ko.md` | Whack-a-Mole |
 
 모든 툴·게임에 한국어 문서가 있습니다.

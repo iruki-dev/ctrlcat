@@ -244,3 +244,14 @@ const { name, class: className = "", size = 20 } = Astro.props;
     <path d="M18 5c1.5 0 2 1 2 2v3l1.5 2-1.5 2v3c0 1-.5 2-2 2"/>
   </svg>
 )}
+
+{name === "whack-a-mole" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class={className}>
+    <path d="M3 20h18"/>
+    <path d="M6 20v-2.5a3 3 0 0 1 6 0V20"/>
+    <circle cx="9" cy="13" r="1.1"/>
+    <path d="M14.5 10.5l5-5"/>
+    <path d="M16.2 4.1a2 2 0 0 1 2.8 0l1 1a2 2 0 0 1 0 2.8z"/>
+    <path d="M13 9l2 2"/>
+  </svg>
+)}
