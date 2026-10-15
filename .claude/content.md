@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (13개)
+## 현재 툴 (14개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -64,6 +64,7 @@ lang: string            # ko 등
 | `qr-code-generator` | QR Code Generator | productivity | `qr-code-generator` | `qr-code-generator/QrCodeGenerator` |
 | `image-compressor` | Image Compressor | image | `image-compressor` | `image-compressor/ImageCompressor` |
 | `csv-to-json-converter` | CSV to JSON Converter | data | `csv-to-json-converter` | `csv-to-json-converter/CsvToJsonConverter` |
+| `diff-checker` | Diff Checker | text | `diff-checker` | `diff-checker/DiffChecker` |
 
 ---
 
@@ -85,7 +86,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (24개)
+## 현재 한국어 문서 (25개)
 
 | 경로 | 대상 |
 |---|---|
@@ -113,5 +114,6 @@ lang: string            # ko 등
 | `docs/games/hangman/ko.md` | Hangman |
 | `docs/tools/csv-to-json-converter/ko.md` | CSV to JSON Converter |
 | `docs/games/whack-a-mole/ko.md` | Whack-a-Mole |
+| `docs/tools/diff-checker/ko.md` | Diff Checker |
 
 모든 툴·게임에 한국어 문서가 있습니다.
