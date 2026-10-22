@@ -299,3 +299,11 @@ const { name, class: className = "", size = 20 } = Astro.props;
     <polyline points="21 4 21 8 17 8"/>
   </svg>
 )}
+
+{name === "percentage-calculator" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class={className}>
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <circle cx="8" cy="8" r="2.5" />
+    <circle cx="16" cy="16" r="2.5" />
+  </svg>
+)}

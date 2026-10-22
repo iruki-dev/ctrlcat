@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (15개)
+## 현재 툴 (16개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -66,6 +66,7 @@ lang: string            # ko 등
 | `csv-to-json-converter` | CSV to JSON Converter | data | `csv-to-json-converter` | `csv-to-json-converter/CsvToJsonConverter` |
 | `diff-checker` | Diff Checker | text | `diff-checker` | `diff-checker/DiffChecker` |
 | `color-palette-generator` | Color Palette Generator | color | `color-palette-generator` | `color-palette-generator/ColorPaletteGenerator` |
+| `percentage-calculator` | Percentage Calculator | math | `percentage-calculator` | `percentage-calculator/PercentageCalculator` |
 
 ---
 
@@ -89,7 +90,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (28개)
+## 현재 한국어 문서 (29개)
 
 | 경로 | 대상 |
 |---|---|
@@ -121,5 +122,6 @@ lang: string            # ko 등
 | `docs/games/connect-four/ko.md` | Connect Four |
 | `docs/tools/color-palette-generator/ko.md` | Color Palette Generator |
 | `docs/games/trivia-quiz/ko.md` | Trivia Quiz |
+| `docs/tools/percentage-calculator/ko.md` | Percentage Calculator |
 
 모든 툴·게임에 한국어 문서가 있습니다.
