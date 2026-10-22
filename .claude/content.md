@@ -70,7 +70,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (13개)
+## 현재 게임 (14개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -87,10 +87,11 @@ lang: string            # ko 등
 | `whack-a-mole` | Whack-a-Mole | arcade | 2 | 2 | `whack-a-mole` |
 | `connect-four` | Connect Four | strategy | 3 | 6 | `connect-four` |
 | `trivia-quiz` | Trivia Quiz | trivia | 2 | 4 | `trivia-quiz` |
+| `math-blitz` | Math Blitz | number | 3 | 3 | `math-blitz` |
 
 ---
 
-## 현재 한국어 문서 (29개)
+## 현재 한국어 문서 (30개)
 
 | 경로 | 대상 |
 |---|---|
@@ -123,5 +124,6 @@ lang: string            # ko 등
 | `docs/tools/color-palette-generator/ko.md` | Color Palette Generator |
 | `docs/games/trivia-quiz/ko.md` | Trivia Quiz |
 | `docs/tools/percentage-calculator/ko.md` | Percentage Calculator |
+| `docs/games/math-blitz/ko.md` | Math Blitz |
 
 모든 툴·게임에 한국어 문서가 있습니다.
