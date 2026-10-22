@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (14개)
+## 현재 툴 (15개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -65,6 +65,7 @@ lang: string            # ko 등
 | `image-compressor` | Image Compressor | image | `image-compressor` | `image-compressor/ImageCompressor` |
 | `csv-to-json-converter` | CSV to JSON Converter | data | `csv-to-json-converter` | `csv-to-json-converter/CsvToJsonConverter` |
 | `diff-checker` | Diff Checker | text | `diff-checker` | `diff-checker/DiffChecker` |
+| `color-palette-generator` | Color Palette Generator | color | `color-palette-generator` | `color-palette-generator/ColorPaletteGenerator` |
 
 ---
 
@@ -87,7 +88,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (26개)
+## 현재 한국어 문서 (27개)
 
 | 경로 | 대상 |
 |---|---|
@@ -117,5 +118,6 @@ lang: string            # ko 등
 | `docs/games/whack-a-mole/ko.md` | Whack-a-Mole |
 | `docs/tools/diff-checker/ko.md` | Diff Checker |
 | `docs/games/connect-four/ko.md` | Connect Four |
+| `docs/tools/color-palette-generator/ko.md` | Color Palette Generator |
 
 모든 툴·게임에 한국어 문서가 있습니다.
