@@ -71,7 +71,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (14개)
+## 현재 게임 (15개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -89,10 +89,11 @@ lang: string            # ko 등
 | `connect-four` | Connect Four | strategy | 3 | 6 | `connect-four` |
 | `trivia-quiz` | Trivia Quiz | trivia | 2 | 4 | `trivia-quiz` |
 | `math-blitz` | Math Blitz | number | 3 | 3 | `math-blitz` |
+| `tetris` | Tetris | arcade | 3 | 8 | `tetris` |
 
 ---
 
-## 현재 한국어 문서 (31개)
+## 현재 한국어 문서 (32개)
 
 | 경로 | 대상 |
 |---|---|
@@ -127,5 +128,6 @@ lang: string            # ko 등
 | `docs/tools/percentage-calculator/ko.md` | Percentage Calculator |
 | `docs/games/math-blitz/ko.md` | Math Blitz |
 | `docs/tools/uuid-generator/ko.md` | UUID Generator |
+| `docs/games/tetris/ko.md` | Tetris |
 
 모든 툴·게임에 한국어 문서가 있습니다.

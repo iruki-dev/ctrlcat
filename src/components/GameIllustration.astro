@@ -422,3 +422,39 @@ const { slug } = Astro.props;
     <circle cx="186" cy="130" r="4" fill="#c084fc"/>
   </svg>
 )}
+
+{slug === "tetris" && (
+  <svg viewBox="0 0 200 160" width="200" height="160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="58" y="14" width="84" height="132" rx="10" fill="#faf5ff" />
+    <rect x="58" y="14" width="84" height="132" rx="10" fill="none" stroke="#ede9fe" stroke-width="3" />
+    <g opacity="0.5" stroke="#ede9fe" stroke-width="1.5">
+      <path d="M79 18v124M100 18v124M121 18v124" />
+      <path d="M62 56h76M62 98h76" />
+    </g>
+    <rect x="58" y="122" width="21" height="21" rx="4" fill="#c084fc" />
+    <rect x="79" y="122" width="21" height="21" rx="4" fill="#f472b6" />
+    <rect x="100" y="122" width="21" height="21" rx="4" fill="#8b5cf6" />
+    <rect x="121" y="122" width="21" height="21" rx="4" fill="#c084fc" />
+    <rect x="58" y="101" width="21" height="21" rx="4" fill="#8b5cf6" />
+    <rect x="79" y="101" width="21" height="21" rx="4" fill="#ede9fe" />
+    <rect x="100" y="101" width="21" height="21" rx="4" fill="#f472b6" />
+    <g>
+      <rect x="79" y="38" width="21" height="21" rx="4" fill="#f472b6" />
+      <rect x="100" y="38" width="21" height="21" rx="4" fill="#f472b6" />
+      <rect x="100" y="17" width="21" height="21" rx="4" fill="#f472b6" />
+      <rect x="121" y="17" width="21" height="21" rx="4" fill="#f472b6" />
+    </g>
+    <g opacity="0.35">
+      <rect x="79" y="80" width="21" height="21" rx="4" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4 3" />
+      <rect x="100" y="80" width="21" height="21" rx="4" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="4 3" />
+    </g>
+    <rect x="12" y="24" width="38" height="38" rx="8" fill="#faf5ff" stroke="#ede9fe" stroke-width="3" />
+    <rect x="21" y="33" width="10" height="10" rx="2" fill="#c084fc" />
+    <rect x="31" y="33" width="10" height="10" rx="2" fill="#c084fc" />
+    <rect x="31" y="43" width="10" height="10" rx="2" fill="#c084fc" />
+    <rect x="12" y="78" width="38" height="8" rx="4" fill="#ede9fe" />
+    <rect x="12" y="78" width="24" height="8" rx="4" fill="#8b5cf6" />
+    <rect x="12" y="96" width="26" height="6" rx="3" fill="#ede9fe" />
+    <rect x="12" y="108" width="34" height="6" rx="3" fill="#ede9fe" />
+  </svg>
+)}
