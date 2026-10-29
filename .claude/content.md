@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (16개)
+## 현재 툴 (17개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -67,6 +67,7 @@ lang: string            # ko 등
 | `diff-checker` | Diff Checker | text | `diff-checker` | `diff-checker/DiffChecker` |
 | `color-palette-generator` | Color Palette Generator | color | `color-palette-generator` | `color-palette-generator/ColorPaletteGenerator` |
 | `percentage-calculator` | Percentage Calculator | math | `percentage-calculator` | `percentage-calculator/PercentageCalculator` |
+| `uuid-generator` | UUID Generator | developer | `uuid-generator` | `uuid-generator/UuidGenerator` |
 
 ---
 
@@ -91,7 +92,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (30개)
+## 현재 한국어 문서 (31개)
 
 | 경로 | 대상 |
 |---|---|
@@ -125,5 +126,6 @@ lang: string            # ko 등
 | `docs/games/trivia-quiz/ko.md` | Trivia Quiz |
 | `docs/tools/percentage-calculator/ko.md` | Percentage Calculator |
 | `docs/games/math-blitz/ko.md` | Math Blitz |
+| `docs/tools/uuid-generator/ko.md` | UUID Generator |
 
 모든 툴·게임에 한국어 문서가 있습니다.
