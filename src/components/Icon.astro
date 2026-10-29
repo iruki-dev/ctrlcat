@@ -340,3 +340,12 @@ const { name, class: className = "", size = 20 } = Astro.props;
     <path d="M17.5 14v7" />
   </svg>
 )}
+
+{name === "hash-generator" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class={className}>
+    <path d="M9.5 3.5 7.5 20.5" />
+    <path d="M16.5 3.5 14.5 20.5" />
+    <path d="M3.5 9h17" />
+    <path d="M3 15h17" />
+  </svg>
+)}

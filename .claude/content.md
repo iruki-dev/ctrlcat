@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (17개)
+## 현재 툴 (18개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -68,6 +68,7 @@ lang: string            # ko 등
 | `color-palette-generator` | Color Palette Generator | color | `color-palette-generator` | `color-palette-generator/ColorPaletteGenerator` |
 | `percentage-calculator` | Percentage Calculator | math | `percentage-calculator` | `percentage-calculator/PercentageCalculator` |
 | `uuid-generator` | UUID Generator | developer | `uuid-generator` | `uuid-generator/UuidGenerator` |
+| `hash-generator` | Hash Generator | developer | `hash-generator` | `hash-generator/HashGenerator` |
 
 ---
 
@@ -93,7 +94,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (32개)
+## 현재 한국어 문서 (33개)
 
 | 경로 | 대상 |
 |---|---|
@@ -129,5 +130,6 @@ lang: string            # ko 등
 | `docs/games/math-blitz/ko.md` | Math Blitz |
 | `docs/tools/uuid-generator/ko.md` | UUID Generator |
 | `docs/games/tetris/ko.md` | Tetris |
+| `docs/tools/hash-generator/ko.md` | Hash Generator |
 
 모든 툴·게임에 한국어 문서가 있습니다.
