@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (19개)
+## 현재 툴 (20개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -70,6 +70,7 @@ lang: string            # ko 등
 | `uuid-generator` | UUID Generator | developer | `uuid-generator` | `uuid-generator/UuidGenerator` |
 | `hash-generator` | Hash Generator | developer | `hash-generator` | `hash-generator/HashGenerator` |
 | `cron-expression-explainer` | Cron Expression Explainer | developer | `cron-expression-explainer` | `cron-expression-explainer/CronExpressionExplainer` |
+| `timestamp-converter` | Timestamp Converter | converter | `timestamp-converter` | `timestamp-converter/TimestampConverter` |
 
 ---
 
@@ -97,7 +98,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (36개)
+## 현재 한국어 문서 (37개)
 
 | 경로 | 대상 |
 |---|---|
@@ -137,5 +138,6 @@ lang: string            # ko 등
 | `docs/games/flappy-flyer/ko.md` | Flappy Flyer |
 | `docs/tools/cron-expression-explainer/ko.md` | Cron Expression Explainer |
 | `docs/games/lights-out/ko.md` | Lights Out |
+| `docs/tools/timestamp-converter/ko.md` | Timestamp Converter |
 
 모든 툴·게임에 한국어 문서가 있습니다.
