@@ -391,3 +391,15 @@ const { name, class: className = "", size = 20 } = Astro.props;
     <path d="M19.5 13.5l-2 2 2 2" />
   </svg>
 )}
+
+{name === "tower-of-hanoi" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class={className}>
+    <path d="M2.5 20.5h19" />
+    <path d="M7 7.5v12" />
+    <path d="M12 10.5v9" />
+    <path d="M17 10.5v9" />
+    <path d="M3.5 18h7" />
+    <path d="M4.5 15h5" />
+    <path d="M5.5 12h3" />
+  </svg>
+)}

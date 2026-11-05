@@ -74,7 +74,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (17개)
+## 현재 게임 (18개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -95,10 +95,11 @@ lang: string            # ko 등
 | `tetris` | Tetris | arcade | 3 | 8 | `tetris` |
 | `flappy-flyer` | Flappy Flyer | arcade | 4 | 3 | `flappy-flyer` |
 | `lights-out` | Lights Out | puzzle | 3 | 5 | `lights-out` |
+| `tower-of-hanoi` | Tower of Hanoi | puzzle | 3 | 4 | `tower-of-hanoi` |
 
 ---
 
-## 현재 한국어 문서 (37개)
+## 현재 한국어 문서 (38개)
 
 | 경로 | 대상 |
 |---|---|
@@ -139,5 +140,6 @@ lang: string            # ko 등
 | `docs/tools/cron-expression-explainer/ko.md` | Cron Expression Explainer |
 | `docs/games/lights-out/ko.md` | Lights Out |
 | `docs/tools/timestamp-converter/ko.md` | Timestamp Converter |
+| `docs/games/tower-of-hanoi/ko.md` | Tower of Hanoi |
 
 모든 툴·게임에 한국어 문서가 있습니다.
