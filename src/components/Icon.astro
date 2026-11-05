@@ -360,3 +360,12 @@ const { name, class: className = "", size = 20 } = Astro.props;
     <path d="M12 9c1.6-1.4 3.4-1.1 4.2.2" />
   </svg>
 )}
+
+{name === "cron-expression-explainer" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class={className}>
+    <circle cx="12" cy="13" r="7.5" />
+    <path d="M12 9.5V13l2.5 1.5" />
+    <path d="M5.5 4.5 7 6" />
+    <path d="M18.5 4.5 17 6" />
+  </svg>
+)}
