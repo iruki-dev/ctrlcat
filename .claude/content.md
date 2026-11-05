@@ -73,7 +73,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (16개)
+## 현재 게임 (17개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -93,10 +93,11 @@ lang: string            # ko 등
 | `math-blitz` | Math Blitz | number | 3 | 3 | `math-blitz` |
 | `tetris` | Tetris | arcade | 3 | 8 | `tetris` |
 | `flappy-flyer` | Flappy Flyer | arcade | 4 | 3 | `flappy-flyer` |
+| `lights-out` | Lights Out | puzzle | 3 | 5 | `lights-out` |
 
 ---
 
-## 현재 한국어 문서 (35개)
+## 현재 한국어 문서 (36개)
 
 | 경로 | 대상 |
 |---|---|
@@ -135,5 +136,6 @@ lang: string            # ko 등
 | `docs/tools/hash-generator/ko.md` | Hash Generator |
 | `docs/games/flappy-flyer/ko.md` | Flappy Flyer |
 | `docs/tools/cron-expression-explainer/ko.md` | Cron Expression Explainer |
+| `docs/games/lights-out/ko.md` | Lights Out |
 
 모든 툴·게임에 한국어 문서가 있습니다.
