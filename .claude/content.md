@@ -75,7 +75,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (18개)
+## 현재 게임 (19개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -97,10 +97,11 @@ lang: string            # ko 등
 | `flappy-flyer` | Flappy Flyer | arcade | 4 | 3 | `flappy-flyer` |
 | `lights-out` | Lights Out | puzzle | 3 | 5 | `lights-out` |
 | `tower-of-hanoi` | Tower of Hanoi | puzzle | 3 | 4 | `tower-of-hanoi` |
+| `simon-says-memory` | Simon Says Memory | arcade | 3 | 3 | `simon-says-memory` |
 
 ---
 
-## 현재 한국어 문서 (39개)
+## 현재 한국어 문서 (40개)
 
 | 경로 | 대상 |
 |---|---|
@@ -143,5 +144,6 @@ lang: string            # ko 등
 | `docs/tools/timestamp-converter/ko.md` | Timestamp Converter |
 | `docs/games/tower-of-hanoi/ko.md` | Tower of Hanoi |
 | `docs/tools/case-converter/ko.md` | Case Converter |
+| `docs/games/simon-says-memory/ko.md` | Simon Says Memory |
 
 모든 툴·게임에 한국어 문서가 있습니다.
