@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (21개)
+## 현재 툴 (22개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -72,6 +72,7 @@ lang: string            # ko 등
 | `cron-expression-explainer` | Cron Expression Explainer | developer | `cron-expression-explainer` | `cron-expression-explainer/CronExpressionExplainer` |
 | `timestamp-converter` | Timestamp Converter | converter | `timestamp-converter` | `timestamp-converter/TimestampConverter` |
 | `case-converter` | Case Converter | text | `case-converter` | `case-converter/CaseConverter` |
+| `lorem-ipsum-generator` | Lorem Ipsum Generator | text | `lorem-ipsum-generator` | `lorem-ipsum-generator/LoremIpsumGenerator` |
 
 ---
 
@@ -101,7 +102,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (40개)
+## 현재 한국어 문서 (41개)
 
 | 경로 | 대상 |
 |---|---|
@@ -145,5 +146,6 @@ lang: string            # ko 등
 | `docs/games/tower-of-hanoi/ko.md` | Tower of Hanoi |
 | `docs/tools/case-converter/ko.md` | Case Converter |
 | `docs/games/simon-says-memory/ko.md` | Simon Says Memory |
+| `docs/tools/lorem-ipsum-generator/ko.md` | Lorem Ipsum Generator |
 
 모든 툴·게임에 한국어 문서가 있습니다.
