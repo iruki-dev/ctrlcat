@@ -76,7 +76,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (19개)
+## 현재 게임 (20개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -99,10 +99,11 @@ lang: string            # ko 등
 | `lights-out` | Lights Out | puzzle | 3 | 5 | `lights-out` |
 | `tower-of-hanoi` | Tower of Hanoi | puzzle | 3 | 4 | `tower-of-hanoi` |
 | `simon-says-memory` | Simon Says Memory | arcade | 3 | 3 | `simon-says-memory` |
+| `blackjack` | Blackjack | card | 2 | 5 | `blackjack` |
 
 ---
 
-## 현재 한국어 문서 (41개)
+## 현재 한국어 문서 (42개)
 
 | 경로 | 대상 |
 |---|---|
@@ -147,5 +148,6 @@ lang: string            # ko 등
 | `docs/tools/case-converter/ko.md` | Case Converter |
 | `docs/games/simon-says-memory/ko.md` | Simon Says Memory |
 | `docs/tools/lorem-ipsum-generator/ko.md` | Lorem Ipsum Generator |
+| `docs/games/blackjack/ko.md` | Blackjack |
 
 모든 툴·게임에 한국어 문서가 있습니다.
