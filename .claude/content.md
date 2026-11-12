@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (20개)
+## 현재 툴 (21개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -71,6 +71,7 @@ lang: string            # ko 등
 | `hash-generator` | Hash Generator | developer | `hash-generator` | `hash-generator/HashGenerator` |
 | `cron-expression-explainer` | Cron Expression Explainer | developer | `cron-expression-explainer` | `cron-expression-explainer/CronExpressionExplainer` |
 | `timestamp-converter` | Timestamp Converter | converter | `timestamp-converter` | `timestamp-converter/TimestampConverter` |
+| `case-converter` | Case Converter | text | `case-converter` | `case-converter/CaseConverter` |
 
 ---
 
@@ -99,7 +100,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (38개)
+## 현재 한국어 문서 (39개)
 
 | 경로 | 대상 |
 |---|---|
@@ -141,5 +142,6 @@ lang: string            # ko 등
 | `docs/games/lights-out/ko.md` | Lights Out |
 | `docs/tools/timestamp-converter/ko.md` | Timestamp Converter |
 | `docs/games/tower-of-hanoi/ko.md` | Tower of Hanoi |
+| `docs/tools/case-converter/ko.md` | Case Converter |
 
 모든 툴·게임에 한국어 문서가 있습니다.
