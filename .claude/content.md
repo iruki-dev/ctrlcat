@@ -78,7 +78,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 게임 (21개)
+## 현재 게임 (22개)
 
 | slug | 제목 | 카테고리 | difficulty | playTime | icon |
 |---|---|---|---|---|---|
@@ -103,10 +103,11 @@ lang: string            # ko 등
 | `simon-says-memory` | Simon Says Memory | arcade | 3 | 3 | `simon-says-memory` |
 | `blackjack` | Blackjack | card | 2 | 5 | `blackjack` |
 | `mastermind` | Mastermind | puzzle | 3 | 5 | `mastermind` |
+| `typing-speed-test` | Typing Speed Test | word | 2 | 2 | `typing-speed-test` |
 
 ---
 
-## 현재 한국어 문서 (45개)
+## 현재 한국어 문서 (46개)
 
 | 경로 | 대상 |
 |---|---|
@@ -155,5 +156,6 @@ lang: string            # ko 등
 | `docs/tools/pomodoro-timer/ko.md` | Pomodoro Timer |
 | `docs/games/mastermind/ko.md` | Mastermind |
 | `docs/tools/duplicate-line-remover-and-sorter/ko.md` | Duplicate Line Remover and Sorter |
+| `docs/games/typing-speed-test/ko.md` | Typing Speed Test |
 
 모든 툴·게임에 한국어 문서가 있습니다.
