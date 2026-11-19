@@ -47,7 +47,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 툴 (23개)
+## 현재 툴 (24개)
 
 | slug | 제목 | 카테고리 | icon | component |
 |---|---|---|---|---|
@@ -74,6 +74,7 @@ lang: string            # ko 등
 | `case-converter` | Case Converter | text | `case-converter` | `case-converter/CaseConverter` |
 | `lorem-ipsum-generator` | Lorem Ipsum Generator | text | `lorem-ipsum-generator` | `lorem-ipsum-generator/LoremIpsumGenerator` |
 | `pomodoro-timer` | Pomodoro Timer | productivity | `pomodoro-timer` | `pomodoro-timer/PomodoroTimer` |
+| `duplicate-line-remover-and-sorter` | Duplicate Line Remover and Sorter | text | `duplicate-line-remover-and-sorter` | `duplicate-line-remover-and-sorter/DuplicateLineRemoverAndSorter` |
 
 ---
 
@@ -105,7 +106,7 @@ lang: string            # ko 등
 
 ---
 
-## 현재 한국어 문서 (44개)
+## 현재 한국어 문서 (45개)
 
 | 경로 | 대상 |
 |---|---|
@@ -153,5 +154,6 @@ lang: string            # ko 등
 | `docs/games/blackjack/ko.md` | Blackjack |
 | `docs/tools/pomodoro-timer/ko.md` | Pomodoro Timer |
 | `docs/games/mastermind/ko.md` | Mastermind |
+| `docs/tools/duplicate-line-remover-and-sorter/ko.md` | Duplicate Line Remover and Sorter |
 
 모든 툴·게임에 한국어 문서가 있습니다.

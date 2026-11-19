@@ -461,3 +461,13 @@ const { name, class: className = "", size = 20 } = Astro.props;
     <path d="M14 15h3" />
   </svg>
 )}
+
+{name === "duplicate-line-remover-and-sorter" && (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class={className}>
+    <path d="M4 6h10" />
+    <path d="M4 11h7" />
+    <path d="M4 16h4" />
+    <path d="M17.5 8v11" />
+    <path d="M14.5 16l3 3 3-3" />
+  </svg>
+)}
