@@ -96,7 +96,7 @@ lang: string            # ko 등
 | `connect-four` | Connect Four | strategy | 3 | 6 | `connect-four` |
 | `trivia-quiz` | Trivia Quiz | trivia | 2 | 4 | `trivia-quiz` |
 | `math-blitz` | Math Blitz | number | 3 | 3 | `math-blitz` |
-| `tetris` | Tetris | arcade | 3 | 8 | `tetris` |
+| `block-drop` | Block Drop | arcade | 3 | 8 | `block-drop` |
 | `flappy-flyer` | Flappy Flyer | arcade | 4 | 3 | `flappy-flyer` |
 | `lights-out` | Lights Out | puzzle | 3 | 5 | `lights-out` |
 | `tower-of-hanoi` | Tower of Hanoi | puzzle | 3 | 4 | `tower-of-hanoi` |
@@ -142,7 +142,7 @@ lang: string            # ko 등
 | `docs/tools/percentage-calculator/ko.md` | Percentage Calculator |
 | `docs/games/math-blitz/ko.md` | Math Blitz |
 | `docs/tools/uuid-generator/ko.md` | UUID Generator |
-| `docs/games/tetris/ko.md` | Tetris |
+| `docs/games/block-drop/ko.md` | Block Drop |
 | `docs/tools/hash-generator/ko.md` | Hash Generator |
 | `docs/games/flappy-flyer/ko.md` | Flappy Flyer |
 | `docs/tools/cron-expression-explainer/ko.md` | Cron Expression Explainer |
