@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -96,6 +97,7 @@ export default function SimonSaysMemory() {
   const [activePad, setActivePad] = useState<number | null>(null);
   const [wrongPad, setWrongPad] = useState<number | null>(null);
   const flashTimer = useRef<number | null>(null);
+  usePhaseEvents(phase, { playing: ["watch", "input", "pause"], score });
 
   useEffect(
     () => () => {
@@ -244,7 +246,7 @@ export default function SimonSaysMemory() {
         </GameMessage>
         <ScoreDisplay label={m.best} value={bestScore ?? "-"} />
         <div className="flex gap-3">
-          <GameButton onClick={startGame} size="xl">
+          <GameButton onClick={() => afterBreak(startGame)} size="xl">
             {m.playAgain}
           </GameButton>
           <GameButton variant="ghost" size="xl" onClick={quitGame}>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -218,6 +219,7 @@ export default function ConnectFour() {
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
   const boardRef = useRef<HTMLDivElement>(null);
+  usePhaseEvents(phase === "over" ? (result === "win" ? "won" : result === "lose" ? "lost" : "over") : phase);
 
   const startGame = useCallback(() => {
     setBoard(createBoard());
@@ -382,7 +384,7 @@ export default function ConnectFour() {
 
       {phase === "over" ? (
         <div className="flex flex-col items-center gap-3 animate-slide-up">
-          <GameButton onClick={startGame} size="xl">
+          <GameButton onClick={() => afterBreak(startGame)} size="xl">
             {m.playAgain}
           </GameButton>
           <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>

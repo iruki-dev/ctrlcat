@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -160,6 +161,7 @@ export default function Mastermind() {
   const [current, setCurrent] = useState<number[]>([]);
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState<number | null>(null);
+  usePhaseEvents(phase, { score });
 
   const startGame = useCallback(() => {
     setSecret(makeSecret());
@@ -273,7 +275,7 @@ export default function Mastermind() {
         {bestScore !== null && (
           <ScoreDisplay label={m.best} value={bestScore} size="sm" />
         )}
-        <GameButton onClick={startGame} size="xl">
+        <GameButton onClick={() => afterBreak(startGame)} size="xl">
           {m.playAgain}
         </GameButton>
       </div>

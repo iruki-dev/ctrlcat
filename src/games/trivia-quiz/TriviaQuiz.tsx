@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLang, useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { QUESTIONS, type Category, type Question } from "./questions";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
@@ -89,6 +90,7 @@ export default function TriviaQuiz() {
   const [bestStreak, setBestStreak] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [timeLeft, setTimeLeft] = useState(QUESTION_SECONDS);
+  usePhaseEvents(phase, { playing: ["playing", "reveal"], score });
 
   const question = round[index];
   const text = question?.[lang];
@@ -160,7 +162,8 @@ export default function TriviaQuiz() {
     if (phase === "idle" || phase === "won" || phase === "lost") {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        startGame();
+        if (phase === "idle") startGame();
+        else afterBreak(startGame);
       }
       return;
     }
@@ -211,7 +214,7 @@ export default function TriviaQuiz() {
         {bestScore !== null && (
           <p className="text-sm text-game-text-dim">{m.bestSoFar(bestScore)}</p>
         )}
-        <GameButton onClick={startGame} size="xl">
+        <GameButton onClick={() => afterBreak(startGame)} size="xl">
           {m.playAgain}
         </GameButton>
       </div>

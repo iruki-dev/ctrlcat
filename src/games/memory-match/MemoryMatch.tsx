@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -136,6 +137,7 @@ export default function MemoryMatch() {
   const pairsFound = matched.length / 2;
   const attemptsLeft = MAX_ATTEMPTS - attempts;
   const score = pairsFound * 100 + Math.max(0, attemptsLeft) * 25;
+  usePhaseEvents(phase, { score });
 
   const startGame = useCallback(() => {
     setDeck(buildDeck());
@@ -237,7 +239,7 @@ export default function MemoryMatch() {
         {bestScore !== null && (
           <p className="text-sm text-game-muted">{m.bestSession(bestScore)}</p>
         )}
-        <GameButton onClick={startGame} size="xl">
+        <GameButton onClick={() => afterBreak(startGame)} size="xl">
           {m.playAgain}
         </GameButton>
       </div>

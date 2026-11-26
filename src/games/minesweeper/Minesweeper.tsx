@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -203,6 +204,7 @@ export default function Minesweeper() {
   const boardRef = useRef<HTMLDivElement>(null);
   const pressTimer = useRef<number | null>(null);
   const longPressed = useRef(false);
+  usePhaseEvents(phase);
 
   const flagged = board.filter((cell) => cell.state === "flagged").length;
   const minesLeft = level.mines - flagged;
@@ -501,7 +503,11 @@ export default function Minesweeper() {
             {m.flagMode}
           </GameButton>
         )}
-        <GameButton variant="secondary" size="sm" onClick={() => startGame(levelIndex)}>
+        <GameButton
+          variant="secondary"
+          size="sm"
+          onClick={() => (over ? afterBreak(() => startGame(levelIndex)) : startGame(levelIndex))}
+        >
           {over ? m.playAgain : m.restart}
         </GameButton>
         <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>

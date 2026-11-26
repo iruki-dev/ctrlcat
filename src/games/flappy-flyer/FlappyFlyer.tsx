@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { useBestScore } from "../lib/useBestScore";
 import { GameCanvas } from "../lib/GameCanvas";
 import { useGameLoop } from "../lib/useGameLoop";
@@ -161,6 +162,7 @@ export default function FlappyFlyer() {
   /* Timestamp before which the keyboard cannot restart a run, so that the tap
      that killed you does not skip past the result screen. */
   const keyLockRef = useRef(0);
+  usePhaseEvents(phase, { paused: ["paused"], score });
 
 
   const startGame = useCallback(() => {
@@ -195,7 +197,8 @@ export default function FlappyFlyer() {
       e.preventDefault();
       if (performance.now() < keyLockRef.current) return;
       if (phase === "paused") setPhase("playing");
-      else startGame();
+      else if (phase === "idle") startGame();
+      else afterBreak(startGame);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -388,7 +391,7 @@ export default function FlappyFlyer() {
               ? m.firstGap
               : m.crashed(score)}
         </GameMessage>
-        <GameButton onClick={startGame} size="xl" autoFocus>
+        <GameButton onClick={() => afterBreak(startGame)} size="xl" autoFocus>
           {m.playAgain}
         </GameButton>
         <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>

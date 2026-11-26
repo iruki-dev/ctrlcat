@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -171,6 +172,7 @@ export default function Sudoku() {
   const [elapsed, setElapsed] = useState(0);
   const [bestTimes, setBestTimes] = useState<Partial<Record<Level, number>>>({});
   const boardRef = useRef<HTMLDivElement>(null);
+  usePhaseEvents(phase);
 
   const startGame = useCallback((chosen: Level) => {
     const blanks = LEVELS.find((l) => l.id === chosen)?.blanks ?? 38;
@@ -310,7 +312,7 @@ export default function Sudoku() {
           {m.solved(m.levels[level], best !== undefined && best === elapsed)}
         </GameMessage>
         <div className="flex flex-wrap gap-3 justify-center">
-          <GameButton onClick={() => startGame(level)} size="xl">
+          <GameButton onClick={() => afterBreak(() => startGame(level))} size="xl">
             {m.playAgain}
           </GameButton>
           <GameButton variant="ghost" size="lg" onClick={() => setPhase("idle")}>

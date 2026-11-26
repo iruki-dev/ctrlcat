@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -159,6 +160,7 @@ export default function LightsOut() {
   const [cursor, setCursor] = useState(0);
   const [lastGain, setLastGain] = useState(0);
   const [par, setPar] = useState(0);
+  usePhaseEvents(phase, { won: ["levelCleared", "won"], score });
 
   const level = LEVELS[Math.min(levelIndex, LEVELS.length - 1)];
   const size = level.size;
@@ -283,7 +285,7 @@ export default function LightsOut() {
         {bestScore !== null && (
           <p className="text-game-text-dim text-sm">{m.bestSoFar(bestScore)}</p>
         )}
-        <GameButton onClick={startGame} size="xl">
+        <GameButton onClick={() => afterBreak(startGame)} size="xl">
           {m.playAgain}
         </GameButton>
       </div>
@@ -347,7 +349,7 @@ export default function LightsOut() {
           <GameMessage type="success">
             {m.cleared(levelIndex + 1, moves, lastGain)}
           </GameMessage>
-          <GameButton onClick={() => loadLevel(levelIndex + 1)} size="lg">
+          <GameButton onClick={() => afterBreak(() => loadLevel(levelIndex + 1))} size="lg">
             {m.nextLevel}
           </GameButton>
         </div>

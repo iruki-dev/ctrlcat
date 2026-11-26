@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -197,6 +198,7 @@ export default function WordGuess() {
   const [solved, setSolved] = useState(0);
   const [gained, setGained] = useState(0);
   const [used, setUsed] = useState<string[]>([]);
+  usePhaseEvents(phase, { score });
 
   const deal = useCallback((exclude: string[]) => {
     const next = pickWord(exclude);
@@ -335,7 +337,7 @@ export default function WordGuess() {
         </GameMessage>
         {won ? (
           <div className="flex flex-col items-center gap-3">
-            <GameButton onClick={nextWord} size="xl">
+            <GameButton onClick={() => afterBreak(nextWord)} size="xl">
               {m.nextWord}
             </GameButton>
             <GameButton
@@ -347,7 +349,7 @@ export default function WordGuess() {
             </GameButton>
           </div>
         ) : (
-          <GameButton onClick={startRun} size="xl">
+          <GameButton onClick={() => afterBreak(startRun)} size="xl">
             {m.playAgain}
           </GameButton>
         )}

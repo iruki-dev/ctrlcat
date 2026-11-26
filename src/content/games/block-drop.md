@@ -32,7 +32,7 @@ A flat stack is a safe stack. Every hole you leave under a block has to be dug o
 costs you rows. Turn each piece so it sits flush against what is already there rather than bridging
 a gap.
 
-The panel on the right shows which shape comes next. Use it. If a long bar is coming, you can leave
+The panel on the right shows the next three shapes, the nearest one largest. Use it. If a long bar is coming, you can leave
 a single deep column open for it. If a square is coming, you want a flat pair of columns ready.
 
 ## Scoring and levels
@@ -42,6 +42,10 @@ rows at once pay eight hundred. Those amounts are multiplied by your current lev
 bigger clears pays off. Holding the down arrow adds a point per row, and dropping a piece straight
 to the bottom adds two per row.
 
+Clearing rows with several pieces in a row builds a combo. Each clear after the first in a streak
+adds a bonus of fifty points times the combo count and your level. Placing a piece that clears
+nothing ends the streak.
+
 The level rises every ten rows and blocks fall faster at each step. Level ten is the last one. Your
 best score is kept on this device, so you can try to beat it later.
 
@@ -49,7 +53,8 @@ best score is kept on this device, so you can try to beat it later.
 
 Left and right arrows move the piece, the up arrow turns it, the down arrow speeds the fall and
 space drops it instantly. Press P to pause. On a touch screen, swipe sideways to move, up to turn
-and down to drop, or use the buttons under the well.
+and down to drop, or use the round buttons on screen. When a piece
+touches down you still have a moment to slide or turn it before it locks in place.
 
 ## Frequently asked questions
 

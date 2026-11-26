@@ -21,3 +21,7 @@ Thumbs.db
 # Logs
 npm-debug.log*
 *.log
+
+# Portal builds
+portal-dist/
+portal/tokens.css

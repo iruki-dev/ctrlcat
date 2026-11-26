@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -125,6 +126,7 @@ export default function WhackAMole() {
   );
   const engineRef = useRef<Engine>(createEngine(0));
   const pointerUsed = useRef(false);
+  usePhaseEvents(phase, { score: view.score });
 
   const startGame = useCallback(() => {
     const now = typeof performance !== "undefined" ? performance.now() : 0;
@@ -219,7 +221,8 @@ export default function WhackAMole() {
       if (event.code === "Space") {
         if (phase !== "playing") {
           event.preventDefault();
-          startGame();
+          if (phase === "idle") startGame();
+          else afterBreak(startGame);
         }
         return;
       }
@@ -272,7 +275,7 @@ export default function WhackAMole() {
           <ScoreDisplay label={m.misses} value={view.misses} size="sm" />
           <ScoreDisplay label={m.best} value={bestScore ?? "-"} size="sm" />
         </div>
-        <GameButton onClick={startGame} size="xl">
+        <GameButton onClick={() => afterBreak(startGame)} size="xl">
           {m.playAgain}
         </GameButton>
       </div>

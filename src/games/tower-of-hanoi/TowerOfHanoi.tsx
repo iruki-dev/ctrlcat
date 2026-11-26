@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -94,6 +95,7 @@ export default function TowerOfHanoi() {
   const [history, setHistory] = useState<Array<[number, number]>>([]);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [bestByDiscs, setBestByDiscs] = useState<Record<number, number>>({});
+  usePhaseEvents(phase);
 
   const target = useMemo(() => minimumMoves(discs), [discs]);
   const best = bestByDiscs[discs];
@@ -255,7 +257,7 @@ export default function TowerOfHanoi() {
           <ScoreDisplay label={m.bestAt(discs)} value={best ?? moves} size="sm" />
         </div>
         <div className="flex flex-wrap justify-center gap-3">
-          <GameButton onClick={resetBoard} size="xl">
+          <GameButton onClick={() => afterBreak(resetBoard)} size="xl">
             {m.playAgain}
           </GameButton>
           <GameButton variant="secondary" size="xl" onClick={() => setPhase("idle")}>
