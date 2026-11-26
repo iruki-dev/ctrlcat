@@ -23,6 +23,10 @@ export default defineConfig(async () => {
   // GameDistribution issues one game id per uploaded game; record them in portal/gd-ids.json ({ "<slug>": "<id>" }).
   const gdFile = path.join(here, "gd-ids.json");
   const gdIds = existsSync(gdFile) ? JSON.parse(readFileSync(gdFile, "utf8")) : {};
+  // Per-game look for portal builds: portal/themes/<slug>.css, else the shared default.
+  const themeFile = existsSync(path.join(here, "themes", `${slug}.css`))
+    ? path.join(here, "themes", `${slug}.css`)
+    : path.join(here, "themes", "default.css");
   return {
     root: here,
     base: "./",
@@ -52,10 +56,12 @@ export default defineConfig(async () => {
       alias: {
         "virtual-game": path.join(repo, "src/games", `${component}.tsx`),
         "virtual-provider": providerFile,
+        "virtual-theme": themeFile,
       },
     },
     define: {
       __GD_GAME_ID__: JSON.stringify(gdIds[slug] ?? ""),
+      __GAME_TITLE__: JSON.stringify(process.env.GAME_TITLE || slug),
     },
     css: {
       postcss: {

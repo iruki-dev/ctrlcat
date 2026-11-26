@@ -1,0 +1,17 @@
+/* Portal look shared by games without their own theme: a dark stage so the board reads as a game, not a page. */
+:root {
+  --game-bg:           20  18  30;
+  --game-surface:      34  31  49;
+  --game-surface-2:    52  48  74;
+  --game-border:       98  92  130;
+  --game-border-dim:   44  40  62;
+  --game-accent:       167 139 250;
+  --game-accent-light: 59  48  102;
+  --game-accent-dim:   196 181 253;
+  --game-on-accent:    24  16  48;
+  --game-secondary:    244 114 182;
+  --game-muted:        150 144 178;
+  --game-text:         240 238 248;
+  --game-text-dim:     200 196 220;
+  --portal-stage: radial-gradient(120% 90% at 50% 0%, #2a2450 0%, #14121e 60%);
+}

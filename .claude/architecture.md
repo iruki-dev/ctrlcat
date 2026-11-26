@@ -138,7 +138,8 @@ node portal/build.mjs --portal <none|demo|debug|playgama|yandex|gamedistribution
 → portal-dist/<portal>/<slug>/ (index.html + assets) 와 <slug>.zip
 ```
 
-- `portal/main.tsx`: 게임 하나 + `GameShell`을 렌더링합니다. `virtual-game`, `virtual-provider` 별칭은 `portal/vite.config.mjs`가 게임 컴포넌트와 `portal/providers/<portal>.ts`로 연결합니다.
+- `portal/main.tsx`: 게임 하나를 `portal/PortalFrame.tsx`(화면 전체를 채우는 무대 + 오른쪽 위 음소거·전체 화면 버튼, 사이트의 `GameShell` 대신) 안에 렌더링합니다. `virtual-game`, `virtual-provider`, `virtual-theme` 별칭은 `portal/vite.config.mjs`가 게임 컴포넌트, `portal/providers/<portal>.ts`, `portal/themes/<slug>.css`(없으면 `default.css`)로 연결합니다.
+- `portal/themes/<slug>.css`: 포털 빌드에서만 `--game-*` 변수와 무대 배경 `--portal-stage`를 덮어씁니다. 게임은 오른쪽 위 약 56px를 비워 둡니다.
 - `portal/providers/*.ts`: 포털 SDK 어댑터. `init`, `loadingFinished`, `host.onEvent`, `host.requestBreak`를 구현합니다.
 - `portal/audio.ts`: 광고 중·탭 숨김 시 모든 AudioContext를 멈춥니다.
 - 게임 쪽 연결은 `src/games/lib/gameEvents.ts`(`usePhaseEvents`, `afterBreak`)입니다. 사이트에서는 호스트가 없어서 아무 일도 하지 않습니다.

@@ -20,13 +20,13 @@ localizations:
 
 The snake moves on its own in a fixed direction. Use the arrow keys, WASD, or a swipe gesture to turn. You cannot stop the snake — only steer it. Touch a wall or cross your own body and the game ends immediately.
 
-Each glowing food dot you eat adds one point and makes the snake one cell longer. The longer it grows, the harder it becomes to maneuver without running out of room.
+Each glowing berry you eat adds one point and makes the snake one cell longer. The longer it grows, the harder it becomes to maneuver without running out of room.
 
 ## Score and speed
 
-Every food dot earned adds one point. As your score climbs, the snake moves faster — gradually at first, then noticeably. High scores require both quick reflexes and the ability to plan the next few moves while the snake is still in motion.
+Every berry adds one point. As your score climbs, the snake moves faster — gradually at first, then noticeably. High scores require both quick reflexes and the ability to plan the next few moves while the snake is still in motion.
 
-Your best score from the session is saved until you close or refresh the page.
+Your best score for each difficulty is saved in this browser, so it is still there next time.
 
 ## How to get a high score
 
@@ -38,7 +38,7 @@ When the snake starts hemming itself in, redirect toward open space immediately,
 
 ## Controls
 
-Arrow keys or WASD on a keyboard. Swipe on a touchscreen — any direction, no buttons needed. There is no pause.
+Arrow keys or WASD on a keyboard. Swipe on a touchscreen — any direction, no buttons needed. Quick turns are remembered in order, so a fast double turn is never lost. Press Space, P, or Esc (or the pause button) to pause; the game also pauses when you switch tabs.
 
 ## Frequently asked questions
 
@@ -49,7 +49,7 @@ Food spawns at a random empty cell on the grid. It cannot appear on your snake, 
 Speed is tied to score, not directly to length. Since eating food raises both at once, they feel the same, but it is your score that controls how fast the snake moves.
 
 **Is there a maximum score?**
-The grid is 20 × 20, so the snake can fill up to 400 cells. Starting from a length of 3, the theoretical maximum score is 397. Getting close requires near-perfect movement for an extended run.
+The board has about 380 cells, and its shape follows your screen: wider on a landscape screen, taller on a phone. Starting from a length of 3, the theoretical maximum is the number of cells minus 3, and filling the whole board ends the run as a win. Getting close requires near-perfect movement for an extended run.
 
 **Does it work on mobile?**
 Yes. Swipe anywhere on the game area to turn. The game is the same on touchscreen as on a keyboard.

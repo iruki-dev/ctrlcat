@@ -14,3 +14,7 @@ body {
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
 }
+
+.portal-stage {
+  background: var(--portal-stage, rgb(var(--game-bg)));
+}
