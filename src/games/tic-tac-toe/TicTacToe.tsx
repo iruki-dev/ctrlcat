@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { useSound } from "../../components/games/SoundContext";
@@ -446,6 +447,17 @@ export default function TicTacToe() {
   const [result, setResult] = useState<"player" | "ai" | "draw" | null>(null);
   const [aiThinking, setAiThinking] = useState(false);
   const { play } = useSound();
+  usePhaseEvents(
+    phase === "setup"
+      ? "idle"
+      : !gameOver
+        ? "playing"
+        : result === "player"
+          ? "won"
+          : result === "ai"
+            ? "lost"
+            : "over",
+  );
 
   const aiMark: Cell = playerMark === "X" ? "O" : "X";
 
@@ -643,7 +655,7 @@ export default function TicTacToe() {
 
       {gameOver && (
         <div className="flex gap-2">
-          <GameButton onClick={resetGame} size="lg" className="flex-1">
+          <GameButton onClick={() => afterBreak(resetGame)} size="lg" className="flex-1">
             {m.playAgain}
           </GameButton>
           <GameButton onClick={() => setPhase("setup")} size="lg" variant="secondary" className="flex-1">

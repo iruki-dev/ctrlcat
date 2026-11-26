@@ -129,6 +129,14 @@ export default function MyArcade() {
 }
 ```
 
+#### 포털 훅 (`src/games/lib/gameEvents.ts`)
+
+모든 게임은 포털 빌드(`portal/`)용 훅을 연결합니다. ctrlcat.dev에서는 호스트가 없어서 아무 일도 하지 않습니다.
+
+- `usePhaseEvents(phase, { playing, paused, won, lost, score })` — 라운드 시작·멈춤·종료 이벤트. 플레이 중 phase가 여러 개면 `playing`에 배열로, 일시 정지는 `paused`에 넣습니다. 메뉴 phase 이름이 `idle`이 아니면 `"idle"`로 바꿔 넘깁니다.
+- 두 번째 이후 라운드를 시작하는 핸들러(다시 하기, 다음 단어·레벨, 결과 화면의 Enter 키)는 `afterBreak(() => ...)`로 감쌉니다. 인트로의 첫 시작과 라운드 안의 조작·재시작은 감싸지 않습니다.
+- 확인: `node portal/build.mjs --portal debug <slug>`로 빌드하면 이벤트가 콘솔에 `[portal]`로 찍힙니다.
+
 UI 컴포넌트 (`src/components/games/ui/`): `GameButton`(`size` sm–xl) · `GameInput` · `ScoreDisplay` · `GameMessage`(`info` · `success` · `warning` · `error` · `hint`). 효과음은 `useSound()`(`src/components/games/SoundContext.tsx`), 음소거·전체 화면 버튼은 `GameShell`이 자동으로 붙입니다.
 
 ---
@@ -188,4 +196,5 @@ lang: ko
 - [ ] `src/components/GameIllustration.astro` 일러스트 블록
 - [ ] `src/content/docs/games/<slug>/ko.md`
 - [ ] `.claude/content.md` 업데이트
+- [ ] 포털 훅 연결 (`usePhaseEvents`, 다시 하기에 `afterBreak`)
 - [ ] `npm run build` 통과, `/games/<slug>/`와 `/ko/games/<slug>/` 둘 다 플레이해 보기

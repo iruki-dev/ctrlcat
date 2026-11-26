@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { GameInput } from "../../components/games/ui/Input";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
@@ -132,6 +133,7 @@ export default function MathBlitz() {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const feedbackId = useRef(0);
+  usePhaseEvents(phase, { score });
 
   const finish = useCallback((won: boolean, finalScore: number) => {
     setPhase(won ? "won" : "lost");
@@ -253,7 +255,7 @@ export default function MathBlitz() {
             ? m.won((timeMs / 1000).toFixed(1))
             : m.lost}
         </GameMessage>
-        <GameButton onClick={startGame} size="xl">
+        <GameButton onClick={() => afterBreak(startGame)} size="xl">
           {m.playAgain}
         </GameButton>
       </div>

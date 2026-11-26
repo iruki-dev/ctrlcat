@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLang, useMessages } from "../../i18n/react";
 import type { Locale } from "../../i18n";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -102,6 +103,7 @@ export default function Hangman() {
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState<number | null>(null);
   const [lastGain, setLastGain] = useState(0);
+  usePhaseEvents(phase, { won: ["solved", "won"], score });
 
   const puzzle = deck[round] ?? null;
 
@@ -170,8 +172,9 @@ export default function Hangman() {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
 
       if (event.key === "Enter") {
-        if (phase === "solved") nextRound();
-        else if (phase === "idle" || phase === "won" || phase === "lost") startRun();
+        if (phase === "solved") afterBreak(nextRound);
+        else if (phase === "idle") startRun();
+        else if (phase === "won" || phase === "lost") afterBreak(startRun);
         return;
       }
 
@@ -220,7 +223,7 @@ export default function Hangman() {
               ? m.lostWord(answer)
               : m.lost}
         </GameMessage>
-        <GameButton onClick={startRun} size="xl">
+        <GameButton onClick={() => afterBreak(startRun)} size="xl">
           {m.playAgain}
         </GameButton>
       </div>
@@ -266,7 +269,7 @@ export default function Hangman() {
           <GameMessage type="success">
             {m.solved(lastGain, deck.length - round - 1)}
           </GameMessage>
-          <GameButton onClick={nextRound} size="lg">
+          <GameButton onClick={() => afterBreak(nextRound)} size="lg">
             {m.nextWord}
           </GameButton>
         </div>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { useBestScore } from "../lib/useBestScore";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
@@ -81,6 +82,7 @@ export default function TypingSpeedTest() {
   const startedAt = useRef<number | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const resultRef = useRef({ wpm: 0, accuracy: 100, typedWords: 0 });
+  usePhaseEvents(phase, { score: resultRef.current.wpm });
 
   const correctChars = useMemo(() => {
     let count = 0;
@@ -215,7 +217,7 @@ export default function TypingSpeedTest() {
         {finalAccuracy < 80 && (
           <GameMessage type="warning">{m.lowAccuracy}</GameMessage>
         )}
-        <GameButton onClick={startGame} size="xl">
+        <GameButton onClick={() => afterBreak(startGame)} size="xl">
           {m.playAgain}
         </GameButton>
       </div>

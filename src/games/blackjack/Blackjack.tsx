@@ -4,6 +4,7 @@ import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 
 type Suit = "spades" | "hearts" | "diamonds" | "clubs";
 type Card = { id: string; suit: Suit; rank: number };
@@ -220,6 +221,7 @@ export default function Blackjack() {
 
   const chipsRef = useRef(START_CHIPS);
   const deckRef = useRef<Card[]>([]);
+  usePhaseEvents(phase, { playing: ["bet", "player", "dealer", "reveal", "result"], score: chips });
 
   const setChips = useCallback((next: number) => {
     chipsRef.current = next;
@@ -393,7 +395,8 @@ export default function Blackjack() {
       } else if (phase === "idle" || phase === "won" || phase === "lost") {
         if (key === "enter" || key === " ") {
           event.preventDefault();
-          startGame();
+          if (phase === "idle") startGame();
+          else afterBreak(startGame);
         }
       }
     };
@@ -445,7 +448,7 @@ export default function Blackjack() {
             ? m.won(TARGET_CHIPS, hands)
             : m.lost}
         </GameMessage>
-        <GameButton onClick={startGame} size="xl">
+        <GameButton onClick={() => afterBreak(startGame)} size="xl">
           {m.playAgain}
         </GameButton>
       </div>

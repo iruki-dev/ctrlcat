@@ -1,8 +1,10 @@
 import type { PortalProvider } from "./types";
 import { none } from "./none";
+import { debug } from "./debug";
 
 const providers: Record<string, () => Promise<PortalProvider>> = {
   none: async () => none,
+  debug: async () => debug,
 };
 
 export async function getProvider(name: string): Promise<PortalProvider> {

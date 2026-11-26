@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { useBestScore } from "../lib/useBestScore";
 import { GameCanvas } from "../lib/GameCanvas";
 import { useGameLoop } from "../lib/useGameLoop";
@@ -275,6 +276,7 @@ export default function BlockDrop() {
   const [scale, setScale] = useState(1);
 
   const { held, consume } = useKeys();
+  usePhaseEvents(phase, { paused: ["paused"], lost: ["over"], score });
 
   useEffect(() => {
     const fit = () => setScale(Math.min(1, (window.innerWidth - 40) / CANVAS_W));
@@ -712,7 +714,7 @@ export default function BlockDrop() {
             ? m.won
             : m.lost}
         </GameMessage>
-        <GameButton onClick={startGame} size="xl">
+        <GameButton onClick={() => afterBreak(startGame)} size="xl">
           {m.playAgain}
         </GameButton>
       </div>

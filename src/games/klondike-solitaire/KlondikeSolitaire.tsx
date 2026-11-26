@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -419,6 +420,7 @@ export default function KlondikeSolitaire() {
   const selRef = useRef(sel);
   gameRef.current = game;
   selRef.current = sel;
+  usePhaseEvents(game.phase, { score: game.score });
 
   const commit = useCallback((next: Game, message: Flash) => {
     gameRef.current = next;
@@ -660,7 +662,8 @@ export default function KlondikeSolitaire() {
       if (gameRef.current.phase === "idle" || gameRef.current.phase === "won" || gameRef.current.phase === "lost") {
         if (key === "Enter" || key === " " || key === "n") {
           event.preventDefault();
-          startGame();
+          if (gameRef.current.phase === "idle") startGame();
+          else afterBreak(startGame);
         }
         return;
       }
@@ -735,7 +738,7 @@ export default function KlondikeSolitaire() {
             : m.lost}
         </GameMessage>
         {best !== null && <p className="text-xs text-game-muted">{m.bestWin(best)}</p>}
-        <GameButton onClick={startGame} size="xl">
+        <GameButton onClick={() => afterBreak(startGame)} size="xl">
           {m.playAgain}
         </GameButton>
       </div>

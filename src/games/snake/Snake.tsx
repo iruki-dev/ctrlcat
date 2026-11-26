@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { GameCanvas } from "../lib/GameCanvas";
 import { useGameLoop } from "../lib/useGameLoop";
 import { useKeys, useSwipe } from "../lib/useInput";
@@ -181,6 +182,7 @@ export default function Snake() {
   const [uiNewBest, setUiNewBest] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty>("normal");
   const [displaySize, setDisplaySize] = useState(W);
+  usePhaseEvents(uiStatus, { lost: ["dead"], score: uiScore });
 
   useEffect(() => {
     const el = containerRef.current;
@@ -484,7 +486,7 @@ export default function Snake() {
             <div className="flex flex-col gap-2 w-full max-w-[200px]">
               <button
                 type="button"
-                onClick={start}
+                onClick={() => afterBreak(start)}
                 className="bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-white font-bold px-8 py-2.5 rounded-full text-sm transition-colors"
               >
                 {m.playAgain}

@@ -5,6 +5,7 @@ import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { useSound } from "../../components/games/SoundContext";
 import { useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 
 type Phase = "setup" | "playing" | "won" | "lost";
 type Difficulty = "easy" | "normal" | "hard" | "expert";
@@ -316,6 +317,7 @@ export default function NumberGuesser() {
   const [newBest, setNewBest] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { play } = useSound();
+  usePhaseEvents(phase === "setup" ? "idle" : phase);
 
   const cfg = DIFF_CONFIG[difficulty];
   const tries = hints.length;
@@ -416,7 +418,7 @@ export default function NumberGuesser() {
             <div className="text-sm mt-0.5 text-game-muted">{m.wonDetail(secret, tries)}</div>
           </div>
           <div className="flex gap-2">
-            <GameButton onClick={() => handleStart(difficulty)} size="lg" className="flex-1">
+            <GameButton onClick={() => afterBreak(() => handleStart(difficulty))} size="lg" className="flex-1">
               {m.playAgain}
             </GameButton>
             <GameButton onClick={() => setPhase("setup")} size="lg" variant="secondary" className="flex-1">
@@ -434,7 +436,7 @@ export default function NumberGuesser() {
             <div className="text-sm mt-0.5 text-game-muted">{m.lostDetail(secret)}</div>
           </div>
           <div className="flex gap-2">
-            <GameButton onClick={() => handleStart(difficulty)} size="lg" className="flex-1">
+            <GameButton onClick={() => afterBreak(() => handleStart(difficulty))} size="lg" className="flex-1">
               {m.tryAgain}
             </GameButton>
             <GameButton onClick={() => setPhase("setup")} size="lg" variant="secondary" className="flex-1">
