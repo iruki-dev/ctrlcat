@@ -6,6 +6,7 @@ import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
 import { useSwipe } from "../lib/useInput";
+import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 
 const SIZE = 4;
 const TARGET = 2048;
@@ -182,6 +183,7 @@ export default function Game2048() {
   const { best, record } = useBestScore(BEST_KEY);
   const [keepPlaying, setKeepPlaying] = useState(false);
   const nextId = useRef(1);
+  usePhaseEvents(phase, { score });
 
   const spawn = useCallback((current: Tile[], count: number) => {
     const out = [...current];
@@ -334,7 +336,7 @@ export default function Game2048() {
                   {m.keepPlaying}
                 </GameButton>
               )}
-              <GameButton onClick={startGame}>{m.playAgain}</GameButton>
+              <GameButton onClick={() => afterBreak(startGame)}>{m.playAgain}</GameButton>
             </div>
           </div>
         )}

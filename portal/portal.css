@@ -1,0 +1,16 @@
+/* Portal builds load no web fonts: everything ships inside the bundle. */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: rgb(var(--game-bg));
+  color: rgb(var(--game-text));
+  font-family: Roboto, Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
