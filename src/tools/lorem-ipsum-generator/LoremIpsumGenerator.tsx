@@ -3,8 +3,39 @@ import { ToolButton } from "../../components/tools/ui/Button";
 import { ToolInput } from "../../components/tools/ui/Input";
 import { StatCard } from "../../components/tools/ui/StatCard";
 import { CopyButton } from "../../components/tools/ui/CopyButton";
+import { useMessages } from "../../i18n/react";
 
 type Unit = "paragraphs" | "sentences" | "words";
+const UNITS: Unit[] = ["paragraphs", "sentences", "words"];
+
+const messages = {
+  en: {
+    unit: "Unit",
+    units: { paragraphs: "Paragraphs", sentences: "Sentences", words: "Words" } as Record<Unit, string>,
+    howMany: "How many",
+    invalid: (max: number) => `Enter a whole number between 1 and ${max}.`,
+    opening: "Start with the classic opening line",
+    generate: "Generate",
+    clear: "Clear",
+    words: "Words",
+    characters: "Characters",
+    paragraphs: "Paragraphs",
+    output: "Output",
+  },
+  ko: {
+    unit: "단위",
+    units: { paragraphs: "문단", sentences: "문장", words: "단어" } as Record<Unit, string>,
+    howMany: "개수",
+    invalid: (max: number) => `1에서 ${max} 사이의 정수를 입력하세요.`,
+    opening: "전통적인 첫 문장으로 시작",
+    generate: "생성",
+    clear: "지우기",
+    words: "단어",
+    characters: "글자",
+    paragraphs: "문단",
+    output: "결과",
+  },
+};
 
 const WORDS = [
   "lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit",
@@ -33,122 +64,75 @@ const WORDS = [
 ];
 
 const OPENING = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
+const OPENING_WORDS = ["lorem", "ipsum", "dolor", "sit", "amet"];
 const MAX_COUNT = 200;
 
-function pick(): string {
-  return WORDS[Math.floor(Math.random() * WORDS.length)];
-}
-
-function makeWords(n: number): string[] {
-  const out: string[] = [];
-  for (let i = 0; i < n; i += 1) out.push(pick());
-  return out;
-}
-
-function capitalize(word: string): string {
-  return word.charAt(0).toUpperCase() + word.slice(1);
-}
+const randomInt = (min: number, max: number) => min + Math.floor(Math.random() * (max - min + 1));
+const repeat = <T,>(n: number, fn: () => T): T[] => Array.from({ length: n }, fn);
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const makeWords = (n: number) => repeat(n, () => WORDS[randomInt(0, WORDS.length - 1)]);
 
 function makeSentence(): string {
-  const length = 8 + Math.floor(Math.random() * 10);
-  const words = makeWords(length);
-  if (words.length > 6 && Math.random() < 0.5) {
-    const at = 3 + Math.floor(Math.random() * (words.length - 5));
-    words[at] = `${words[at]},`;
+  const words = makeWords(randomInt(8, 17));
+  if (Math.random() < 0.5) {
+    const at = randomInt(3, words.length - 3);
+    words[at] += ",";
   }
   return `${capitalize(words.join(" "))}.`;
 }
 
-function makeParagraph(): string {
-  const count = 3 + Math.floor(Math.random() * 4);
-  const sentences: string[] = [];
-  for (let i = 0; i < count; i += 1) sentences.push(makeSentence());
-  return sentences.join(" ");
-}
+const makeParagraph = () => repeat(randomInt(3, 6), makeSentence).join(" ");
 
 function generate(unit: Unit, count: number, opening: boolean): string {
   if (unit === "words") {
     const words = makeWords(count);
-    if (opening) {
-      const lead = ["lorem", "ipsum", "dolor", "sit", "amet"];
-      for (let i = 0; i < Math.min(lead.length, words.length); i += 1) {
-        words[i] = lead[i];
-      }
-    }
+    if (opening) OPENING_WORDS.slice(0, count).forEach((w, i) => (words[i] = w));
     return `${capitalize(words.join(" "))}.`;
   }
-
   if (unit === "sentences") {
-    const sentences: string[] = [];
-    for (let i = 0; i < count; i += 1) sentences.push(makeSentence());
-    if (opening && sentences.length > 0) sentences[0] = OPENING;
+    const sentences = repeat(count, makeSentence);
+    if (opening) sentences[0] = OPENING;
     return sentences.join(" ");
   }
-
-  const paragraphs: string[] = [];
-  for (let i = 0; i < count; i += 1) paragraphs.push(makeParagraph());
-  if (opening && paragraphs.length > 0) {
-    paragraphs[0] = `${OPENING} ${paragraphs[0]}`;
-  }
+  const paragraphs = repeat(count, makeParagraph);
+  if (opening) paragraphs[0] = `${OPENING} ${paragraphs[0]}`;
   return paragraphs.join("\n\n");
 }
 
-const UNITS: { id: Unit; label: string }[] = [
-  { id: "paragraphs", label: "Paragraphs" },
-  { id: "sentences", label: "Sentences" },
-  { id: "words", label: "Words" },
-];
-
 export default function LoremIpsumGenerator() {
+  const m = useMessages(messages);
   const [unit, setUnit] = useState<Unit>("paragraphs");
   const [count, setCount] = useState("3");
   const [opening, setOpening] = useState(true);
   const [output, setOutput] = useState("");
 
   const parsed = Number.parseInt(count, 10);
-  const valid = Number.isFinite(parsed) && parsed >= 1 && parsed <= MAX_COUNT;
-
-  const run = () => {
-    if (!valid) return;
-    setOutput(generate(unit, parsed, opening));
-  };
-
+  const valid = parsed >= 1 && parsed <= MAX_COUNT;
   const wordCount = output === "" ? 0 : output.trim().split(/\s+/).length;
   const paragraphCount = output === "" ? 0 : output.split("\n\n").length;
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div className="flex flex-col gap-2">
-        <span className="text-xs font-semibold text-tool-text-dim uppercase tracking-wider">
-          Unit
-        </span>
+        <span className="text-xs font-semibold text-tool-text-dim uppercase tracking-wider">{m.unit}</span>
         <div className="flex flex-wrap gap-2">
-          {UNITS.map((item) => (
-            <ToolButton
-              key={item.id}
-              size="sm"
-              variant={unit === item.id ? "primary" : "secondary"}
-              onClick={() => setUnit(item.id)}
-            >
-              {item.label}
+          {UNITS.map((id) => (
+            <ToolButton key={id} size="sm" variant={unit === id ? "primary" : "secondary"} onClick={() => setUnit(id)}>
+              {m.units[id]}
             </ToolButton>
           ))}
         </div>
       </div>
 
       <ToolInput
-        label="How many"
+        label={m.howMany}
         type="number"
         min={1}
         max={MAX_COUNT}
         value={count}
         onChange={(e) => setCount(e.target.value)}
+        hint={valid ? undefined : m.invalid(MAX_COUNT)}
       />
-      {!valid && (
-        <span className="-mt-4 text-xs text-tool-muted">
-          Enter a whole number between 1 and {MAX_COUNT}.
-        </span>
-      )}
 
       <label className="flex items-center gap-2 text-sm text-tool-text">
         <input
@@ -157,31 +141,29 @@ export default function LoremIpsumGenerator() {
           onChange={(e) => setOpening(e.target.checked)}
           className="h-4 w-4 accent-tool-accent"
         />
-        Start with the classic opening line
+        {m.opening}
       </label>
 
       <div className="flex gap-2">
-        <ToolButton onClick={run} disabled={!valid}>
-          Generate
+        <ToolButton onClick={() => setOutput(generate(unit, parsed, opening))} disabled={!valid}>
+          {m.generate}
         </ToolButton>
-        <ToolButton variant="ghost" onClick={() => setOutput("")}>
-          Clear
+        <ToolButton variant="ghost" onClick={() => setOutput("")} disabled={output === ""}>
+          {m.clear}
         </ToolButton>
       </div>
 
       {output && (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <StatCard label="Words" value={wordCount} />
-            <StatCard label="Characters" value={output.length} />
-            <StatCard label="Paragraphs" value={paragraphCount} />
+            <StatCard label={m.words} value={wordCount} />
+            <StatCard label={m.characters} value={output.length} />
+            <StatCard label={m.paragraphs} value={paragraphCount} />
           </div>
 
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-tool-muted uppercase tracking-wider">
-                Output
-              </span>
+              <span className="text-xs font-medium text-tool-muted uppercase tracking-wider">{m.output}</span>
               <CopyButton text={output} />
             </div>
             <div className="rounded-lg border border-tool-border bg-tool-surface p-4 text-sm text-tool-text whitespace-pre-wrap">

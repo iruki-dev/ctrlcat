@@ -3,8 +3,8 @@ import { ToolButton } from "../../components/tools/ui/Button";
 import { ToolTextarea } from "../../components/tools/ui/Textarea";
 import { StatCard } from "../../components/tools/ui/StatCard";
 import { CopyButton } from "../../components/tools/ui/CopyButton";
+import { useMessages } from "../../i18n/react";
 
-/* ── class tokens used by the generated preview markup ───────────── */
 const CLS = {
   h1: "text-2xl font-semibold text-tool-text mt-6 mb-3 first:mt-0",
   h2: "text-xl font-semibold text-tool-text mt-6 mb-2 first:mt-0",
@@ -289,7 +289,7 @@ function markdownToHtml(source: string): string {
   return renderBlocks(escapeHtml(source.replace(/\r\n?/g, "\n")).split("\n"));
 }
 
-const SAMPLE = `# Release notes
+const SAMPLE_EN = `# Release notes
 
 A short intro paragraph with **bold text**, *italic text*, and \`inline code\`.
 
@@ -324,7 +324,76 @@ See the [documentation](https://example.com) for details.
 Questions? Write to support@example.com.
 `;
 
+const SAMPLE_KO = `# 릴리스 노트
+
+**굵은 글씨**, *기울인 글씨*, \`인라인 코드\`가 들어간 짧은 소개 문단입니다.
+
+## 주요 변경 사항
+
+- 더 빨라진 시작 속도
+- 새 내보내기 옵션
+  - CSV
+  - JSON
+- 저장 시 멈추던 문제 수정
+
+1. 압축 파일 내려받기
+2. 압축 풀기
+3. 설치 프로그램 실행
+
+> 이번 달 업그레이드는 선택 사항입니다.
+
+| 플랫폼 | 상태 | 크기 |
+| --- | :---: | ---: |
+| macOS | 준비됨 | 42 MB |
+| Windows | 준비됨 | 48 MB |
+
+\`\`\`
+npm install
+npm run build
+\`\`\`
+
+자세한 내용은 [문서](https://example.com)를 참고하세요.
+
+---
+
+문의는 support@example.com 으로 보내 주세요.
+`;
+
+const messages = {
+  en: {
+    sample: SAMPLE_EN,
+    loadSample: "Load sample",
+    clear: "Clear",
+    label: "Markdown",
+    hint: "Headings, lists, tables, links, quotes and fenced code blocks are supported.",
+    placeholder: "# Title\n\nWrite Markdown here…",
+    preview: "Preview",
+    empty: "The rendered document appears here as you type.",
+    words: "Words",
+    characters: "Characters",
+    lines: "Lines",
+    readingTime: "Reading time",
+    minutes: "minutes",
+  },
+  ko: {
+    sample: SAMPLE_KO,
+    loadSample: "예시 불러오기",
+    clear: "지우기",
+    label: "마크다운",
+    hint: "제목, 목록, 표, 링크, 인용, 코드 블록을 지원합니다.",
+    placeholder: "# 제목\n\n여기에 마크다운을 작성하세요…",
+    preview: "미리보기",
+    empty: "입력하는 대로 이곳에 렌더링된 문서가 표시됩니다.",
+    words: "단어",
+    characters: "글자",
+    lines: "줄",
+    readingTime: "읽는 시간",
+    minutes: "분",
+  },
+};
+
 export default function MarkdownPreviewer() {
+  const m = useMessages(messages);
   const [source, setSource] = useState("");
   const [view, setView] = useState<"preview" | "html">("preview");
 
@@ -343,23 +412,22 @@ export default function MarkdownPreviewer() {
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div className="flex flex-wrap gap-2">
-        <ToolButton variant="secondary" onClick={() => setSource(SAMPLE)}>
-          Load sample
+        <ToolButton variant="secondary" onClick={() => setSource(m.sample)}>
+          {m.loadSample}
         </ToolButton>
         <ToolButton variant="ghost" onClick={() => setSource("")} disabled={source === ""}>
-          Clear
+          {m.clear}
         </ToolButton>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ToolTextarea
-          label="Markdown"
-          hint="Headings, lists, tables, links, quotes and fenced code blocks are supported."
-          placeholder="# Title&#10;&#10;Write Markdown here…"
+          label={m.label}
+          hint={m.hint}
+          placeholder={m.placeholder}
           value={source}
           onChange={(e) => setSource(e.target.value)}
           rows={20}
-          className="font-mono text-sm"
           spellCheck={false}
         />
 
@@ -371,7 +439,7 @@ export default function MarkdownPreviewer() {
                 variant={view === "preview" ? "secondary" : "ghost"}
                 onClick={() => setView("preview")}
               >
-                Preview
+                {m.preview}
               </ToolButton>
               <ToolButton
                 size="sm"
@@ -386,9 +454,7 @@ export default function MarkdownPreviewer() {
 
           <div className="rounded-lg border border-tool-border bg-tool-surface p-4 min-h-[20rem] max-h-[36rem] overflow-auto">
             {html === "" ? (
-              <p className="text-sm text-tool-muted">
-                The rendered document appears here as you type.
-              </p>
+              <p className="text-sm text-tool-muted">{m.empty}</p>
             ) : view === "preview" ? (
               <div dangerouslySetInnerHTML={{ __html: html }} />
             ) : (
@@ -401,10 +467,10 @@ export default function MarkdownPreviewer() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Words" value={stats.words} accent />
-        <StatCard label="Characters" value={stats.characters} />
-        <StatCard label="Lines" value={stats.lines} />
-        <StatCard label="Reading time" value={stats.minutes} sub="minutes" />
+        <StatCard label={m.words} value={stats.words} accent />
+        <StatCard label={m.characters} value={stats.characters} />
+        <StatCard label={m.lines} value={stats.lines} />
+        <StatCard label={m.readingTime} value={stats.minutes} sub={m.minutes} />
       </div>
     </div>
   );

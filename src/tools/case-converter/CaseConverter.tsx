@@ -3,8 +3,68 @@ import { ToolButton } from "../../components/tools/ui/Button";
 import { ToolTextarea } from "../../components/tools/ui/Textarea";
 import { StatCard } from "../../components/tools/ui/StatCard";
 import { CopyButton } from "../../components/tools/ui/CopyButton";
+import { useMessages } from "../../i18n/react";
 
-/** Split an arbitrary string into word tokens, honouring camel/Pascal boundaries. */
+type CaseKey = "upper" | "lower" | "title" | "sentence" | "camel" | "pascal" | "snake" | "kebab" | "constant";
+
+const LABELS: Record<CaseKey, string> = {
+  upper: "UPPER CASE",
+  lower: "lower case",
+  title: "Title Case",
+  sentence: "Sentence case",
+  camel: "camelCase",
+  pascal: "PascalCase",
+  snake: "snake_case",
+  kebab: "kebab-case",
+  constant: "CONSTANT_CASE",
+};
+
+const messages = {
+  en: {
+    input: "Input",
+    placeholder: "Paste or type any text…",
+    inputHint: "Results update as you type. Everything stays in your browser.",
+    clear: "Clear",
+    characters: "Characters",
+    words: "Words",
+    lines: "Lines",
+    waiting: "Waiting for input",
+    hints: {
+      upper: "Every letter capitalised",
+      lower: "Every letter in lower case",
+      title: "First letter of each word",
+      sentence: "First letter of each sentence",
+      camel: "Joined, first word in lower case",
+      pascal: "Joined, every word capitalised",
+      snake: "Lower case, underscores",
+      kebab: "Lower case, hyphens",
+      constant: "Upper case, underscores",
+    } as Record<CaseKey, string>,
+  },
+  ko: {
+    input: "입력",
+    placeholder: "텍스트를 붙여넣거나 입력하세요…",
+    inputHint: "입력하는 대로 결과가 바뀝니다. 모든 처리는 브라우저 안에서만 이루어집니다.",
+    clear: "지우기",
+    characters: "글자",
+    words: "단어",
+    lines: "줄",
+    waiting: "입력을 기다리는 중",
+    hints: {
+      upper: "모든 글자를 대문자로",
+      lower: "모든 글자를 소문자로",
+      title: "각 단어의 첫 글자를 대문자로",
+      sentence: "각 문장의 첫 글자를 대문자로",
+      camel: "붙여 쓰고 첫 단어만 소문자로",
+      pascal: "붙여 쓰고 모든 단어를 대문자로 시작",
+      snake: "소문자, 밑줄로 연결",
+      kebab: "소문자, 하이픈으로 연결",
+      constant: "대문자, 밑줄로 연결",
+    } as Record<CaseKey, string>,
+  },
+};
+
+/** Split into word tokens, honouring camel/Pascal boundaries. */
 function splitWords(value: string): string[] {
   return value
     .replace(/([\p{Ll}\p{N}])(\p{Lu})/gu, "$1 $2")
@@ -13,117 +73,75 @@ function splitWords(value: string): string[] {
     .filter((word) => word.length > 0);
 }
 
-const capitalize = (word: string): string =>
-  word.charAt(0).toUpperCase() + word.slice(1);
+const capitalize = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
 
 function toTitleCase(value: string): string {
-  return value.replace(
-    /\p{L}[\p{L}\p{N}'’]*/gu,
-    (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-  );
+  return value.replace(/\p{L}[\p{L}\p{N}'’]*/gu, (word) => capitalize(word.toLowerCase()));
 }
 
 function toSentenceCase(value: string): string {
   return value
     .toLowerCase()
-    .replace(
-      /(^|[.!?]["')\]]?\s+|\n\s*)(\p{L})/gu,
-      (_match, lead: string, letter: string) => lead + letter.toUpperCase(),
-    );
+    .replace(/(^|[.!?]["')\]]?\s+|\n\s*)(\p{L})/gu, (_m, lead: string, letter: string) => lead + letter.toUpperCase());
 }
 
-interface CaseResult {
-  key: string;
-  label: string;
-  hint: string;
-  value: string;
-}
-
-function buildResults(value: string): CaseResult[] {
-  const words = splitWords(value);
-  const lower = words.map((word) => word.toLowerCase());
-
-  return [
-    { key: "upper", label: "UPPER CASE", hint: "Every letter capitalised", value: value.toUpperCase() },
-    { key: "lower", label: "lower case", hint: "Every letter in lower case", value: value.toLowerCase() },
-    { key: "title", label: "Title Case", hint: "First letter of each word", value: toTitleCase(value) },
-    { key: "sentence", label: "Sentence case", hint: "First letter of each sentence", value: toSentenceCase(value) },
-    {
-      key: "camel",
-      label: "camelCase",
-      hint: "Joined, first word in lower case",
-      value: lower.map((word, index) => (index === 0 ? word : capitalize(word))).join(""),
-    },
-    {
-      key: "pascal",
-      label: "PascalCase",
-      hint: "Joined, every word capitalised",
-      value: lower.map(capitalize).join(""),
-    },
-    { key: "snake", label: "snake_case", hint: "Lower case, underscores", value: lower.join("_") },
-    { key: "kebab", label: "kebab-case", hint: "Lower case, hyphens", value: lower.join("-") },
-    {
-      key: "constant",
-      label: "CONSTANT_CASE",
-      hint: "Upper case, underscores",
-      value: lower.map((word) => word.toUpperCase()).join("_"),
-    },
-  ];
+function convert(value: string): Record<CaseKey, string> {
+  const lower = splitWords(value).map((word) => word.toLowerCase());
+  return {
+    upper: value.toUpperCase(),
+    lower: value.toLowerCase(),
+    title: toTitleCase(value),
+    sentence: toSentenceCase(value),
+    camel: lower.map((word, i) => (i === 0 ? word : capitalize(word))).join(""),
+    pascal: lower.map(capitalize).join(""),
+    snake: lower.join("_"),
+    kebab: lower.join("-"),
+    constant: lower.join("_").toUpperCase(),
+  };
 }
 
 export default function CaseConverter() {
+  const m = useMessages(messages);
   const [input, setInput] = useState("");
-
-  const results = useMemo(() => buildResults(input), [input]);
-
-  const stats = useMemo(() => {
-    const characters = input.length;
-    const wordCount = splitWords(input).length;
-    const lines = input === "" ? 0 : input.split("\n").length;
-    return { characters, wordCount, lines };
-  }, [input]);
+  const results = useMemo(() => convert(input), [input]);
+  const wordCount = useMemo(() => splitWords(input).length, [input]);
+  const lines = input === "" ? 0 : input.split("\n").length;
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       <ToolTextarea
-        label="Input"
-        placeholder="Paste or type any text…"
+        label={m.input}
+        placeholder={m.placeholder}
         value={input}
         onChange={(event) => setInput(event.target.value)}
         rows={6}
-        hint="Results update as you type. Everything stays in your browser."
+        hint={m.inputHint}
       />
 
       <div className="flex gap-2">
         <ToolButton variant="ghost" onClick={() => setInput("")} disabled={input === ""}>
-          Clear
+          {m.clear}
         </ToolButton>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <StatCard label="Characters" value={stats.characters} />
-        <StatCard label="Words" value={stats.wordCount} />
-        <StatCard label="Lines" value={stats.lines} />
+        <StatCard label={m.characters} value={input.length} />
+        <StatCard label={m.words} value={wordCount} />
+        <StatCard label={m.lines} value={lines} />
       </div>
 
       <div className="flex flex-col gap-3">
-        {results.map((result) => (
-          <div key={result.key} className="flex flex-col gap-2">
+        {(Object.keys(LABELS) as CaseKey[]).map((key) => (
+          <div key={key} className="flex flex-col gap-2">
             <div className="flex items-center justify-between gap-3">
               <div className="flex flex-col">
-                <span className="text-xs font-medium text-tool-muted uppercase tracking-wider">
-                  {result.label}
-                </span>
-                <span className="text-xs text-tool-muted">{result.hint}</span>
+                <span className="text-xs font-medium text-tool-muted uppercase tracking-wider">{LABELS[key]}</span>
+                <span className="text-xs text-tool-muted">{m.hints[key]}</span>
               </div>
-              <CopyButton text={result.value} />
+              <CopyButton text={results[key]} />
             </div>
             <div className="rounded-lg border border-tool-border bg-tool-surface p-4 font-mono text-sm text-tool-text whitespace-pre-wrap break-all min-h-[3.25rem]">
-              {result.value === "" ? (
-                <span className="text-tool-muted">Waiting for input</span>
-              ) : (
-                result.value
-              )}
+              {results[key] === "" ? <span className="text-tool-muted">{m.waiting}</span> : results[key]}
             </div>
           </div>
         ))}
