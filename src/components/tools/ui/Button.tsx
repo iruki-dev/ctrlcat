@@ -8,16 +8,15 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
 }
 
-/* Carbon Design System button tokens */
 const variantClass: Record<Variant, string> = {
   primary:
-    "bg-tool-accent text-white font-semibold hover:bg-tool-accent-dim active:bg-[#002d9c] focus:ring-2 focus:ring-tool-accent focus:ring-offset-2",
+    "bg-tool-accent text-tool-on-accent font-semibold hover:bg-tool-accent-dim active:bg-tool-accent-dim focus:ring-2 focus:ring-tool-accent focus:ring-offset-2",
   secondary:
     "border border-tool-accent text-tool-accent bg-transparent hover:bg-tool-accent-light active:bg-tool-accent/20",
   ghost:
     "text-tool-accent bg-transparent hover:bg-tool-accent-light active:bg-tool-accent/20",
   danger:
-    "bg-[#da1e28] text-white hover:bg-[#b81921] active:bg-[#750e13]",
+    "bg-red-600 text-white hover:bg-red-700 active:bg-red-800",
 };
 
 const sizeClass: Record<Size, string> = {
@@ -35,6 +34,7 @@ export function ToolButton({
 }: Props) {
   return (
     <button
+      type="button"
       {...props}
       className={`inline-flex items-center justify-center gap-2 font-medium transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none ${variantClass[variant]} ${sizeClass[size]} ${className}`}
     >

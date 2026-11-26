@@ -1,4 +1,6 @@
 import { lazy, Suspense } from "react";
+import { LangProvider } from "../../i18n/react";
+import type { Locale } from "../../i18n";
 
 // Vite resolves this glob statically at build time.
 // Each entry is a lazy import fn -> automatic code splitting per tool.
@@ -16,9 +18,10 @@ for (const [path, importFn] of Object.entries(toolModules)) {
 
 interface Props {
   component: string;
+  lang: Locale;
 }
 
-export default function ToolRenderer({ component }: Props) {
+export default function ToolRenderer({ component, lang }: Props) {
   const Tool = toolLazy[component];
 
   if (!Tool) {
@@ -34,9 +37,11 @@ export default function ToolRenderer({ component }: Props) {
   }
 
   return (
-    <Suspense fallback={<ToolSkeleton />}>
-      <Tool />
-    </Suspense>
+    <LangProvider lang={lang}>
+      <Suspense fallback={<ToolSkeleton />}>
+        <Tool />
+      </Suspense>
+    </LangProvider>
   );
 }
 

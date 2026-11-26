@@ -315,7 +315,7 @@ export default function ImageCompressor() {
             <a
               href={result.url}
               download={result.name}
-              className="inline-flex h-10 items-center justify-center gap-2 self-start bg-tool-accent px-4 text-sm font-semibold text-white transition-colors hover:bg-tool-accent-dim"
+              className="inline-flex h-10 items-center justify-center gap-2 self-start bg-tool-accent px-4 text-sm font-semibold text-tool-on-accent transition-colors hover:bg-tool-accent-dim"
             >
               Download {result.name}
             </a>

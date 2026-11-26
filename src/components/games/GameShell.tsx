@@ -1,7 +1,14 @@
 import { useRef, useState, useEffect, type ReactNode } from "react";
 import { SoundProvider, useSound } from "./SoundContext";
+import { useMessages } from "../../i18n/react";
+
+const messages = {
+  en: { mute: "Mute", unmute: "Unmute", enterFullscreen: "Enter fullscreen", exitFullscreen: "Exit fullscreen" },
+  ko: { mute: "음소거", unmute: "음소거 해제", enterFullscreen: "전체 화면", exitFullscreen: "전체 화면 종료" },
+};
 
 function ShellControls({ gameRef }: { gameRef: React.RefObject<HTMLDivElement> }) {
+  const m = useMessages(messages);
   const { muted, toggleMute } = useSound();
   const [fullscreen, setFullscreen] = useState(false);
 
@@ -22,9 +29,10 @@ function ShellControls({ gameRef }: { gameRef: React.RefObject<HTMLDivElement> }
   return (
     <div className="flex items-center gap-1">
       <button
+        type="button"
         onClick={toggleMute}
-        aria-label={muted ? "Unmute" : "Mute"}
-        title={muted ? "Unmute" : "Mute"}
+        aria-label={muted ? m.unmute : m.mute}
+        title={muted ? m.unmute : m.mute}
         className="w-8 h-8 flex items-center justify-center rounded-full text-game-muted hover:bg-game-surface-2 hover:text-game-text transition-colors"
       >
         {muted ? (
@@ -42,9 +50,10 @@ function ShellControls({ gameRef }: { gameRef: React.RefObject<HTMLDivElement> }
         )}
       </button>
       <button
+        type="button"
         onClick={toggleFs}
-        aria-label={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-        title={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+        aria-label={fullscreen ? m.exitFullscreen : m.enterFullscreen}
+        title={fullscreen ? m.exitFullscreen : m.enterFullscreen}
         className="w-8 h-8 flex items-center justify-center rounded-full text-game-muted hover:bg-game-surface-2 hover:text-game-text transition-colors"
       >
         {fullscreen ? (
@@ -72,16 +81,11 @@ export default function GameShell({ children }: { children: ReactNode }) {
 
   return (
     <SoundProvider>
-      {/*
-        gameRef is the fullscreen root. h-full so it fills the game-box in [slug].astro.
-        When fullscreen is entered, the browser sets this element to 100vw × 100vh.
-      */}
+      {/* Fullscreen root; fills the fixed-height game box from GameDetailView. */}
       <div ref={gameRef} className="h-full flex flex-col overflow-hidden rounded-xl border border-game-border bg-game-bg">
-        {/* Game content area — fills available height, scrollable for form-based games */}
         <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           {children}
         </div>
-        {/* Controls bar — fixed height, always outside the game */}
         <div className="shrink-0 h-10 flex items-center justify-center border-t border-game-border-dim bg-game-surface/60 px-4">
           <ShellControls gameRef={gameRef} />
         </div>

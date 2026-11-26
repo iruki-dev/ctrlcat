@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import type { Locale } from "../../i18n";
-import { t, localePath, switchLocalePath } from "../../i18n";
+import { t, localePath, switchLocalePath, localize, locales, localeLabels } from "../../i18n";
 import Icon from "../Icon.astro";
 
 interface Props {
@@ -21,9 +21,6 @@ const grouped = categoryOrder.reduce<Record<string, CollectionEntry<"games">[]>>
   return acc;
 }, {});
 
-function getTitle(game: CollectionEntry<"games">) {
-  return (game.data.localizations?.[lang]?.title) ?? game.data.title;
-}
 ---
 
 <!-- Material Design 3: Navigation Drawer -->
@@ -67,7 +64,7 @@ function getTitle(game: CollectionEntry<"games">) {
   </div>
 
   <!-- Navigation -->
-  <nav class="flex-1 overflow-y-auto py-1 scrollbar-hide px-3" aria-label="Games navigation">
+  <nav class="flex-1 overflow-y-auto py-1 scrollbar-hide px-3" aria-label={tr.nav.gamesNav}>
 
     <!-- All Games — MD3 active indicator pill -->
     <a
@@ -108,7 +105,7 @@ function getTitle(game: CollectionEntry<"games">) {
             <a
               href={localePath(`/games/${game.slug}/`, lang)}
               data-game-item
-              data-title={getTitle(game).toLowerCase()}
+              data-title={localize(game, lang).title.toLowerCase()}
               data-tags={game.data.tags.join(" ").toLowerCase()}
               class:list={[
                 "flex items-center gap-3 px-4 py-2.5 text-sm rounded-[28px] transition-colors mb-0.5",
@@ -120,7 +117,7 @@ function getTitle(game: CollectionEntry<"games">) {
               <span class:list={["shrink-0", game.slug === currentSlug ? "text-game-accent" : "text-game-muted"]}>
                 <Icon name={game.data.icon ?? ""} size={16} />
               </span>
-              <span class="truncate">{getTitle(game)}</span>
+              <span class="truncate">{localize(game, lang).title}</span>
             </a>
           ))}
         </div>
@@ -132,8 +129,8 @@ function getTitle(game: CollectionEntry<"games">) {
   <div class="px-4 py-4 border-t border-game-border-dim shrink-0">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-1 text-xs">
-        <span class="text-game-muted mr-1 text-xs">Lang</span>
-        {(["en", "ko"] as Locale[]).map((l) => (
+        <span class="text-game-muted mr-1 text-xs">{tr.nav.language}</span>
+        {locales.map((l) => (
           <a
             href={switchLocalePath(url, l)}
             class:list={[
@@ -143,7 +140,7 @@ function getTitle(game: CollectionEntry<"games">) {
                 : "text-game-muted hover:bg-game-text/[.08] hover:text-game-text-dim",
             ]}
           >
-            {l === "en" ? "EN" : "KO"}
+            {localeLabels[l].short}
           </a>
         ))}
       </div>
@@ -151,8 +148,8 @@ function getTitle(game: CollectionEntry<"games">) {
       <button
         class="theme-toggle w-9 h-9 flex items-center justify-center rounded-full
                text-game-text-dim hover:bg-game-text/[.08] transition-colors"
-        aria-label="Toggle dark mode"
-        title="Toggle dark mode"
+        aria-label={tr.nav.toggleTheme}
+        title={tr.nav.toggleTheme}
       >
         <svg class="theme-icon-light" width="16" height="16" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round">

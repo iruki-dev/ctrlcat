@@ -97,7 +97,7 @@ export default function JsonFormatter() {
               onClick={() => setIndent(n)}
               className={`w-6 h-6 rounded text-xs font-mono transition-colors ${
                 indent === n
-                  ? "bg-tool-accent text-white"
+                  ? "bg-tool-accent text-tool-on-accent"
                   : "bg-tool-surface border border-tool-border text-tool-muted hover:text-tool-text"
               }`}
             >

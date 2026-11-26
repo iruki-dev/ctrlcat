@@ -1,17 +1,23 @@
 import type { Translations } from "./en";
 
 export const ko: Translations = {
+  meta: {
+    title: "ctrlcat — 무료 웹 툴 & 게임",
+    description: "계정 불필요. 텍스트, 수학, 색상, 퍼즐, 숫자 게임 등 다양한 무료 웹 툴과 게임.",
+  },
   nav: {
+    main: "주요 내비게이션",
+    tools: "툴",
+    games: "게임",
     allTools: "모든 툴",
     allGames: "모든 게임",
+    toolsNav: "툴 내비게이션",
+    gamesNav: "게임 내비게이션",
+    openMenu: "메뉴 열기",
+    toggleTheme: "다크 모드 전환",
+    language: "언어",
   },
   landing: {
-    tagline: "웹을 위한\n툴과 게임.",
-    sub: "빠르고 무료, 계정 불필요.",
-    enterTools: "툴 보러가기",
-    enterGames: "게임 하러가기",
-    toolsDesc: "텍스트, 수학, 색상, 개발 유틸리티",
-    gamesDesc: "퍼즐, 단어, 숫자, 아케이드",
     heroTitle: "무료 웹 툴 & 게임",
     heroSub: "계정 불필요, 추적 없음. 모든 기기에서 작동.",
     searchPlaceholder: "툴과 게임 검색…",
@@ -21,14 +27,18 @@ export const ko: Translations = {
     viewAllGames: "모든 게임 보기 →",
     useTool: "툴 사용 →",
     playGame: "플레이 →",
+    noResults: "검색 결과가 없습니다",
     footerTagline: "웹을 위한 빠르고 무료인 유틸리티와 게임.",
+    footerAllTools: "모든 툴",
+    footerAllGames: "모든 게임",
+    footerSite: "사이트",
+    copyright: "무료 웹 툴과 게임",
   },
   tools: {
     siteTitle: "ctrlcat 툴",
     pageTitle: "웹 툴",
     pageSubtitle: "빠르고 무료인 유틸리티. 계정 불필요.",
     search: "툴 검색…",
-    categories: "카테고리",
     all: "전체",
     featured: "추천",
     noResults: "검색 결과가 없습니다.",
@@ -48,7 +58,6 @@ export const ko: Translations = {
     pageTitle: "웹 게임",
     pageSubtitle: "빠른 브라우저 게임. 설치 불필요, 계정 불필요.",
     search: "게임 검색…",
-    categories: "카테고리",
     all: "전체",
     featured: "추천",
     noResults: "검색 결과가 없습니다.",
@@ -63,10 +72,5 @@ export const ko: Translations = {
       card: "카드",
       trivia: "퀴즈",
     },
-  },
-  common: {
-    loading: "로딩 중…",
-    notFound: "찾을 수 없습니다",
-    lang: "언어",
   },
 };

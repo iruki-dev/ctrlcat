@@ -137,13 +137,13 @@ function pickWord(exclude: string[]): string {
 }
 
 const markTile: Record<Mark, string> = {
-  correct: "bg-game-accent border-game-accent text-white",
+  correct: "bg-game-accent border-game-accent text-game-on-accent",
   present: "bg-game-secondary border-game-secondary text-white",
   absent: "bg-game-muted/25 border-game-border text-game-text-dim",
 };
 
 const markKey: Record<Mark, string> = {
-  correct: "bg-game-accent border-game-accent text-white",
+  correct: "bg-game-accent border-game-accent text-game-on-accent",
   present: "bg-game-secondary border-game-secondary text-white",
   absent: "bg-game-muted/20 border-game-border text-game-muted",
 };

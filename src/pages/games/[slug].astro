@@ -1,51 +1,13 @@
 ---
-import { getCollection, render } from "astro:content";
-import GameLayout from "../../layouts/GameLayout.astro";
-import GameRenderer from "../../components/games/GameRenderer";
+import { getCollection } from "astro:content";
+import GameDetailView from "../../views/GameDetailView.astro";
 
 export async function getStaticPaths() {
-  const games = await getCollection("games", ({ data }) => data.status === "published");
-  return games.map((game) => ({
-    params: { slug: game.slug },
-    props: { game },
-  }));
+  const entries = await getCollection("games", ({ data }) => data.status === "published");
+  return entries.map((game) => ({ params: { slug: game.slug }, props: { game } }));
 }
 
-const lang = "en";
 const { game } = Astro.props;
-const { title, description, icon, category, component, difficulty, playTime } = game.data;
-const { Content, headings } = await render(game);
-const hasDoc = headings.length > 0;
 ---
 
-<GameLayout
-  title={title}
-  description={description}
-  icon={icon}
-  category={category}
-  difficulty={difficulty}
-  playTime={playTime}
-  currentSlug={game.slug}
-  lang={lang}
->
-  <!-- Game box: fixed viewport-relative height so it never grows with content -->
-  <div class="h-[min(75svh,85svw)] min-h-[300px] mb-8">
-    <GameRenderer component={component} client:load />
-  </div>
-
-  <!-- Documentation -->
-  {hasDoc && (
-    <article class="prose prose-game max-w-none
-                    prose-headings:font-semibold prose-headings:tracking-tight
-                    prose-h2:text-base prose-h2:mt-8 prose-h2:mb-3
-                    prose-h3:text-sm prose-h3:mt-6 prose-h3:mb-2
-                    prose-p:text-sm prose-p:leading-relaxed
-                    prose-li:text-sm prose-li:leading-relaxed
-                    prose-table:text-sm prose-th:font-semibold
-                    prose-code:text-xs prose-code:px-1 prose-code:py-0.5 prose-code:rounded
-                    prose-code:bg-game-surface-2 prose-code:border prose-code:border-game-border-dim
-                    prose-code:before:content-none prose-code:after:content-none">
-      <Content />
-    </article>
-  )}
-</GameLayout>
+<GameDetailView game={game} lang="en" />
