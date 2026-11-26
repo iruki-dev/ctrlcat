@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import type { Locale } from "../../i18n";
-import { t, localePath, switchLocalePath } from "../../i18n";
+import { t, localePath, switchLocalePath, localize, locales, localeLabels } from "../../i18n";
 import Icon from "../Icon.astro";
 
 interface Props {
@@ -21,9 +21,6 @@ const grouped = categoryOrder.reduce<Record<string, CollectionEntry<"tools">[]>>
   return acc;
 }, {});
 
-function getTitle(tool: CollectionEntry<"tools">) {
-  return (tool.data.localizations?.[lang]?.title) ?? tool.data.title;
-}
 ---
 
 <!-- Carbon Design System: Left Navigation -->
@@ -67,7 +64,7 @@ function getTitle(tool: CollectionEntry<"tools">) {
   </div>
 
   <!-- Navigation -->
-  <nav class="flex-1 overflow-y-auto scrollbar-hide" aria-label="Tools navigation">
+  <nav class="flex-1 overflow-y-auto scrollbar-hide" aria-label={tr.nav.toolsNav}>
 
     <!-- All Tools link -->
     <a
@@ -108,7 +105,7 @@ function getTitle(tool: CollectionEntry<"tools">) {
             <a
               href={localePath(`/tools/${tool.slug}/`, lang)}
               data-sidebar-item
-              data-title={getTitle(tool).toLowerCase()}
+              data-title={localize(tool, lang).title.toLowerCase()}
               data-tags={tool.data.tags.join(" ").toLowerCase()}
               class:list={[
                 "flex items-center gap-3 px-4 py-2.5 text-sm border-l-[3px] transition-colors",
@@ -120,7 +117,7 @@ function getTitle(tool: CollectionEntry<"tools">) {
               <span class:list={["shrink-0", tool.slug === currentSlug ? "text-tool-accent" : "text-tool-muted"]}>
                 <Icon name={tool.data.icon ?? ""} size={16} />
               </span>
-              <span class="truncate">{getTitle(tool)}</span>
+              <span class="truncate">{localize(tool, lang).title}</span>
             </a>
           ))}
         </div>
@@ -132,18 +129,18 @@ function getTitle(tool: CollectionEntry<"tools">) {
   <div class="px-4 py-3 border-t border-tool-border shrink-0 bg-tool-surface">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-1 text-xs">
-        <span class="text-tool-muted mr-1 text-xs">Lang</span>
-        {(["en", "ko"] as Locale[]).map((l) => (
+        <span class="text-tool-muted mr-1 text-xs">{tr.nav.language}</span>
+        {locales.map((l) => (
           <a
             href={switchLocalePath(url, l)}
             class:list={[
               "px-2 py-0.5 text-xs transition-colors",
               l === lang
-                ? "bg-tool-accent text-white font-medium"
+                ? "bg-tool-accent text-tool-on-accent font-medium"
                 : "text-tool-muted hover:text-tool-text-dim",
             ]}
           >
-            {l === "en" ? "EN" : "KO"}
+            {localeLabels[l].short}
           </a>
         ))}
       </div>
@@ -151,8 +148,8 @@ function getTitle(tool: CollectionEntry<"tools">) {
       <button
         class="theme-toggle w-7 h-7 flex items-center justify-center
                text-tool-muted hover:text-tool-text hover:bg-tool-surface-2 transition-colors"
-        aria-label="Toggle dark mode"
-        title="Toggle dark mode"
+        aria-label={tr.nav.toggleTheme}
+        title={tr.nav.toggleTheme}
       >
         <svg class="theme-icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="square">

@@ -3,120 +3,132 @@ import { ToolTextarea } from "../../components/tools/ui/Textarea";
 import { ToolButton } from "../../components/tools/ui/Button";
 import { StatCard } from "../../components/tools/ui/StatCard";
 import { CopyButton } from "../../components/tools/ui/CopyButton";
+import { useMessages } from "../../i18n/react";
+
+const READ_WPM = 238;
+const SPEAK_WPM = 150;
+
+const messages = {
+  en: {
+    label: "Your text",
+    placeholder: "Paste or type your text here…",
+    clear: "Clear",
+    wordCount: (n: string) => `${n} words`,
+    words: "Words",
+    characters: "Characters",
+    noSpaces: "No spaces",
+    lines: "Lines",
+    sentences: "Sentences",
+    paragraphs: "Paragraphs",
+    readTime: "Read time",
+    speakTime: "Speak time",
+    minutes: (n: number) => `${n} min`,
+    wpm: (n: number) => `@ ${n} wpm`,
+    topWords: "Top words",
+  },
+  ko: {
+    label: "텍스트",
+    placeholder: "텍스트를 붙여넣거나 입력하세요…",
+    clear: "지우기",
+    wordCount: (n: string) => `${n}단어`,
+    words: "단어",
+    characters: "글자",
+    noSpaces: "공백 제외",
+    lines: "줄",
+    sentences: "문장",
+    paragraphs: "문단",
+    readTime: "읽는 시간",
+    speakTime: "말하는 시간",
+    minutes: (n: number) => `${n}분`,
+    wpm: (n: number) => `분당 ${n}단어 기준`,
+    topWords: "자주 쓴 단어",
+  },
+};
+
+const STOP_WORDS = new Set([
+  "the", "a", "an", "and", "or", "but", "in", "on", "at", "to",
+  "for", "of", "with", "by", "from", "is", "it", "this", "that",
+  "was", "are", "be", "as", "i", "you", "he", "she", "we", "they",
+  "have", "had", "has", "not", "do", "did", "will", "would", "can",
+  "could", "should", "may", "might", "shall", "its", "my", "your",
+]);
 
 function analyze(text: string) {
   const trimmed = text.trim();
   const words = trimmed === "" ? 0 : trimmed.split(/\s+/).length;
-  const chars = text.length;
-  const charsNoSpace = text.replace(/\s/g, "").length;
-  const lines = text === "" ? 0 : text.split("\n").length;
-  const sentences = trimmed === "" ? 0 : (trimmed.match(/[.!?]+/g) ?? []).length;
-  const paragraphs = trimmed === "" ? 0 : trimmed.split(/\n\s*\n/).filter(Boolean).length;
-  const readingTime = Math.ceil(words / 238); // avg 238 wpm
-  const speakingTime = Math.ceil(words / 150); // avg 150 wpm
-
   return {
     words,
-    chars,
-    charsNoSpace,
-    lines,
-    sentences,
-    paragraphs,
-    readingTime,
-    speakingTime,
+    chars: text.length,
+    charsNoSpace: text.replace(/\s/g, "").length,
+    lines: text === "" ? 0 : text.split("\n").length,
+    sentences: trimmed === "" ? 0 : (trimmed.match(/[.!?。]+/g) ?? []).length,
+    paragraphs: trimmed === "" ? 0 : trimmed.split(/\n\s*\n/).filter(Boolean).length,
+    readingTime: Math.ceil(words / READ_WPM),
+    speakingTime: Math.ceil(words / SPEAK_WPM),
   };
 }
 
+function topWords(text: string) {
+  const freq = new Map<string, number>();
+  for (const w of text.toLowerCase().match(/[\p{L}\p{N}']{2,}/gu) ?? []) {
+    if (!STOP_WORDS.has(w)) freq.set(w, (freq.get(w) ?? 0) + 1);
+  }
+  return [...freq].sort(([, a], [, b]) => b - a).slice(0, 8);
+}
+
 export default function WordCounter() {
+  const m = useMessages(messages);
   const [text, setText] = useState("");
   const stats = useMemo(() => analyze(text), [text]);
+  const fmt = (n: number) => n.toLocaleString();
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
-      {/* Input */}
       <ToolTextarea
-        label="Your text"
-        placeholder="Paste or type your text here…"
+        label={m.label}
+        placeholder={m.placeholder}
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={10}
       />
 
-      {/* Actions */}
       <div className="flex items-center gap-2 flex-wrap">
         <CopyButton text={text} />
-        <ToolButton
-          variant="ghost"
-          size="sm"
-          onClick={() => setText("")}
-          disabled={text === ""}
-        >
-          Clear
+        <ToolButton variant="ghost" size="sm" onClick={() => setText("")} disabled={text === ""}>
+          {m.clear}
         </ToolButton>
-        <span className="ml-auto text-xs text-tool-muted">
-          {stats.words.toLocaleString()} words
-        </span>
-      </div>
-
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Words" value={stats.words.toLocaleString()} accent />
-        <StatCard label="Characters" value={stats.chars.toLocaleString()} />
-        <StatCard label="No spaces" value={stats.charsNoSpace.toLocaleString()} />
-        <StatCard label="Lines" value={stats.lines.toLocaleString()} />
+        <span className="ml-auto text-xs text-tool-muted">{m.wordCount(fmt(stats.words))}</span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Sentences" value={stats.sentences.toLocaleString()} />
-        <StatCard label="Paragraphs" value={stats.paragraphs.toLocaleString()} />
-        <StatCard
-          label="Read time"
-          value={`${stats.readingTime} min`}
-          sub="@ 238 wpm"
-        />
-        <StatCard
-          label="Speak time"
-          value={`${stats.speakingTime} min`}
-          sub="@ 150 wpm"
-        />
+        <StatCard label={m.words} value={fmt(stats.words)} accent />
+        <StatCard label={m.characters} value={fmt(stats.chars)} />
+        <StatCard label={m.noSpaces} value={fmt(stats.charsNoSpace)} />
+        <StatCard label={m.lines} value={fmt(stats.lines)} />
       </div>
 
-      {/* Top words */}
-      {stats.words > 0 && <TopWords text={text} />}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard label={m.sentences} value={fmt(stats.sentences)} />
+        <StatCard label={m.paragraphs} value={fmt(stats.paragraphs)} />
+        <StatCard label={m.readTime} value={m.minutes(stats.readingTime)} sub={m.wpm(READ_WPM)} />
+        <StatCard label={m.speakTime} value={m.minutes(stats.speakingTime)} sub={m.wpm(SPEAK_WPM)} />
+      </div>
+
+      {stats.words > 0 && <TopWords text={text} title={m.topWords} />}
     </div>
   );
 }
 
-function TopWords({ text }: { text: string }) {
-  const topWords = useMemo(() => {
-    const stopWords = new Set([
-      "the", "a", "an", "and", "or", "but", "in", "on", "at", "to",
-      "for", "of", "with", "by", "from", "is", "it", "this", "that",
-      "was", "are", "be", "as", "i", "you", "he", "she", "we", "they",
-      "have", "had", "has", "not", "do", "did", "will", "would", "can",
-      "could", "should", "may", "might", "shall", "its", "my", "your",
-    ]);
-    const freq: Record<string, number> = {};
-    const words = text.toLowerCase().match(/\b[a-z']{2,}\b/g) ?? [];
-    for (const w of words) {
-      if (!stopWords.has(w)) freq[w] = (freq[w] ?? 0) + 1;
-    }
-    return Object.entries(freq)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 8);
-  }, [text]);
-
-  if (topWords.length === 0) return null;
-
-  const maxCount = topWords[0][1];
+function TopWords({ text, title }: { text: string; title: string }) {
+  const words = useMemo(() => topWords(text), [text]);
+  if (words.length === 0) return null;
+  const maxCount = words[0][1];
 
   return (
     <div className="rounded-xl border border-tool-border bg-tool-surface p-5">
-      <h3 className="text-xs font-medium text-tool-muted uppercase tracking-wider mb-4">
-        Top words
-      </h3>
+      <h3 className="text-xs font-medium text-tool-muted uppercase tracking-wider mb-4">{title}</h3>
       <div className="flex flex-col gap-2">
-        {topWords.map(([word, count]) => (
+        {words.map(([word, count]) => (
           <div key={word} className="flex items-center gap-3">
             <span className="text-sm text-tool-text font-mono w-28 truncate">{word}</span>
             <div className="flex-1 bg-tool-bg rounded-full h-1.5 overflow-hidden">

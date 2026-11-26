@@ -1,0 +1,23 @@
+---
+import type { CollectionEntry } from "astro:content";
+import ToolLayout from "../layouts/ToolLayout.astro";
+import ToolRenderer from "../components/tools/ToolRenderer";
+import DocArticle from "../components/DocArticle.astro";
+import { localize, type Locale } from "../i18n";
+
+interface Props {
+  tool: CollectionEntry<"tools">;
+  lang: Locale;
+}
+
+const { tool, lang } = Astro.props;
+const { title, description } = localize(tool, lang);
+const { icon, category, component } = tool.data;
+---
+
+<ToolLayout title={title} description={description} icon={icon} category={category} currentSlug={tool.slug} lang={lang}>
+  <div class="rounded-xl border border-tool-border bg-tool-surface/30 p-4 md:p-6 mb-8">
+    <ToolRenderer component={component} lang={lang} client:load />
+  </div>
+  <DocArticle kind="tool" entry={tool} lang={lang} />
+</ToolLayout>

@@ -6,6 +6,18 @@
 
 /* ── Color tokens: light mode ──────────────────────────────────────────── */
 :root {
+  /* Landing page (shared between realms) */
+  --site-bg:            255 255 255;  /* white     */
+  --site-surface:       248 250 252;  /* slate-50  */
+  --site-card:          255 255 255;  /* white     */
+  --site-border:        226 232 240;  /* slate-200 */
+  --site-border-strong: 203 213 225;  /* slate-300 */
+  --site-text:          15  23  42;   /* slate-900 */
+  --site-text-dim:      100 116 139;  /* slate-500 */
+  --site-muted:         148 163 184;  /* slate-400 */
+  --site-tool:          8   145 178;  /* cyan-600  */
+  --site-tool-hover:    236 254 255;  /* cyan-50   */
+
   /* Tool realm — Carbon Design System */
   --tool-bg:           244 244 244;   /* Gray-10  #f4f4f4 */
   --tool-surface:      255 255 255;   /* White    #ffffff */
@@ -15,6 +27,7 @@
   --tool-accent:       15  98  254;   /* Blue-60  #0f62fe */
   --tool-accent-light: 237 245 255;   /* Blue-10  #edf5ff */
   --tool-accent-dim:   0   67  206;   /* Blue-70  #0043ce */
+  --tool-on-accent:    255 255 255;   /* text on accent   */
   --tool-muted:        141 141 141;   /* Gray-50  #8d8d8d */
   --tool-text:         22  22  22;    /* Gray-100 #161616 */
   --tool-text-dim:     82  82  82;    /* Gray-70  #525252 */
@@ -28,6 +41,7 @@
   --game-accent:       124 58  237;   /* violet-600      #7c3aed */
   --game-accent-light: 234 221 255;   /* MD3 prim-cont   #eaddff */
   --game-accent-dim:   109 40  217;   /* violet-700      #6d28d9 */
+  --game-on-accent:    255 255 255;   /* text on accent  */
   --game-secondary:    219 39  119;   /* pink-600        #db2777 */
   --game-muted:        121 116 126;   /* MD3 outline     #79747e */
   --game-text:         28  27  31;    /* MD3 on-surface  #1c1b1f */
@@ -38,6 +52,18 @@
 .dark {
   color-scheme: dark;
 
+  /* Landing page dark */
+  --site-bg:            22  22  22;   /* #161616   */
+  --site-surface:       28  27  31;   /* #1c1b1f   */
+  --site-card:          38  38  38;   /* #262626   */
+  --site-border:        57  57  57;   /* #393939   */
+  --site-border-strong: 82  82  82;   /* #525252   */
+  --site-text:          241 245 249;  /* slate-100 */
+  --site-text-dim:      148 163 184;  /* slate-400 */
+  --site-muted:         100 116 139;  /* slate-500 */
+  --site-tool:          120 169 255;  /* #78a9ff   */
+  --site-tool-hover:    0   58  109;  /* #003a6d   */
+
   /* Tool realm dark — Carbon G100 theme */
   --tool-bg:           22  22  22;    /* Gray-100 #161616 */
   --tool-surface:      38  38  38;    /* Gray-90  #262626 */
@@ -47,6 +73,7 @@
   --tool-accent:       120 169 255;   /* Blue-40  #78a9ff */
   --tool-accent-light: 0   29  108;   /* dark blue tint   */
   --tool-accent-dim:   105 141 255;   /* Blue-30  #699dff */
+  --tool-on-accent:    22  22  22;    /* Gray-100 #161616 */
   --tool-muted:        141 141 141;   /* Gray-50  #8d8d8d */
   --tool-text:         244 244 244;   /* Gray-10  #f4f4f4 */
   --tool-text-dim:     198 198 198;   /* Gray-30  #c6c6c6 */
@@ -60,6 +87,7 @@
   --game-accent:       208 188 255;   /* MD3 dark prim   #d0bcff */
   --game-accent-light: 79  55  138;   /* MD3 dark prim-c #4f3789 */
   --game-accent-dim:   179 157 255;   /* lighter variant */
+  --game-on-accent:    56  30  114;   /* MD3 on-primary  #381e72 */
   --game-secondary:    244 114 182;   /* pink-400        #f472b6 */
   --game-muted:        147 143 153;   /* MD3 dark outl   #938f99 */
   --game-text:         230 225 229;   /* MD3 dark on-s   #e6e1e5 */

@@ -16,7 +16,9 @@
 
 ## Tailwind 색상 토큰
 
-`tailwind.config.mjs`에 정의되어 있습니다. 컴포넌트에서 hex를 직접 쓰는 대신 이 토큰을 씁니다.
+값은 `src/styles/global.css`의 CSS 변수(라이트/다크 각각)에 있고, `tailwind.config.mjs`가 `rgb(var(--x) / <alpha-value>)` 형태로 연결합니다. 컴포넌트에서 hex를 직접 쓰는 대신 이 토큰을 씁니다. 다크 모드는 변수 값만 바뀌므로 `dark:` 접두사 없이 자동으로 따라갑니다.
+
+예외: `<canvas>` 드로잉과 다운로드용 SVG/PNG(QR 코드 등)는 Tailwind 클래스를 읽을 수 없어서 파일 상단 상수로 색을 둡니다. 이때도 DOM 클래스에는 `bg-[#...]` 같은 임의 hex를 쓰지 않습니다.
 
 ### Tools 토큰 — Carbon Design System
 
@@ -33,6 +35,7 @@
 | `tool-muted` | `#8d8d8d` (Gray-50) | 플레이스홀더, 메타 |
 | `tool-text` | `#161616` (Gray-100) | 주 텍스트 |
 | `tool-text-dim` | `#525252` (Gray-70) | 보조 텍스트 |
+| `tool-on-accent` | `#ffffff` (다크: `#161616`) | `bg-tool-accent` 위의 글자 |
 
 ### Games 토큰 — Material Design 3
 
@@ -50,6 +53,11 @@
 | `game-muted` | `#79747e` (MD3 outline) | 플레이스홀더, 메타 |
 | `game-text` | `#1c1b1f` (MD3 on-surface) | 주 텍스트 |
 | `game-text-dim` | `#49454e` (MD3 on-surface-variant) | 보조 텍스트 |
+| `game-on-accent` | `#ffffff` (다크: `#381e72`) | `bg-game-accent` 위의 글자 |
+
+### Site 토큰 — 랜딩 페이지
+
+홈(`HomeView`)과 공용 헤더가 씁니다. `site-bg` · `site-surface` · `site-card` · `site-border` · `site-border-strong` · `site-text` · `site-text-dim` · `site-muted` · `site-tool` · `site-tool-hover`. 게임 쪽 강조는 `game-accent`를 그대로 씁니다. 값은 `global.css` 참고.
 
 ### 공용 토큰
 
@@ -79,17 +87,7 @@
 - `size` 기본값: 20px
 - 색상은 `currentColor` — 부모의 `text-*` 클래스로 제어합니다
 
-**등록된 아이콘:**
-
-| `icon` 값 | 형태 |
-|---|---|
-| `word-counter` | 폴딩 코너 문서 + 텍스트 선 |
-| `base64-encoder` | 양방향 순환 화살표 |
-| `json-formatter` | 중괄호 쌍 `{ }` |
-| `password-generator` | 자물쇠 |
-| `color-converter` | 페인트 팔레트 (점 4개) |
-| `number-guesser` | 3중 원 크로스헤어 |
-| `tic-tac-toe` | 격자 + X와 O |
+**등록된 아이콘:** 툴·게임 slug마다 하나씩 있습니다. 목록은 `Icon.astro`의 `name === "..."` 블록이 기준입니다.
 
 **사용 위치:** ToolLayout 헤더, GameLayout 헤더, 툴/게임 사이드바, 툴 리스팅 카드.
 
@@ -108,14 +106,9 @@
 - viewBox 200×160, 컬러 filled SVG
 - 게임 테마 색상: violet-50~600, pink (#f472b6)
 
-**등록된 일러스트:**
+**등록된 일러스트:** 게임 slug마다 하나씩 있습니다. 목록은 `GameIllustration.astro`의 `slug === "..."` 블록이 기준입니다. 일러스트 안의 색은 SVG fill 값으로 직접 둡니다.
 
-| `slug` | 디자인 |
-|---|---|
-| `number-guesser` | 불스아이 타겟 4단계 동심원 + 크로스헤어 + 화살표. 바이올렛 그라데이션 |
-| `tic-tac-toe` | 게임 보드 (X 대각선 승리 상태). board: `#faf5ff`, X: `#c084fc`, O: `#f472b6` |
-
-**사용 위치:** 게임 리스팅 카드(`games/index.astro`, `ko/games/index.astro`), 홈페이지 게임 섹션(`index.astro`, `ko/index.astro`).
+**사용 위치:** 게임 리스팅 카드(`views/GameIndexView.astro`), 홈페이지 게임 섹션(`views/HomeView.astro`).
 
 **새 게임을 추가할 때:** `GameIllustration.astro`에 블록을 추가합니다. 빠뜨리면 카드 일러스트 영역이 비어 보입니다.
 
@@ -139,8 +132,7 @@
 
 | 위치 | 크기 | 색상 |
 |---|---|---|
-| `pages/index.astro` 홈 헤더 | 22×22 | 흰 캐럿 |
-| `pages/ko/index.astro` 홈 헤더 | 22×22 | 흰 캐럿 |
+| `views/HomeView.astro` 홈 헤더 | 22×22 | 흰 캐럿 |
 | `layouts/ToolLayout.astro` 사이드바 헤더 | 18×18 | 시안 캐럿+바 |
 | `layouts/GameLayout.astro` 사이드바 헤더 | 18×18 | 바이올렛 캐럿+원 |
 
@@ -154,7 +146,9 @@
 - 클래스: `bg-tool-*`, `text-tool-*`, `border-tool-*`
 - 테두리: `border border-tool-border` (1px, 직각)
 - 라운드: **없음** (Carbon 원칙: 직각 코너)
-- 버튼: 직각, 플랫, `bg-tool-accent text-white`
+- 버튼: 직각, 플랫, `bg-tool-accent text-tool-on-accent`, 항상 `type="button"`
+- 오류·성공 알림: `ToolNotice` (`tone="error" | "success"`, 스크린리더에 알림)
+- 복사: `CopyButton` (실패 시 실패 상태 표시)
 - 입력: 전체 테두리 + 포커스 2px ring
 - 활성 네비: `border-l-[3px] border-l-tool-accent bg-tool-accent-light`
 
@@ -163,7 +157,9 @@
 - 임포트 경로: `../../components/games/ui/`
 - 클래스: `bg-game-*`, `text-game-*`, `border-game-*`
 - 라운드: `rounded-3xl` (카드), `rounded-full` (버튼/칩), `rounded-[28px]` (네비 항목)
-- 버튼: `rounded-full`, 채워진 스타일, shadow-md-1
+- 버튼: `rounded-full`, 채워진 스타일, shadow-md-1, `bg-game-accent text-game-on-accent`
+- 상태 메시지: `GameMessage` (`info` · `success` · `warning` · `error` · `hint`)
+- 점수판: `ScoreDisplay` (값이 없으면 `"-"`를 표시)
 - 카드: `shadow-md-1 hover:shadow-md-3` (MD3 고도)
 - 활성 네비: `rounded-[28px] bg-game-accent-light text-game-accent`
 - 필터: MD3 Filter Chips (`rounded-full`, selected: `border-2 border-game-accent bg-game-accent-light`)

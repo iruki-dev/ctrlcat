@@ -1,4 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameCanvas } from "../lib/GameCanvas";
 import { useGameLoop } from "../lib/useGameLoop";
 import { useKeys, useSwipe } from "../lib/useInput";
@@ -23,11 +25,53 @@ const DELTA: Record<Dir, Point> = {
   up: { x: 0, y: -1 }, down: { x: 0, y: 1 },
 };
 
-const DIFF: Record<Difficulty, { label: string; baseMs: number; minMs: number; desc: string }> = {
-  easy:   { label: "Easy",   baseMs: 240, minMs: 110, desc: "Relaxed pace — great to start" },
-  normal: { label: "Normal", baseMs: 150, minMs: 65,  desc: "Classic Snake experience" },
-  hard:   { label: "Hard",   baseMs: 90,  minMs: 40,  desc: "Fast and unforgiving" },
-  insane: { label: "Insane", baseMs: 55,  minMs: 22,  desc: "Not for the faint-hearted" },
+const DIFF: Record<Difficulty, { baseMs: number; minMs: number }> = {
+  easy: { baseMs: 240, minMs: 110 },
+  normal: { baseMs: 150, minMs: 65 },
+  hard: { baseMs: 90, minMs: 40 },
+  insane: { baseMs: 55, minMs: 22 },
+};
+
+/* Canvas background. The DOM wrapper uses the same value so the board blends in. */
+const BOARD_BG = "#0d0818";
+
+const messages = {
+  en: {
+    ...common.en,
+    title: "Snake",
+    levels: { easy: "Easy", normal: "Normal", hard: "Hard", insane: "Insane" } as Record<Difficulty, string>,
+    levelDesc: {
+      easy: "Relaxed pace, good for a first run",
+      normal: "The classic pace",
+      hard: "Fast and unforgiving",
+      insane: "Not for the faint-hearted",
+    } as Record<Difficulty, string>,
+    difficulty: "Difficulty",
+    bestLabel: "Best:",
+    controls: "Arrow keys · WASD · Swipe",
+    gameOver: "Game Over",
+    newBest: "New best!",
+    changeDifficulty: "Change difficulty",
+    dirs: { up: "Up", down: "Down", left: "Left", right: "Right" } as Record<Dir, string>,
+  },
+  ko: {
+    ...common.ko,
+    title: "스네이크",
+    levels: { easy: "쉬움", normal: "보통", hard: "어려움", insane: "극한" } as Record<Difficulty, string>,
+    levelDesc: {
+      easy: "느긋한 속도, 처음 하기에 좋습니다",
+      normal: "기본 속도",
+      hard: "빠르고 가차 없습니다",
+      insane: "강심장만 도전하세요",
+    } as Record<Difficulty, string>,
+    difficulty: "난이도",
+    bestLabel: "최고 기록:",
+    controls: "방향키 · WASD · 밀기",
+    gameOver: "게임 오버",
+    newBest: "최고 기록!",
+    changeDifficulty: "난이도 바꾸기",
+    dirs: { up: "위", down: "아래", left: "왼쪽", right: "오른쪽" } as Record<Dir, string>,
+  },
 };
 
 interface Particle {
@@ -106,6 +150,7 @@ function drawEyesAt(ctx: CanvasRenderingContext2D, cx: number, cy: number, dir: 
 }
 
 function ArrowBtn({ dir, onPress }: { dir: Dir; onPress: () => void }) {
+  const m = useMessages(messages);
   const paths: Record<Dir, string> = {
     up:    "M12 17V7M7 12l5-5 5 5",
     down:  "M12 7v10M7 12l5 5 5-5",
@@ -114,9 +159,10 @@ function ArrowBtn({ dir, onPress }: { dir: Dir; onPress: () => void }) {
   };
   return (
     <button
+      type="button"
       onPointerDown={e => { e.preventDefault(); onPress(); }}
       className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 active:bg-white/25 transition-colors select-none"
-      aria-label={dir}
+      aria-label={m.dirs[dir]}
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
         <path d={paths[dir]}/>
@@ -126,6 +172,7 @@ function ArrowBtn({ dir, onPress }: { dir: Dir; onPress: () => void }) {
 }
 
 export default function Snake() {
+  const m = useMessages(messages);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [uiStatus, setUiStatus] = useState<Status>("idle");
@@ -238,7 +285,7 @@ export default function Snake() {
       ctx.translate(sx, sy);
 
       // Background
-      ctx.fillStyle = "#0d0818";
+      ctx.fillStyle = BOARD_BG;
       ctx.fillRect(-16, -16, w + 32, h + 32);
 
       // Grid
@@ -336,7 +383,7 @@ export default function Snake() {
   const level = Math.floor(uiScore / 5) + 1;
 
   return (
-    <div ref={containerRef} className="w-full h-full bg-[#0d0818] flex items-center justify-center touch-none">
+    <div ref={containerRef} className="w-full h-full flex items-center justify-center touch-none" style={{ backgroundColor: BOARD_BG }}>
       <div className="relative" style={{ width: displaySize, height: displaySize }}>
         <GameCanvas
           ref={canvasRef}
@@ -349,15 +396,15 @@ export default function Snake() {
         {uiStatus === "playing" && (
           <div className="absolute top-2 left-2 right-2 flex gap-2 pointer-events-none">
             <div className="bg-black/55 backdrop-blur-sm rounded-lg px-2.5 py-1.5 text-center min-w-[4rem]">
-              <div className="text-[9px] text-violet-400 font-bold uppercase tracking-widest leading-none mb-0.5">Score</div>
+              <div className="text-[9px] text-violet-400 font-bold uppercase tracking-widest leading-none mb-0.5">{m.score}</div>
               <div className="text-lg font-black text-white tabular-nums leading-none">{uiScore}</div>
             </div>
             <div className="bg-black/55 backdrop-blur-sm rounded-lg px-2.5 py-1.5 text-center min-w-[4rem]">
-              <div className="text-[9px] text-violet-400 font-bold uppercase tracking-widest leading-none mb-0.5">Level</div>
+              <div className="text-[9px] text-violet-400 font-bold uppercase tracking-widest leading-none mb-0.5">{m.level}</div>
               <div className="text-lg font-black text-white tabular-nums leading-none">{level}</div>
             </div>
             <div className="bg-black/55 backdrop-blur-sm rounded-lg px-2.5 py-1.5 text-center min-w-[4rem] ml-auto">
-              <div className="text-[9px] text-violet-400 font-bold uppercase tracking-widest leading-none mb-0.5">Best</div>
+              <div className="text-[9px] text-violet-400 font-bold uppercase tracking-widest leading-none mb-0.5">{m.best}</div>
               <div className="text-lg font-black text-white tabular-nums leading-none">{uiBest}</div>
             </div>
           </div>
@@ -380,20 +427,21 @@ export default function Snake() {
 
         {/* Start screen */}
         {uiStatus === "idle" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 rounded-2xl bg-[#0d0818]/92 backdrop-blur-sm px-5">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 rounded-2xl bg-black/80 backdrop-blur-sm px-5">
             <div className="text-center">
-              <p className="text-3xl font-black text-white tracking-tight">Snake</p>
+              <p className="text-3xl font-black text-white tracking-tight">{m.title}</p>
               {uiBest > 0 && (
-                <p className="text-sm text-violet-300 mt-1">Best: <span className="font-black text-violet-200">{uiBest}</span></p>
+                <p className="text-sm text-violet-300 mt-1">{m.bestLabel} <span className="font-black text-violet-200">{uiBest}</span></p>
               )}
             </div>
 
             <div className="w-full flex flex-col gap-2">
-              <p className="text-[10px] text-violet-400 font-bold uppercase tracking-widest text-center">Difficulty</p>
+              <p className="text-[10px] text-violet-400 font-bold uppercase tracking-widest text-center">{m.difficulty}</p>
               <div className="grid grid-cols-2 gap-2">
-                {(Object.entries(DIFF) as [Difficulty, typeof DIFF.easy][]).map(([key, cfg]) => (
+                {(Object.keys(DIFF) as Difficulty[]).map((key) => (
                   <button
                     key={key}
+                    type="button"
                     onClick={() => setDifficulty(key)}
                     className={`py-2 px-3 rounded-xl text-sm font-semibold border-2 transition-all ${
                       difficulty === key
@@ -401,20 +449,21 @@ export default function Snake() {
                         : "border-violet-900/40 bg-violet-950/30 text-violet-400 hover:border-violet-700/60"
                     }`}
                   >
-                    {cfg.label}
+                    {m.levels[key]}
                   </button>
                 ))}
               </div>
-              <p className="text-center text-xs text-violet-400/70 mt-0.5">{DIFF[difficulty].desc}</p>
+              <p className="text-center text-xs text-violet-400/70 mt-0.5">{m.levelDesc[difficulty]}</p>
             </div>
 
             <button
+              type="button"
               onClick={start}
               className="bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-white font-black px-10 py-3 rounded-full text-base transition-colors shadow-lg shadow-violet-900/60"
             >
-              Start
+              {m.start}
             </button>
-            <p className="text-[11px] text-violet-500">Arrow keys · WASD · Swipe</p>
+            <p className="text-[11px] text-violet-500">{m.controls}</p>
           </div>
         )}
 
@@ -422,28 +471,30 @@ export default function Snake() {
         {uiStatus === "dead" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-2xl px-5">
             <div className="text-center">
-              <p className="text-3xl font-black text-white tracking-tight">Game Over</p>
-              <p className="text-2xl font-black tabular-nums mt-1" style={{ color: uiNewBest ? "#c084fc" : "#a78bfa" }}>
+              <p className="text-3xl font-black text-white tracking-tight">{m.gameOver}</p>
+              <p className={`text-2xl font-black tabular-nums mt-1 ${uiNewBest ? "text-purple-400" : "text-violet-400"}`}>
                 {uiScore}
               </p>
               {uiNewBest ? (
-                <p className="text-sm text-violet-300 mt-1 font-semibold">New best!</p>
+                <p className="text-sm text-violet-300 mt-1 font-semibold">{m.newBest}</p>
               ) : uiBest > 0 ? (
-                <p className="text-xs text-violet-500 mt-1">Best: {uiBest}</p>
+                <p className="text-xs text-violet-500 mt-1">{m.bestLabel} {uiBest}</p>
               ) : null}
             </div>
             <div className="flex flex-col gap-2 w-full max-w-[200px]">
               <button
+                type="button"
                 onClick={start}
                 className="bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-white font-bold px-8 py-2.5 rounded-full text-sm transition-colors"
               >
-                Play again
+                {m.playAgain}
               </button>
               <button
+                type="button"
                 onClick={() => { g.current.status = "idle"; setUiStatus("idle"); }}
                 className="border border-violet-800 text-violet-400 hover:text-violet-200 hover:border-violet-600 font-medium px-8 py-2 rounded-full text-xs transition-colors"
               >
-                Change difficulty
+                {m.changeDifficulty}
               </button>
             </div>
           </div>

@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from "astro:content";
+import GameLayout from "../layouts/GameLayout.astro";
+import GameRenderer from "../components/games/GameRenderer";
+import DocArticle from "../components/DocArticle.astro";
+import { localize, type Locale } from "../i18n";
+
+interface Props {
+  game: CollectionEntry<"games">;
+  lang: Locale;
+}
+
+const { game, lang } = Astro.props;
+const { title, description } = localize(game, lang);
+const { icon, category, component, difficulty, playTime } = game.data;
+---
+
+<GameLayout
+  title={title}
+  description={description}
+  icon={icon}
+  category={category}
+  difficulty={difficulty}
+  playTime={playTime}
+  currentSlug={game.slug}
+  lang={lang}
+>
+  <!-- Fixed viewport-relative height so the game box never grows with its content. -->
+  <div class="h-[min(75svh,85svw)] min-h-[300px] mb-8">
+    <GameRenderer component={component} lang={lang} client:load />
+  </div>
+  <DocArticle kind="game" entry={game} lang={lang} />
+</GameLayout>

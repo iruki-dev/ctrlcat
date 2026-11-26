@@ -6,7 +6,7 @@ import { useRef, useEffect, useCallback } from "react";
  * Returns:
  *   held     — Set of currently held keys. Poll in update(): held.current.has("ArrowLeft")
  *   consume  — Check and clear a key in one call. Good for single-press actions
- *              like rotating a Tetris piece. Returns true if the key was just pressed.
+ *              like rotating a falling block. Returns true if the key was just pressed.
  *
  * Arrow keys and Space are preventDefault'd to stop the page from scrolling.
  *

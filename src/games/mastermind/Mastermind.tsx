@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -26,6 +28,45 @@ const COLORS = [
   { name: "Indigo", letter: "I", swatch: "bg-indigo-500" },
   { name: "Fuchsia", letter: "F", swatch: "bg-fuchsia-500" },
 ];
+
+const messages = {
+  en: {
+    ...common.en,
+    colors: ["Rose", "Amber", "Emerald", "Sky", "Indigo", "Fuchsia"],
+    empty: "Empty slot",
+    intro1: "A secret code of four colours is hidden. Colours can repeat.",
+    intro2: (rounds: number) =>
+      `Each guess returns feedback: a filled peg for a right colour in the right slot, a hollow peg for a right colour in the wrong slot. You have ${rounds} guesses.`,
+    won: (n: number) => `Code cracked in ${n} ${n === 1 ? "guess" : "guesses"}.`,
+    lost: "Out of guesses.",
+    theCode: "The code",
+    guess: "Guess",
+    remove: (name: string) => `Remove ${name}`,
+    left: (n: number) => `${n} left`,
+    feedback: (exact: number, partial: number) => `${exact} in place, ${partial} misplaced.`,
+    pick: (name: string, key: number) => `${name} (key ${key})`,
+    submit: "Submit",
+    clear: "Clear",
+  },
+  ko: {
+    ...common.ko,
+    colors: ["장미", "호박", "에메랄드", "하늘", "남색", "자홍"],
+    empty: "빈 칸",
+    intro1: "네 가지 색으로 된 비밀 코드가 숨겨져 있습니다. 같은 색이 반복될 수 있습니다.",
+    intro2: (rounds: number) =>
+      `추측할 때마다 힌트가 나옵니다. 채워진 핀은 색과 위치가 모두 맞은 것, 빈 핀은 색은 맞지만 위치가 다른 것입니다. 기회는 ${rounds}번입니다.`,
+    won: (n: number) => `${n}번 만에 코드를 풀었습니다.`,
+    lost: "기회를 모두 썼습니다.",
+    theCode: "정답 코드",
+    guess: "추측",
+    remove: (name: string) => `${name} 빼기`,
+    left: (n: number) => `${n}번 남음`,
+    feedback: (exact: number, partial: number) => `위치까지 맞음 ${exact}개, 색만 맞음 ${partial}개.`,
+    pick: (name: string, key: number) => `${name} (${key}번 키)`,
+    submit: "제출",
+    clear: "지우기",
+  },
+};
 
 function makeSecret(): number[] {
   return Array.from({ length: CODE_LENGTH }, () =>
@@ -63,13 +104,14 @@ function evaluate(guess: number[], secret: number[]): Feedback {
 }
 
 function Peg({ color, dim }: { color: number | null; dim?: boolean }) {
+  const m = useMessages(messages);
   if (color === null) {
     return (
       <div
         className={`h-10 w-10 rounded-full border-2 border-dashed border-game-border-dim ${
           dim ? "" : "bg-game-surface-2"
         }`}
-        aria-label="Empty slot"
+        aria-label={m.empty}
       />
     );
   }
@@ -77,7 +119,7 @@ function Peg({ color, dim }: { color: number | null; dim?: boolean }) {
   return (
     <div
       className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-black text-white shadow-md-1 transition-transform duration-200 ${c.swatch}`}
-      aria-label={c.name}
+      aria-label={m.colors[color]}
     >
       {c.letter}
     </div>
@@ -111,6 +153,7 @@ function FeedbackPegs({ feedback }: { feedback: Feedback }) {
 }
 
 export default function Mastermind() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [secret, setSecret] = useState<number[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
@@ -198,17 +241,11 @@ export default function Mastermind() {
           ))}
         </div>
         <div className="flex flex-col gap-3">
-          <p className="text-game-text-dim">
-            A secret code of four colours is hidden. Colours can repeat.
-          </p>
-          <p className="text-game-text-dim">
-            Each guess returns feedback: a filled peg for a right colour in the
-            right slot, a hollow peg for a right colour in the wrong slot. You
-            have {MAX_ROUNDS} guesses.
-          </p>
+          <p className="text-game-text-dim">{m.intro1}</p>
+          <p className="text-game-text-dim">{m.intro2(MAX_ROUNDS)}</p>
         </div>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -217,15 +254,15 @@ export default function Mastermind() {
   if (phase === "won" || phase === "lost") {
     return (
       <div className="mx-auto flex max-w-md animate-slide-up flex-col items-center gap-6 py-8 text-center">
-        <ScoreDisplay label="Score" value={score} size="lg" highlight />
+        <ScoreDisplay label={m.score} value={score} size="lg" highlight />
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? `Code cracked in ${rows.length} ${rows.length === 1 ? "guess" : "guesses"}.`
-            : "Out of guesses."}
+            ? m.won(rows.length)
+            : m.lost}
         </GameMessage>
         <div className="flex flex-col items-center gap-3">
           <span className="text-xs font-bold uppercase tracking-widest text-game-muted">
-            The code
+            {m.theCode}
           </span>
           <div className="flex gap-2">
             {secret.map((c, i) => (
@@ -234,10 +271,10 @@ export default function Mastermind() {
           </div>
         </div>
         {bestScore !== null && (
-          <ScoreDisplay label="Best" value={bestScore} size="sm" />
+          <ScoreDisplay label={m.best} value={bestScore} size="sm" />
         )}
         <GameButton onClick={startGame} size="xl">
-          Play again
+          {m.playAgain}
         </GameButton>
       </div>
     );
@@ -250,8 +287,8 @@ export default function Mastermind() {
   return (
     <div className="mx-auto flex max-w-md animate-fade-in flex-col gap-6">
       <div className="grid grid-cols-2 gap-3">
-        <ScoreDisplay label="Guess" value={`${rows.length + 1} / ${MAX_ROUNDS}`} highlight />
-        <ScoreDisplay label="Best" value={bestScore ?? "—"} />
+        <ScoreDisplay label={m.guess} value={`${rows.length + 1} / ${MAX_ROUNDS}`} highlight />
+        <ScoreDisplay label={m.best} value={bestScore ?? "-"} />
       </div>
 
       <div className="flex flex-col gap-2 rounded-2xl border-2 border-game-border bg-game-surface p-4">
@@ -283,7 +320,7 @@ export default function Mastermind() {
                   key={i}
                   type="button"
                   onClick={() => removeAt(i)}
-                  aria-label={`Remove ${COLORS[current[i]].name}`}
+                  aria-label={m.remove(m.colors[current[i]])}
                   className="rounded-full transition-transform duration-150 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-game-accent focus:ring-offset-2"
                 >
                   <Peg color={current[i]} />
@@ -294,14 +331,14 @@ export default function Mastermind() {
             )}
           </div>
           <div className="w-10 text-center text-xs font-bold tabular-nums text-game-accent">
-            {guessesLeft} left
+            {m.left(guessesLeft)}
           </div>
         </div>
       </div>
 
       {last && (
         <GameMessage type="hint">
-          {last.feedback.exact} in place, {last.feedback.partial} misplaced.
+          {m.feedback(last.feedback.exact, last.feedback.partial)}
         </GameMessage>
       )}
 
@@ -312,7 +349,7 @@ export default function Mastermind() {
             type="button"
             onClick={() => place(i)}
             disabled={current.length >= CODE_LENGTH}
-            aria-label={`${c.name} (key ${i + 1})`}
+            aria-label={m.pick(m.colors[i], i + 1)}
             className={`flex h-12 w-12 flex-col items-center justify-center rounded-full text-xs font-black text-white shadow-md-1 transition-all duration-200 hover:scale-110 hover:shadow-md-2 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-game-accent focus:ring-offset-2 ${c.swatch}`}
           >
             <span>{c.letter}</span>
@@ -323,7 +360,7 @@ export default function Mastermind() {
 
       <div className="flex items-center justify-center gap-3">
         <GameButton onClick={submit} disabled={!ready} size="lg">
-          Submit
+          {m.submit}
         </GameButton>
         <GameButton
           variant="secondary"
@@ -331,12 +368,12 @@ export default function Mastermind() {
           onClick={() => setCurrent([])}
           disabled={current.length === 0}
         >
-          Clear
+          {m.clear}
         </GameButton>
       </div>
 
       <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-        Quit
+        {m.quit}
       </GameButton>
     </div>
   );

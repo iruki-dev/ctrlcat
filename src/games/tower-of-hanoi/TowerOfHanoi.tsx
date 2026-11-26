@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -31,14 +33,66 @@ function discColor(size: number): string {
   return size % 2 === 1 ? "bg-game-accent" : "bg-game-secondary";
 }
 
+type Notice = "empty" | "larger";
+
+const messages = {
+  en: {
+    ...common.en,
+    intro: "Move the whole stack to the right peg. Carry one disc at a time, and never place a larger disc on a smaller one.",
+    discs: "Discs",
+    shortest: (n: number) => `Shortest solution: ${n} moves`,
+    perfect: (discs: number, target: number) => `Perfect. You solved ${discs} discs in the minimum ${target} moves.`,
+    solved: (discs: number, moves: number, target: number) =>
+      `Solved with ${discs} discs in ${moves} moves. The minimum is ${target}.`,
+    minimum: "Minimum",
+    bestAt: (discs: number) => `Best at ${discs}`,
+    changeDiscs: "Change discs",
+    home: (n: number, total: number) => `${n} of ${total} discs home`,
+    peg: (n: number, discs: number) => `Peg ${n}, ${discs} discs`,
+    notices: {
+      empty: "That peg is empty. Pick a peg with a disc on it.",
+      larger: "A larger disc cannot sit on a smaller one.",
+    } as Record<Notice, string>,
+    pick: "Click a peg to lift its top disc, or press 1, 2, or 3.",
+    lifted: (disc: number) => `Disc ${disc} lifted. Choose a peg to drop it on.`,
+    offLeft: (n: number) => `${n} off the left peg`,
+    undo: "Undo",
+    reset: "Reset",
+  },
+  ko: {
+    ...common.ko,
+    intro: "원판 더미 전체를 오른쪽 기둥으로 옮기세요. 한 번에 한 장씩만 옮길 수 있고, 큰 원판을 작은 원판 위에 올릴 수 없습니다.",
+    discs: "원판 수",
+    shortest: (n: number) => `최소 이동 수: ${n}번`,
+    perfect: (discs: number, target: number) => `완벽합니다. 원판 ${discs}장을 최소 이동 수인 ${target}번 만에 옮겼습니다.`,
+    solved: (discs: number, moves: number, target: number) =>
+      `원판 ${discs}장을 ${moves}번 만에 옮겼습니다. 최소 이동 수는 ${target}번입니다.`,
+    minimum: "최소",
+    bestAt: (discs: number) => `${discs}장 최고 기록`,
+    changeDiscs: "원판 수 바꾸기",
+    home: (n: number, total: number) => `${total}장 중 ${n}장 도착`,
+    peg: (n: number, discs: number) => `${n}번 기둥, 원판 ${discs}장`,
+    notices: {
+      empty: "빈 기둥입니다. 원판이 있는 기둥을 고르세요.",
+      larger: "큰 원판은 작은 원판 위에 올릴 수 없습니다.",
+    } as Record<Notice, string>,
+    pick: "기둥을 클릭하거나 1, 2, 3을 눌러 맨 위 원판을 드세요.",
+    lifted: (disc: number) => `${disc}번 원판을 들었습니다. 내려놓을 기둥을 고르세요.`,
+    offLeft: (n: number) => `왼쪽 기둥에서 ${n}장 옮김`,
+    undo: "되돌리기",
+    reset: "처음부터",
+  },
+};
+
 export default function TowerOfHanoi() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [discs, setDiscs] = useState(4);
   const [pegs, setPegs] = useState<Pegs>(() => buildPegs(4));
   const [selected, setSelected] = useState<number | null>(null);
   const [moves, setMoves] = useState(0);
   const [history, setHistory] = useState<Array<[number, number]>>([]);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const [bestByDiscs, setBestByDiscs] = useState<Record<number, number>>({});
 
   const target = useMemo(() => minimumMoves(discs), [discs]);
@@ -76,7 +130,7 @@ export default function TowerOfHanoi() {
 
       if (selected === null) {
         if (pegs[index].length === 0) {
-          setNotice("That peg is empty. Pick a peg with a disc on it.");
+          setNotice("empty");
           return;
         }
         setNotice(null);
@@ -96,7 +150,7 @@ export default function TowerOfHanoi() {
       const landing = to[to.length - 1];
 
       if (landing !== undefined && landing < disc) {
-        setNotice("A larger disc cannot sit on a smaller one.");
+        setNotice("larger");
         return;
       }
 
@@ -157,13 +211,10 @@ export default function TowerOfHanoi() {
   if (phase === "idle") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
-        <p className="text-game-text-dim">
-          Move the whole stack to the right peg. Carry one disc at a time, and never place a larger
-          disc on a smaller one.
-        </p>
+        <p className="text-game-text-dim">{m.intro}</p>
         <div className="flex flex-col items-center gap-3">
           <span className="text-xs font-bold uppercase tracking-widest text-game-muted">
-            Discs
+            {m.discs}
           </span>
           <div className="flex flex-wrap justify-center gap-2">
             {DISC_OPTIONS.map((count) => (
@@ -179,11 +230,11 @@ export default function TowerOfHanoi() {
             ))}
           </div>
           <span className="text-sm text-game-text-dim tabular-nums">
-            Shortest solution: {minimumMoves(discs)} moves
+            {m.shortest(minimumMoves(discs))}
           </span>
         </div>
         <GameButton onClick={() => startGame(discs)} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -193,22 +244,22 @@ export default function TowerOfHanoi() {
     const perfect = moves === target;
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
-        <ScoreDisplay label="Moves" value={moves} size="lg" highlight />
+        <ScoreDisplay label={m.moves} value={moves} size="lg" highlight />
         <GameMessage type={perfect ? "success" : "info"}>
           {perfect
-            ? `Perfect. You solved ${discs} discs in the minimum ${target} moves.`
-            : `Solved with ${discs} discs in ${moves} moves. The minimum is ${target}.`}
+            ? m.perfect(discs, target)
+            : m.solved(discs, moves, target)}
         </GameMessage>
         <div className="grid grid-cols-2 gap-3 w-full">
-          <ScoreDisplay label="Minimum" value={target} size="sm" />
-          <ScoreDisplay label={`Best at ${discs}`} value={best ?? moves} size="sm" />
+          <ScoreDisplay label={m.minimum} value={target} size="sm" />
+          <ScoreDisplay label={m.bestAt(discs)} value={best ?? moves} size="sm" />
         </div>
         <div className="flex flex-wrap justify-center gap-3">
           <GameButton onClick={resetBoard} size="xl">
-            Play again
+            {m.playAgain}
           </GameButton>
           <GameButton variant="secondary" size="xl" onClick={() => setPhase("idle")}>
-            Change discs
+            {m.changeDiscs}
           </GameButton>
         </div>
       </div>
@@ -220,9 +271,9 @@ export default function TowerOfHanoi() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Moves" value={moves} highlight />
-        <ScoreDisplay label="Minimum" value={target} />
-        <ScoreDisplay label="Best" value={best ?? "—"} />
+        <ScoreDisplay label={m.moves} value={moves} highlight />
+        <ScoreDisplay label={m.minimum} value={target} />
+        <ScoreDisplay label={m.best} value={best ?? "-"} />
       </div>
 
       <div className="flex flex-col gap-2">
@@ -233,7 +284,7 @@ export default function TowerOfHanoi() {
           />
         </div>
         <span className="text-xs font-bold uppercase tracking-widest text-game-muted">
-          {pegs[2].length} of {discs} discs home
+          {m.home(pegs[2].length, discs)}
         </span>
       </div>
 
@@ -245,7 +296,7 @@ export default function TowerOfHanoi() {
               key={index}
               type="button"
               onClick={() => tapPeg(index)}
-              aria-label={`Peg ${index + 1}, ${peg.length} discs`}
+              aria-label={m.peg(index + 1, peg.length)}
               className={`group relative flex h-56 flex-col justify-end rounded-2xl border-2 p-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-game-accent focus:ring-offset-2 ${
                 isSelected
                   ? "border-game-accent bg-game-surface"
@@ -289,23 +340,24 @@ export default function TowerOfHanoi() {
       </div>
 
       <GameMessage type={notice ? "warning" : "hint"}>
-        {notice ??
-          (selected === null
-            ? "Click a peg to lift its top disc, or press 1, 2, or 3."
-            : `Disc ${pegs[selected][pegs[selected].length - 1]} lifted. Choose a peg to drop it on.`)}
+        {notice
+          ? m.notices[notice]
+          : selected === null
+            ? m.pick
+            : m.lifted(pegs[selected][pegs[selected].length - 1])}
       </GameMessage>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs text-game-muted tabular-nums">{moved} off the left peg</span>
+        <span className="text-xs text-game-muted tabular-nums">{m.offLeft(moved)}</span>
         <div className="flex flex-wrap gap-2">
           <GameButton variant="secondary" size="sm" onClick={undo} disabled={history.length === 0}>
-            Undo
+            {m.undo}
           </GameButton>
           <GameButton variant="secondary" size="sm" onClick={resetBoard}>
-            Reset
+            {m.reset}
           </GameButton>
           <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-            Quit
+            {m.quit}
           </GameButton>
         </div>
       </div>

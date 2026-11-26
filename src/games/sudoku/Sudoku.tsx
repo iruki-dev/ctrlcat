@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -6,12 +8,51 @@ import { GameMessage } from "../../components/games/ui/GameMessage";
 type Phase = "idle" | "playing" | "won";
 type Level = "easy" | "medium" | "hard" | "expert";
 
-const LEVELS: { id: Level; label: string; blanks: number }[] = [
-  { id: "easy", label: "Easy", blanks: 38 },
-  { id: "medium", label: "Medium", blanks: 46 },
-  { id: "hard", label: "Hard", blanks: 52 },
-  { id: "expert", label: "Expert", blanks: 55 },
+const LEVELS: { id: Level; blanks: number }[] = [
+  { id: "easy", blanks: 38 },
+  { id: "medium", blanks: 46 },
+  { id: "hard", blanks: 52 },
+  { id: "expert", blanks: 55 },
 ];
+
+const messages = {
+  en: {
+    ...common.en,
+    levels: { easy: "Easy", medium: "Medium", hard: "Hard", expert: "Expert" } as Record<Level, string>,
+    intro:
+      "Fill the grid so every row, column, and 3x3 box holds 1 through 9 exactly once. Every puzzle has one solution, so you never need to guess.",
+    keys: "Arrow keys move, 1 to 9 place a digit, 0 clears, N toggles notes.",
+    mistakes: "Mistakes",
+    solved: (level: string, newBest: boolean) => `Solved on ${level.toLowerCase()}${newBest ? ", a new best time." : "."}`,
+    changeDifficulty: "Change difficulty",
+    filled: "Filled",
+    board: "Sudoku board",
+    cell: (row: number, col: number, value: number) => `Row ${row} column ${col}, ${value || "empty"}`,
+    clear: "Clear",
+    notes: (on: boolean) => `Notes ${on ? "on" : "off"}`,
+    newPuzzle: "New puzzle",
+    mismatch: (n: number) =>
+      n === 1 ? "One digit does not match the solution." : `${n} digits placed so far do not match the solution.`,
+  },
+  ko: {
+    ...common.ko,
+    levels: { easy: "쉬움", medium: "보통", hard: "어려움", expert: "전문가" } as Record<Level, string>,
+    intro:
+      "모든 가로줄, 세로줄, 3x3 칸에 1부터 9까지 숫자가 한 번씩만 들어가도록 채우세요. 모든 퍼즐은 답이 하나뿐이라 찍을 필요가 없습니다.",
+    keys: "방향키로 이동, 1~9로 숫자 입력, 0으로 지우기, N으로 메모 모드를 켜고 끕니다.",
+    mistakes: "실수",
+    solved: (level: string, newBest: boolean) => `${level} 난이도를 풀었습니다${newBest ? ". 최고 기록입니다." : "."}`,
+    changeDifficulty: "난이도 바꾸기",
+    filled: "채운 칸",
+    board: "스도쿠 판",
+    cell: (row: number, col: number, value: number) => `${row}행 ${col}열, ${value || "빈칸"}`,
+    clear: "지우기",
+    notes: (on: boolean) => `메모 ${on ? "켜짐" : "꺼짐"}`,
+    newPuzzle: "새 퍼즐",
+    mismatch: (n: number) =>
+      n === 1 ? "정답과 다른 숫자가 하나 있습니다." : `지금까지 넣은 숫자 중 ${n}개가 정답과 다릅니다.`,
+  },
+};
 
 const DIGITS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -117,6 +158,7 @@ function formatTime(seconds: number): string {
 }
 
 export default function Sudoku() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [level, setLevel] = useState<Level>("easy");
   const [given, setGiven] = useState<number[]>(() => new Array(81).fill(0));
@@ -171,7 +213,7 @@ export default function Sudoku() {
         return;
       }
 
-      if (value !== 0 && solution[index] !== value) setMistakes((m) => m + 1);
+      if (value !== 0 && solution[index] !== value) setMistakes((n) => n + 1);
 
       setNotes((prev) => {
         if (value === 0 && prev[index].length === 0) return prev;
@@ -223,7 +265,7 @@ export default function Sudoku() {
       }
       if (key === "n" || key === "N") {
         event.preventDefault();
-        setNoteMode((m) => !m);
+        setNoteMode((on) => !on);
       }
     },
     [selected, place],
@@ -236,10 +278,7 @@ export default function Sudoku() {
   if (phase === "idle") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
-        <p className="text-game-text-dim">
-          Fill the grid so every row, column, and 3x3 box holds 1 through 9 exactly once. Every
-          puzzle has one solution, so you never need to guess.
-        </p>
+        <p className="text-game-text-dim">{m.intro}</p>
         <div className="grid grid-cols-2 gap-3 w-full">
           {LEVELS.map((item) => (
             <GameButton
@@ -248,12 +287,12 @@ export default function Sudoku() {
               variant={item.id === "easy" ? "primary" : "secondary"}
               size="lg"
             >
-              {item.label}
+              {m.levels[item.id]}
             </GameButton>
           ))}
         </div>
         <p className="text-xs text-game-muted">
-          Arrow keys move, 1 to 9 place a digit, 0 clears, N toggles notes.
+          {m.keys}
         </p>
       </div>
     );
@@ -264,19 +303,18 @@ export default function Sudoku() {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
         <div className="grid grid-cols-2 gap-3 w-full">
-          <ScoreDisplay label="Time" value={formatTime(elapsed)} size="lg" highlight />
-          <ScoreDisplay label="Mistakes" value={mistakes} size="lg" />
+          <ScoreDisplay label={m.time} value={formatTime(elapsed)} size="lg" highlight />
+          <ScoreDisplay label={m.mistakes} value={mistakes} size="lg" />
         </div>
         <GameMessage type="success">
-          Solved on {LEVELS.find((l) => l.id === level)?.label.toLowerCase()}
-          {best !== undefined && best === elapsed ? " — a new best time." : "."}
+          {m.solved(m.levels[level], best !== undefined && best === elapsed)}
         </GameMessage>
         <div className="flex flex-wrap gap-3 justify-center">
           <GameButton onClick={() => startGame(level)} size="xl">
-            Play again
+            {m.playAgain}
           </GameButton>
           <GameButton variant="ghost" size="lg" onClick={() => setPhase("idle")}>
-            Change difficulty
+            {m.changeDifficulty}
           </GameButton>
         </div>
       </div>
@@ -288,16 +326,16 @@ export default function Sudoku() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-5 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Time" value={formatTime(elapsed)} size="sm" highlight />
-        <ScoreDisplay label="Filled" value={`${filled}/81`} size="sm" />
-        <ScoreDisplay label="Mistakes" value={mistakes} size="sm" />
+        <ScoreDisplay label={m.time} value={formatTime(elapsed)} size="sm" highlight />
+        <ScoreDisplay label={m.filled} value={`${filled}/81`} size="sm" />
+        <ScoreDisplay label={m.mistakes} value={mistakes} size="sm" />
       </div>
 
       <div
         ref={boardRef}
         tabIndex={0}
         onKeyDown={onKeyDown}
-        aria-label="Sudoku board"
+        aria-label={m.board}
         className="grid grid-cols-9 gap-px bg-game-border p-1 rounded-2xl border-2 border-game-border outline-none focus:ring-2 focus:ring-game-accent/50 select-none"
       >
         {grid.map((value, index) => {
@@ -333,7 +371,7 @@ export default function Sudoku() {
               key={index}
               type="button"
               onClick={() => setSelected(index)}
-              aria-label={`Row ${row + 1} column ${col + 1}${value ? `, ${value}` : ", empty"}`}
+              aria-label={m.cell(row + 1, col + 1, value)}
               className={`relative aspect-square flex items-center justify-center text-base sm:text-lg tabular-nums transition-colors duration-150 ${tone} ${
                 col % 3 === 2 && col !== 8 ? "mr-0.5" : ""
               } ${row % 3 === 2 && row !== 8 ? "mb-0.5" : ""}`}
@@ -382,7 +420,7 @@ export default function Sudoku() {
           }}
           className="rounded-xl border-2 border-game-border bg-game-surface py-3 text-sm font-bold text-game-text-dim transition-colors duration-150 hover:border-game-accent hover:text-game-accent"
         >
-          Clear
+          {m.clear}
         </button>
       </div>
 
@@ -391,25 +429,25 @@ export default function Sudoku() {
           variant={noteMode ? "primary" : "secondary"}
           size="sm"
           onClick={() => {
-            setNoteMode((m) => !m);
+            setNoteMode((on) => !on);
             focusBoard();
           }}
         >
-          Notes {noteMode ? "on" : "off"}
+          {m.notes(noteMode)}
         </GameButton>
         <div className="flex gap-2">
           <GameButton variant="ghost" size="sm" onClick={() => startGame(level)}>
-            New puzzle
+            {m.newPuzzle}
           </GameButton>
           <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-            Quit
+            {m.quit}
           </GameButton>
         </div>
       </div>
 
       {mistakes > 0 && (
         <GameMessage type="warning">
-          {mistakes === 1 ? "One digit does not match the solution." : `${mistakes} digits placed so far do not match the solution.`}
+          {m.mismatch(mistakes)}
         </GameMessage>
       )}
     </div>

@@ -1,0 +1,99 @@
+---
+import { getCollection } from "astro:content";
+import GameLayout from "../layouts/GameLayout.astro";
+import GameIllustration from "../components/GameIllustration.astro";
+import { difficultyClass } from "../components/games/difficulty";
+import { t, localePath, localize, type Locale } from "../i18n";
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const tr = t(lang);
+
+const allGames = await getCollection("games", ({ data }) => data.status === "published");
+allGames.sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || a.data.title.localeCompare(b.data.title));
+const categories = [...new Set(allGames.map((game) => game.data.category))].sort();
+
+const activeClass = "border-2 border-game-accent bg-game-accent-light text-game-accent";
+const inactiveClass = "border border-game-border-dim bg-game-surface text-game-text-dim hover:bg-game-surface-2 hover:border-game-border";
+---
+
+<GameLayout title={tr.games.pageTitle} description={tr.games.pageSubtitle} lang={lang} showHeader={false}>
+  <div class="mb-8">
+    <h1 class="text-[1.75rem] font-bold text-game-text leading-snug">{tr.games.pageTitle}</h1>
+    <p class="text-sm text-game-text-dim mt-1.5 leading-relaxed">{tr.games.pageSubtitle}</p>
+  </div>
+
+  <div class="relative max-w-sm mb-5">
+    <svg class="absolute left-4 top-1/2 -translate-y-1/2 text-game-muted w-4 h-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+    </svg>
+    <input
+      id="game-search"
+      type="search"
+      placeholder={tr.games.search}
+      class="w-full bg-game-surface border border-game-border rounded-full pl-11 pr-4 py-2.5
+             text-game-text text-sm placeholder:text-game-muted
+             focus:outline-none focus:ring-2 focus:ring-game-accent focus:border-game-accent transition-colors"
+    />
+  </div>
+
+  <div id="game-filters" data-active-class={activeClass} data-inactive-class={inactiveClass} class="flex gap-2 flex-wrap mb-6">
+    {["all", ...categories].map((cat) => (
+      <button
+        data-filter={cat}
+        aria-pressed={String(cat === "all")}
+        class:list={["px-4 py-2 rounded-full text-xs font-medium transition-colors", cat === "all" ? activeClass : inactiveClass]}
+      >
+        {cat === "all" ? tr.games.all : tr.games.categories_map[cat as keyof typeof tr.games.categories_map]}
+      </button>
+    ))}
+  </div>
+
+  <div id="game-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    {allGames.map((game) => {
+      const { title } = localize(game, lang);
+      return (
+        <a
+          href={localePath(`/games/${game.slug}/`, lang)}
+          data-category={game.data.category}
+          data-title={title.toLowerCase()}
+          data-tags={game.data.tags.join(" ").toLowerCase()}
+          class="game-card group block rounded-3xl overflow-hidden bg-game-surface shadow-md-1
+                 hover:shadow-md-3 transition-shadow duration-200 focus:outline-none
+                 focus:ring-2 focus:ring-game-accent focus:ring-offset-2"
+        >
+          <div class="flex items-center justify-center bg-game-accent-light/30 h-44">
+            <GameIllustration slug={game.slug} />
+          </div>
+          <div class="px-5 py-4">
+            <h2 class="font-bold text-sm text-game-text group-hover:text-game-accent transition-colors leading-snug">{title}</h2>
+            <div class="flex items-center gap-3 mt-2">
+              <span class={`text-xs font-semibold px-2 py-0.5 rounded-full bg-game-surface-2 ${difficultyClass(game.data.difficulty)}`}>
+                {tr.games.difficulty[game.data.difficulty]}
+              </span>
+              {game.data.playTime && <span class="text-xs text-game-muted">{tr.games.playTime(game.data.playTime)}</span>}
+              <span class="text-xs font-semibold text-game-accent group-hover:underline ml-auto shrink-0">{tr.landing.playGame}</span>
+            </div>
+          </div>
+        </a>
+      );
+    })}
+  </div>
+
+  <div id="game-empty" class="hidden py-20 text-center text-sm text-game-muted">{tr.games.noResults}</div>
+</GameLayout>
+
+<script>
+  import { initCatalogFilter } from "../scripts/catalogFilter";
+
+  initCatalogFilter({
+    searchId: "game-search",
+    gridId: "game-grid",
+    emptyId: "game-empty",
+    filtersId: "game-filters",
+    cardSelector: ".game-card",
+  });
+</script>

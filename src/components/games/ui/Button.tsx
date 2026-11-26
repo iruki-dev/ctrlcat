@@ -8,10 +8,9 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size;
 }
 
-/* Material Design 3 button tokens */
 const variantClass: Record<Variant, string> = {
   primary:
-    "bg-game-accent text-white font-bold hover:bg-game-accent-dim active:bg-game-accent-dim shadow-md-1 hover:shadow-md-2",
+    "bg-game-accent text-game-on-accent font-bold hover:bg-game-accent-dim active:bg-game-accent-dim shadow-md-1 hover:shadow-md-2",
   secondary:
     "bg-game-accent-light text-game-accent font-semibold hover:bg-game-accent/20 active:bg-game-accent/25",
   ghost:
@@ -36,6 +35,7 @@ export function GameButton({
 }: Props) {
   return (
     <button
+      type="button"
       {...props}
       className={`inline-flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-game-accent focus:ring-offset-2 ${variantClass[variant]} ${sizeClass[size]} ${className}`}
     >

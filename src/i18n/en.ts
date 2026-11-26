@@ -1,15 +1,22 @@
 export const en = {
+  meta: {
+    title: "ctrlcat — Free Web Tools & Games",
+    description:
+      "No accounts, no tracking. Free web tools and games — text, math, color, puzzles, number games and more.",
+  },
   nav: {
+    main: "Main navigation",
+    tools: "Tools",
+    games: "Games",
     allTools: "All Tools",
     allGames: "All Games",
+    toolsNav: "Tools navigation",
+    gamesNav: "Games navigation",
+    openMenu: "Open navigation",
+    toggleTheme: "Toggle dark mode",
+    language: "Lang",
   },
   landing: {
-    tagline: "Tools & Games,\nbuilt for the web.",
-    sub: "Fast, free, no accounts.",
-    enterTools: "Browse Tools",
-    enterGames: "Browse Games",
-    toolsDesc: "Text, math, color, dev utilities",
-    gamesDesc: "Puzzle, word, number, arcade",
     heroTitle: "Free Web Tools & Games",
     heroSub: "No accounts, no tracking. Works on any device.",
     searchPlaceholder: "Search tools and games…",
@@ -19,14 +26,18 @@ export const en = {
     viewAllGames: "View all games →",
     useTool: "Use Tool →",
     playGame: "Play →",
+    noResults: "No results found",
     footerTagline: "Fast, free utilities and games for the web.",
+    footerAllTools: "All tools",
+    footerAllGames: "All games",
+    footerSite: "Site",
+    copyright: "Free web tools and games",
   },
   tools: {
     siteTitle: "ctrlcat tools",
     pageTitle: "Web Tools",
     pageSubtitle: "Fast, free utilities. No accounts, no tracking.",
     search: "Search tools…",
-    categories: "Categories",
     all: "All",
     featured: "Featured",
     noResults: "No tools found. Try a different search.",
@@ -46,7 +57,6 @@ export const en = {
     pageTitle: "Web Games",
     pageSubtitle: "Quick browser games. No installs, no accounts.",
     search: "Search games…",
-    categories: "Categories",
     all: "All",
     featured: "Featured",
     noResults: "No games found. Try a different search.",
@@ -62,11 +72,6 @@ export const en = {
       trivia: "Trivia",
     },
   },
-  common: {
-    loading: "Loading…",
-    notFound: "Not found",
-    lang: "Language",
-  },
-} as const;
+};
 
 export type Translations = typeof en;

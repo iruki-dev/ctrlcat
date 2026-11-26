@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
+import { useBestScore } from "../lib/useBestScore";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -22,24 +25,47 @@ function pickPassage(previous: string | null) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
-function readBest(): number | null {
-  try {
-    const raw = window.localStorage.getItem(BEST_KEY);
-    if (!raw) return null;
-    const parsed = Number.parseInt(raw, 10);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeBest(value: number) {
-  try {
-    window.localStorage.setItem(BEST_KEY, String(value));
-  } catch {
-    // storage unavailable, personal best stays in memory only
-  }
-}
+const messages = {
+  en: {
+    ...common.en,
+    intro1: "Copy the passage exactly as it appears. You have sixty seconds. The clock starts on your first keystroke.",
+    intro2:
+      "Finish the whole passage in time to clear the round. Your speed is measured in words per minute, where one word counts as five correct characters.",
+    personalBest: "Personal best WPM",
+    wpmLong: "Words per minute",
+    accuracy: "Accuracy",
+    bestWpm: "Best WPM",
+    finished: (s: string) => `Passage finished in ${s} seconds.`,
+    timeUp: (words: number) => `Time is up. You typed about ${words} words.`,
+    newBest: "New personal best.",
+    lowAccuracy: "Accuracy under eighty percent does not count towards your best.",
+    secondsLeft: "Seconds left",
+    wpm: "WPM",
+    inputLabel: "Type the passage here",
+    placeholder: "Start typing here",
+    progress: (pct: number) => `${pct}% of the passage typed`,
+    newPassage: "New passage",
+  },
+  ko: {
+    ...common.ko,
+    intro1: "화면의 영어 지문을 그대로 따라 입력하세요. 제한 시간은 60초이며, 첫 글자를 입력하는 순간 시간이 흐르기 시작합니다.",
+    intro2: "시간 안에 지문을 모두 입력하면 성공입니다. 속도는 분당 단어 수(WPM)로 재며, 올바르게 입력한 5글자를 한 단어로 셉니다.",
+    personalBest: "최고 WPM",
+    wpmLong: "분당 단어 수",
+    accuracy: "정확도",
+    bestWpm: "최고 WPM",
+    finished: (s: string) => `${s}초 만에 지문을 끝냈습니다.`,
+    timeUp: (words: number) => `시간이 끝났습니다. 약 ${words}단어를 입력했습니다.`,
+    newBest: "최고 기록을 새로 세웠습니다.",
+    lowAccuracy: "정확도가 80% 미만이면 최고 기록에 반영되지 않습니다.",
+    secondsLeft: "남은 시간(초)",
+    wpm: "WPM",
+    inputLabel: "여기에 지문을 입력하세요",
+    placeholder: "여기에 입력을 시작하세요",
+    progress: (pct: number) => `지문의 ${pct}% 입력`,
+    newPassage: "다른 지문",
+  },
+};
 
 export default function TypingSpeedTest() {
   const [phase, setPhase] = useState<Phase>("idle");
@@ -48,19 +74,13 @@ export default function TypingSpeedTest() {
   const [keystrokes, setKeystrokes] = useState(0);
   const [mistakes, setMistakes] = useState(0);
   const [elapsed, setElapsed] = useState(0);
-  const [bestWpm, setBestWpm] = useState<number | null>(null);
+  const m = useMessages(messages);
+  const { best: bestWpm, record } = useBestScore(BEST_KEY);
   const [newRecord, setNewRecord] = useState(false);
 
   const startedAt = useRef<number | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const resultRef = useRef({ wpm: 0, accuracy: 100, typedWords: 0 });
-  const bestRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const stored = readBest();
-    bestRef.current = stored;
-    setBestWpm(stored);
-  }, []);
 
   const correctChars = useMemo(() => {
     let count = 0;
@@ -93,16 +113,9 @@ export default function TypingSpeedTest() {
       setElapsed(finalElapsed);
       setPhase(won ? "won" : "lost");
 
-      const previousBest = bestRef.current;
-      const qualifies = acc >= 80 && wpm > 0 && (previousBest === null || wpm > previousBest);
-      if (qualifies) {
-        bestRef.current = wpm;
-        writeBest(wpm);
-        setBestWpm(wpm);
-      }
-      setNewRecord(qualifies);
+      setNewRecord(acc >= 80 && record(wpm));
     },
-    [passage],
+    [passage, record],
   );
 
   useEffect(() => {
@@ -148,7 +161,7 @@ export default function TypingSpeedTest() {
           if (next[i] !== passage[i]) wrong += 1;
         }
         setKeystrokes((k) => k + added);
-        setMistakes((m) => m + wrong);
+        setMistakes((n) => n + wrong);
       }
 
       setTyped(next);
@@ -173,17 +186,12 @@ export default function TypingSpeedTest() {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
         <div className="flex flex-col gap-3">
-          <p className="text-game-text-dim">
-            Copy the passage exactly as it appears. You have sixty seconds. The clock starts on your first keystroke.
-          </p>
-          <p className="text-game-text-dim">
-            Finish the whole passage in time to clear the round. Your speed is measured in words per minute, where one
-            word counts as five correct characters.
-          </p>
+          <p className="text-game-text-dim">{m.intro1}</p>
+          <p className="text-game-text-dim">{m.intro2}</p>
         </div>
-        {bestWpm !== null && <ScoreDisplay label="Personal best WPM" value={bestWpm} size="sm" />}
+        {bestWpm !== null && <ScoreDisplay label={m.personalBest} value={bestWpm} size="sm" />}
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -193,22 +201,22 @@ export default function TypingSpeedTest() {
     const { wpm, accuracy: finalAccuracy, typedWords } = resultRef.current;
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
-        <ScoreDisplay label="Words per minute" value={wpm} size="lg" highlight />
+        <ScoreDisplay label={m.wpmLong} value={wpm} size="lg" highlight />
         <div className="grid grid-cols-2 gap-3 w-full">
-          <ScoreDisplay label="Accuracy" value={`${finalAccuracy}%`} />
-          <ScoreDisplay label="Best WPM" value={bestWpm ?? "—"} />
+          <ScoreDisplay label={m.accuracy} value={`${finalAccuracy}%`} />
+          <ScoreDisplay label={m.bestWpm} value={bestWpm ?? "-"} />
         </div>
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? `Passage finished in ${elapsed.toFixed(1)} seconds.`
-            : `Time is up. You typed about ${typedWords} words.`}
+            ? m.finished(elapsed.toFixed(1))
+            : m.timeUp(typedWords)}
         </GameMessage>
-        {newRecord && <GameMessage type="hint">New personal best.</GameMessage>}
+        {newRecord && <GameMessage type="hint">{m.newBest}</GameMessage>}
         {finalAccuracy < 80 && (
-          <GameMessage type="warning">Accuracy under eighty percent does not count towards your best.</GameMessage>
+          <GameMessage type="warning">{m.lowAccuracy}</GameMessage>
         )}
         <GameButton onClick={startGame} size="xl">
-          Play again
+          {m.playAgain}
         </GameButton>
       </div>
     );
@@ -217,9 +225,9 @@ export default function TypingSpeedTest() {
   return (
     <div className="max-w-2xl mx-auto flex flex-col gap-6 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Seconds left" value={remaining} highlight={remaining <= 10} />
-        <ScoreDisplay label="WPM" value={liveWpm} />
-        <ScoreDisplay label="Accuracy" value={`${accuracy}%`} />
+        <ScoreDisplay label={m.secondsLeft} value={remaining} highlight={remaining <= 10} />
+        <ScoreDisplay label={m.wpm} value={liveWpm} />
+        <ScoreDisplay label={m.accuracy} value={`${accuracy}%`} />
       </div>
 
       <div
@@ -273,19 +281,19 @@ export default function TypingSpeedTest() {
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck={false}
-        aria-label="Type the passage here"
-        placeholder="Start typing here"
+        aria-label={m.inputLabel}
+        placeholder={m.placeholder}
         className="w-full h-24 resize-none rounded-2xl border-2 border-game-border bg-game-bg p-4 text-base text-game-text placeholder:text-game-text-dim outline-none focus:border-game-accent transition-colors"
       />
 
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-game-text-dim">{progress}% of the passage typed</p>
+        <p className="text-sm text-game-text-dim">{m.progress(progress)}</p>
         <div className="flex gap-2">
           <GameButton variant="ghost" size="sm" onClick={startGame}>
-            New passage
+            {m.newPassage}
           </GameButton>
           <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-            Quit
+            {m.quit}
           </GameButton>
         </div>
       </div>

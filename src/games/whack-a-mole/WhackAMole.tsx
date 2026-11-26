@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -81,7 +83,41 @@ const upTime = (score: number) => Math.max(520, 1250 - score * 32);
 const spawnGap = (score: number) => Math.max(380, 950 - score * 26);
 const maxUp = (score: number) => (score >= 14 ? 3 : score >= 6 ? 2 : 1);
 
+const messages = {
+  en: {
+    ...common.en,
+    intro1: "Moles pop out of nine holes. Hit them before they duck back down.",
+    intro2: (target: number) =>
+      `You get 30 seconds. Land ${target} hits to win the round. Every swing at an empty hole costs you one second, so aim before you swing.`,
+    intro3: "Click or tap a hole, or use the keys 1-9.",
+    hits: "Hits",
+    won: (hits: number) => `You cleared the round with ${hits} hits.`,
+    lost: (target: number, hits: number) => `Time is up. You needed ${target} hits and landed ${hits}.`,
+    bestStreak: "Best streak",
+    misses: "Misses",
+    streak: "Streak",
+    hole: (n: number, up: boolean) => `Hole ${n}, ${up ? "mole up" : "empty"}`,
+    help: "Keys 1-9 hit the matching hole. An empty swing costs one second.",
+  },
+  ko: {
+    ...common.ko,
+    intro1: "구멍 아홉 개에서 두더지가 튀어나옵니다. 숨기 전에 잡으세요.",
+    intro2: (target: number) =>
+      `제한 시간은 30초이며, ${target}번 맞히면 승리합니다. 빈 구멍을 치면 1초가 줄어드니 잘 보고 치세요.`,
+    intro3: "구멍을 클릭하거나 탭하세요. 숫자 1~9 키도 쓸 수 있습니다.",
+    hits: "맞힌 수",
+    won: (hits: number) => `${hits}번 맞혀 라운드를 통과했습니다.`,
+    lost: (target: number, hits: number) => `시간이 끝났습니다. ${target}번이 필요했는데 ${hits}번 맞혔습니다.`,
+    bestStreak: "최고 연속",
+    misses: "헛스윙",
+    streak: "연속",
+    hole: (n: number, up: boolean) => `${n}번 구멍, ${up ? "두더지 있음" : "비어 있음"}`,
+    help: "숫자 1~9 키로 같은 번호의 구멍을 칩니다. 빈 구멍을 치면 1초가 줄어듭니다.",
+  },
+};
+
 export default function WhackAMole() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [bestScore, setBestScore] = useState<number | null>(null);
   const [view, setView] = useState<View>(() =>
@@ -208,22 +244,15 @@ export default function WhackAMole() {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
         <div className="flex flex-col gap-3">
-          <p className="text-game-text">
-            Moles pop out of nine holes. Hit them before they duck back down.
-          </p>
-          <p className="text-game-text-dim text-sm">
-            You get 30 seconds. Land {TARGET} hits to win the round. Every swing
-            at an empty hole costs you one second, so aim before you swing.
-          </p>
-          <p className="text-game-text-dim text-sm">
-            Click or tap a hole, or use the keys 1-9.
-          </p>
+          <p className="text-game-text">{m.intro1}</p>
+          <p className="text-game-text-dim text-sm">{m.intro2(TARGET)}</p>
+          <p className="text-game-text-dim text-sm">{m.intro3}</p>
         </div>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
         {bestScore !== null && (
-          <ScoreDisplay label="Best" value={bestScore} size="sm" />
+          <ScoreDisplay label={m.best} value={bestScore} size="sm" />
         )}
       </div>
     );
@@ -232,19 +261,19 @@ export default function WhackAMole() {
   if (phase === "won" || phase === "lost") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
-        <ScoreDisplay label="Hits" value={view.score} size="lg" highlight />
+        <ScoreDisplay label={m.hits} value={view.score} size="lg" highlight />
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? `You cleared the round with ${view.score} hits.`
-            : `Time is up. You needed ${TARGET} hits and landed ${view.score}.`}
+            ? m.won(view.score)
+            : m.lost(TARGET, view.score)}
         </GameMessage>
         <div className="grid grid-cols-3 gap-3 w-full">
-          <ScoreDisplay label="Best streak" value={view.bestStreak} size="sm" />
-          <ScoreDisplay label="Misses" value={view.misses} size="sm" />
-          <ScoreDisplay label="Best" value={bestScore ?? "—"} size="sm" />
+          <ScoreDisplay label={m.bestStreak} value={view.bestStreak} size="sm" />
+          <ScoreDisplay label={m.misses} value={view.misses} size="sm" />
+          <ScoreDisplay label={m.best} value={bestScore ?? "-"} size="sm" />
         </div>
         <GameButton onClick={startGame} size="xl">
-          Play again
+          {m.playAgain}
         </GameButton>
       </div>
     );
@@ -253,9 +282,9 @@ export default function WhackAMole() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-5 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Time" value={seconds} highlight />
-        <ScoreDisplay label="Hits" value={`${view.score}/${TARGET}`} />
-        <ScoreDisplay label="Streak" value={view.streak} />
+        <ScoreDisplay label={m.time} value={seconds} highlight />
+        <ScoreDisplay label={m.hits} value={`${view.score}/${TARGET}`} />
+        <ScoreDisplay label={m.streak} value={view.streak} />
       </div>
 
       <div className="h-2 w-full overflow-hidden rounded-full bg-game-accent/15">
@@ -270,7 +299,7 @@ export default function WhackAMole() {
           <button
             key={i}
             type="button"
-            aria-label={`Hole ${i + 1}${hole.up ? ", mole up" : ", empty"}`}
+            aria-label={m.hole(i + 1, hole.up)}
             onPointerDown={() => {
               pointerUsed.current = true;
               whack(i);
@@ -309,11 +338,11 @@ export default function WhackAMole() {
       </div>
 
       <p className="text-center text-xs text-game-text-dim">
-        Keys 1-9 hit the matching hole. An empty swing costs one second.
+        {m.help}
       </p>
 
       <GameButton variant="ghost" size="sm" onClick={quitGame}>
-        Quit
+        {m.quit}
       </GameButton>
     </div>
   );

@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLang, useMessages } from "../../i18n/react";
+import type { Locale } from "../../i18n";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -7,39 +10,76 @@ type Phase = "idle" | "playing" | "solved" | "won" | "lost";
 
 interface Puzzle {
   word: string;
-  hint: string;
+  hint: Record<Locale, string>;
 }
 
 const PUZZLES: Puzzle[] = [
-  { word: "HARBOR", hint: "Where boats wait out the weather" },
-  { word: "LANTERN", hint: "A light you can carry" },
-  { word: "MARBLE", hint: "A small glass sphere, or a kind of stone" },
-  { word: "ORCHARD", hint: "A field planted with fruit trees" },
-  { word: "WHISPER", hint: "Speech almost too quiet to hear" },
-  { word: "COMPASS", hint: "It always points the same way" },
-  { word: "BLANKET", hint: "You pull it up when the room is cold" },
-  { word: "JOURNEY", hint: "A long trip from one place to another" },
-  { word: "SILVER", hint: "A bright metal, second place at the games" },
-  { word: "THUNDER", hint: "The sound that follows lightning" },
-  { word: "PUZZLE", hint: "Something built to be worked out" },
-  { word: "GARDEN", hint: "A patch of ground you tend" },
-  { word: "MIRROR", hint: "It shows you back to yourself" },
-  { word: "CANDLE", hint: "Wax with a wick" },
-  { word: "FOREST", hint: "Trees for as far as you can walk" },
-  { word: "RIBBON", hint: "A thin strip tied in a bow" },
-  { word: "VELVET", hint: "Fabric with a soft nap" },
-  { word: "MONSOON", hint: "A season of heavy rain" },
-  { word: "QUARRY", hint: "Where stone is cut from the ground" },
-  { word: "SHADOW", hint: "It follows you on a sunny day" },
-  { word: "TRUMPET", hint: "A brass instrument with three valves" },
-  { word: "WINDOW", hint: "A hole in the wall with glass in it" },
-  { word: "ANCHOR", hint: "It holds a ship in place" },
-  { word: "BRIDGE", hint: "It carries a road over water" },
+  { word: "HARBOR", hint: { en: "Where boats wait out the weather", ko: "배가 궂은 날씨를 피해 머무는 곳" } },
+  { word: "LANTERN", hint: { en: "A light you can carry", ko: "들고 다닐 수 있는 등불" } },
+  { word: "MARBLE", hint: { en: "A small glass sphere, or a kind of stone", ko: "작은 유리구슬, 또는 돌의 한 종류" } },
+  { word: "ORCHARD", hint: { en: "A field planted with fruit trees", ko: "과일나무를 심은 밭" } },
+  { word: "WHISPER", hint: { en: "Speech almost too quiet to hear", ko: "거의 들리지 않을 만큼 작은 말소리" } },
+  { word: "COMPASS", hint: { en: "It always points the same way", ko: "늘 같은 방향을 가리키는 도구" } },
+  { word: "BLANKET", hint: { en: "You pull it up when the room is cold", ko: "방이 추울 때 끌어 덮는 것" } },
+  { word: "JOURNEY", hint: { en: "A long trip from one place to another", ko: "한 곳에서 다른 곳으로 가는 긴 여정" } },
+  { word: "SILVER", hint: { en: "A bright metal, second place at the games", ko: "빛나는 금속, 대회의 2등" } },
+  { word: "THUNDER", hint: { en: "The sound that follows lightning", ko: "번개 뒤에 따라오는 소리" } },
+  { word: "PUZZLE", hint: { en: "Something built to be worked out", ko: "풀어내라고 만든 것" } },
+  { word: "GARDEN", hint: { en: "A patch of ground you tend", ko: "가꾸며 돌보는 땅" } },
+  { word: "MIRROR", hint: { en: "It shows you back to yourself", ko: "내 모습을 비춰 주는 것" } },
+  { word: "CANDLE", hint: { en: "Wax with a wick", ko: "심지가 박힌 밀랍" } },
+  { word: "FOREST", hint: { en: "Trees for as far as you can walk", ko: "걸어도 걸어도 이어지는 나무들" } },
+  { word: "RIBBON", hint: { en: "A thin strip tied in a bow", ko: "나비 모양으로 묶는 얇은 끈" } },
+  { word: "VELVET", hint: { en: "Fabric with a soft nap", ko: "보드라운 털이 있는 천" } },
+  { word: "MONSOON", hint: { en: "A season of heavy rain", ko: "큰비가 이어지는 계절" } },
+  { word: "QUARRY", hint: { en: "Where stone is cut from the ground", ko: "땅에서 돌을 캐내는 곳" } },
+  { word: "SHADOW", hint: { en: "It follows you on a sunny day", ko: "맑은 날 나를 따라다니는 것" } },
+  { word: "TRUMPET", hint: { en: "A brass instrument with three valves", ko: "밸브가 세 개인 금관악기" } },
+  { word: "WINDOW", hint: { en: "A hole in the wall with glass in it", ko: "유리를 끼운 벽의 구멍" } },
+  { word: "ANCHOR", hint: { en: "It holds a ship in place", ko: "배를 한자리에 붙잡아 두는 것" } },
+  { word: "BRIDGE", hint: { en: "It carries a road over water", ko: "물 위로 길을 이어 주는 것" } },
 ];
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const MAX_MISSES = 6;
 const ROUND_COUNT = 8;
+
+const messages = {
+  en: {
+    ...common.en,
+    intro1: "Guess the hidden word one letter at a time. Six wrong guesses and the run is over.",
+    intro2: "Eight words per run. Every chance you have left at the end of a word is worth extra points.",
+    won: (n: number) => `You cleared all ${n} words.`,
+    lostWord: (word: string) => `Out of chances. The word was ${word}.`,
+    lost: "Out of chances.",
+    word: "Word",
+    chances: "Chances",
+    hiddenWord: "Hidden word",
+    solved: (gain: number, left: number) => `Solved for ${gain} points. ${left} words left.`,
+    nextWord: "Next word",
+    guessLetter: (l: string) => `Guess ${l}`,
+    missed: (letters: string) => `Missed: ${letters}`,
+    typeHint: "Type a letter or tap the keyboard.",
+    gallows: (misses: number, max: number) => `${misses} of ${max} wrong guesses`,
+  },
+  ko: {
+    ...common.ko,
+    intro1: "숨겨진 영어 단어를 한 글자씩 맞혀 보세요. 여섯 번 틀리면 게임이 끝납니다.",
+    intro2: "한 판에 여덟 단어가 나옵니다. 단어를 맞혔을 때 남은 기회만큼 추가 점수를 받습니다.",
+    won: (n: number) => `${n}개 단어를 모두 맞혔습니다.`,
+    lostWord: (word: string) => `기회를 모두 썼습니다. 정답은 ${word}였습니다.`,
+    lost: "기회를 모두 썼습니다.",
+    word: "단어",
+    chances: "남은 기회",
+    hiddenWord: "숨겨진 단어",
+    solved: (gain: number, left: number) => `${gain}점을 얻었습니다. ${left}개 단어가 남았습니다.`,
+    nextWord: "다음 단어",
+    guessLetter: (l: string) => `${l} 추측`,
+    missed: (letters: string) => `틀린 글자: ${letters}`,
+    typeHint: "키보드로 입력하거나 아래 글자를 누르세요.",
+    gallows: (misses: number, max: number) => `${max}번 중 ${misses}번 틀림`,
+  },
+};
 
 function shuffled(list: Puzzle[]): Puzzle[] {
   const copy = list.slice();
@@ -53,6 +93,8 @@ function shuffled(list: Puzzle[]): Puzzle[] {
 }
 
 export default function Hangman() {
+  const lang = useLang();
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [deck, setDeck] = useState<Puzzle[]>([]);
   const [round, setRound] = useState(0);
@@ -152,15 +194,11 @@ export default function Hangman() {
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
         <Gallows misses={0} />
         <div className="flex flex-col gap-2">
-          <p className="text-game-text-dim">
-            Guess the hidden word one letter at a time. Six wrong guesses and the run is over.
-          </p>
-          <p className="text-game-text-dim text-sm">
-            Eight words per run. Every chance you have left at the end of a word is worth extra points.
-          </p>
+          <p className="text-game-text-dim">{m.intro1}</p>
+          <p className="text-game-text-dim text-sm">{m.intro2}</p>
         </div>
         <GameButton onClick={startRun} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -172,18 +210,18 @@ export default function Hangman() {
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
         <Gallows misses={phase === "lost" ? MAX_MISSES : 0} />
         <div className="grid grid-cols-2 gap-3 w-full">
-          <ScoreDisplay label="Score" value={score} size="lg" highlight />
-          <ScoreDisplay label="Best" value={bestScore ?? score} size="lg" />
+          <ScoreDisplay label={m.score} value={score} size="lg" highlight />
+          <ScoreDisplay label={m.best} value={bestScore ?? score} size="lg" />
         </div>
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? `You cleared all ${ROUND_COUNT} words.`
+            ? m.won(ROUND_COUNT)
             : answer
-              ? `Out of chances. The word was ${answer}.`
-              : "Out of chances."}
+              ? m.lostWord(answer)
+              : m.lost}
         </GameMessage>
         <GameButton onClick={startRun} size="xl">
-          Play again
+          {m.playAgain}
         </GameButton>
       </div>
     );
@@ -197,17 +235,17 @@ export default function Hangman() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Score" value={score} highlight />
-        <ScoreDisplay label="Word" value={`${round + 1} / ${deck.length}`} />
-        <ScoreDisplay label="Chances" value={livesLeft} />
+        <ScoreDisplay label={m.score} value={score} highlight />
+        <ScoreDisplay label={m.word} value={`${round + 1} / ${deck.length}`} />
+        <ScoreDisplay label={m.chances} value={livesLeft} />
       </div>
 
       <div className="flex flex-col items-center gap-4">
         <Gallows misses={misses} />
-        <p className="text-game-text-dim text-sm text-center">{puzzle.hint}</p>
+        <p className="text-game-text-dim text-sm text-center">{puzzle.hint[lang]}</p>
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2" aria-label="Hidden word">
+      <div className="flex flex-wrap justify-center gap-2" aria-label={m.hiddenWord}>
         {puzzle.word.split("").map((char, index) => {
           const open = guessed.includes(char);
           return (
@@ -226,10 +264,10 @@ export default function Hangman() {
       {revealed ? (
         <div className="flex flex-col gap-3 animate-slide-up">
           <GameMessage type="success">
-            Solved for {lastGain} points. {deck.length - round - 1} words left.
+            {m.solved(lastGain, deck.length - round - 1)}
           </GameMessage>
           <GameButton onClick={nextRound} size="lg">
-            Next word
+            {m.nextWord}
           </GameButton>
         </div>
       ) : (
@@ -244,7 +282,7 @@ export default function Hangman() {
                   type="button"
                   onClick={() => guess(letter)}
                   disabled={used}
-                  aria-label={`Guess ${letter}`}
+                  aria-label={m.guessLetter(letter)}
                   className={`h-10 rounded-lg border text-sm font-semibold transition-all duration-150 ${
                     hit
                       ? "border-game-accent bg-game-accent/20 text-game-accent"
@@ -259,19 +297,20 @@ export default function Hangman() {
             })}
           </div>
           <p className="text-game-text-dim text-xs text-center min-h-4">
-            {wrongLetters.length > 0 ? `Missed: ${wrongLetters.join(" ")}` : "Type a letter or tap the keyboard."}
+            {wrongLetters.length > 0 ? m.missed(wrongLetters.join(" ")) : m.typeHint}
           </p>
         </div>
       )}
 
       <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-        Quit
+        {m.quit}
       </GameButton>
     </div>
   );
 }
 
 function Gallows({ misses }: { misses: number }) {
+  const m = useMessages(messages);
   const part = (index: number) =>
     `transition-opacity duration-300 ${misses >= index ? "opacity-100" : "opacity-0"}`;
 
@@ -285,7 +324,7 @@ function Gallows({ misses }: { misses: number }) {
       strokeLinecap="round"
       className="text-game-secondary"
       role="img"
-      aria-label={`${misses} of ${MAX_MISSES} wrong guesses`}
+      aria-label={m.gallows(misses, MAX_MISSES)}
     >
       <g className="text-game-border" stroke="currentColor">
         <line x1="14" y1="131" x2="62" y2="131" />

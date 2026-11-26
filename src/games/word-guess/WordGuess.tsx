@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -137,23 +139,59 @@ function pickWord(exclude: string[]): string {
 }
 
 const markTile: Record<Mark, string> = {
-  correct: "bg-game-accent border-game-accent text-white",
+  correct: "bg-game-accent border-game-accent text-game-on-accent",
   present: "bg-game-secondary border-game-secondary text-white",
   absent: "bg-game-muted/25 border-game-border text-game-text-dim",
 };
 
 const markKey: Record<Mark, string> = {
-  correct: "bg-game-accent border-game-accent text-white",
+  correct: "bg-game-accent border-game-accent text-game-on-accent",
   present: "bg-game-secondary border-game-secondary text-white",
   absent: "bg-game-muted/20 border-game-border text-game-muted",
 };
 
+type Notice = "short" | "unknown";
+
+const messages = {
+  en: {
+    ...common.en,
+    intro:
+      "Guess the hidden five-letter word in six tries. After each guess, a purple tile means the letter is in the right spot and a pink tile means it belongs somewhere else. Solve a word to keep your run going.",
+    notices: { short: "Fill all five letters first.", unknown: "That word is not in the list." } as Record<Notice, string>,
+    wordsSolved: "Words solved",
+    won: (tries: number, points: number) => `Correct in ${tries} ${tries === 1 ? "try" : "tries"}. Plus ${points} points.`,
+    lost: (word: string) => `Out of tries. The word was ${word}.`,
+    nextWord: "Next word",
+    endRun: "End run",
+    triesLeft: "Tries left",
+    solved: "Solved",
+    enter: "Enter",
+    del: "Del",
+  },
+  ko: {
+    ...common.ko,
+    intro:
+      "숨겨진 다섯 글자 영어 단어를 여섯 번 안에 맞히세요. 추측할 때마다 보라색 칸은 글자와 위치가 모두 맞은 것, 분홍색 칸은 글자는 있지만 위치가 다른 것입니다. 단어를 맞히면 다음 단어로 이어집니다.",
+    notices: { short: "다섯 글자를 모두 채우세요.", unknown: "목록에 없는 단어입니다." } as Record<Notice, string>,
+    wordsSolved: "맞힌 단어",
+    won: (tries: number, points: number) => `${tries}번 만에 맞혔습니다. ${points}점 획득.`,
+    lost: (word: string) => `기회를 모두 썼습니다. 정답은 ${word}였습니다.`,
+    nextWord: "다음 단어",
+    endRun: "그만하기",
+    triesLeft: "남은 기회",
+    solved: "맞힌 수",
+    enter: "입력",
+    del: "지우기",
+  },
+};
+
 export default function WordGuess() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [answer, setAnswer] = useState("");
   const [rows, setRows] = useState<Row[]>([]);
   const [current, setCurrent] = useState("");
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState<number | null>(null);
   const [solved, setSolved] = useState(0);
@@ -183,13 +221,13 @@ export default function WordGuess() {
 
   const submit = useCallback(() => {
     if (current.length < WORD_LENGTH) {
-      setNotice("Fill all five letters first.");
+      setNotice("short");
       return;
     }
 
     const guess = current.toLowerCase();
     if (!WORDS.includes(guess)) {
-      setNotice("That word is not in the list.");
+      setNotice("unknown");
       return;
     }
 
@@ -270,16 +308,12 @@ export default function WordGuess() {
   if (phase === "idle") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
-        <p className="text-game-text-dim">
-          Guess the hidden five-letter word in six tries. After each guess, a
-          purple tile means the letter is in the right spot and a pink tile
-          means it belongs somewhere else. Solve a word to keep your run going.
-        </p>
+        <p className="text-game-text-dim">{m.intro}</p>
         {bestScore !== null && (
-          <ScoreDisplay label="Best" value={bestScore} size="lg" />
+          <ScoreDisplay label={m.best} value={bestScore} size="lg" />
         )}
         <GameButton onClick={startRun} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -289,32 +323,32 @@ export default function WordGuess() {
     const won = phase === "won";
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
-        <ScoreDisplay label="Score" value={score} size="lg" highlight />
+        <ScoreDisplay label={m.score} value={score} size="lg" highlight />
         <div className="grid grid-cols-2 gap-3 w-full">
-          <ScoreDisplay label="Words solved" value={solved} />
-          <ScoreDisplay label="Best" value={bestScore ?? "—"} />
+          <ScoreDisplay label={m.wordsSolved} value={solved} />
+          <ScoreDisplay label={m.best} value={bestScore ?? "-"} />
         </div>
         <GameMessage type={won ? "success" : "error"}>
           {won
-            ? `Correct in ${rows.length} ${rows.length === 1 ? "try" : "tries"}. Plus ${gained} points.`
-            : `Out of tries. The word was ${answer.toUpperCase()}.`}
+            ? m.won(rows.length, gained)
+            : m.lost(answer.toUpperCase())}
         </GameMessage>
         {won ? (
           <div className="flex flex-col items-center gap-3">
             <GameButton onClick={nextWord} size="xl">
-              Next word
+              {m.nextWord}
             </GameButton>
             <GameButton
               variant="ghost"
               size="sm"
               onClick={() => setPhase("idle")}
             >
-              End run
+              {m.endRun}
             </GameButton>
           </div>
         ) : (
           <GameButton onClick={startRun} size="xl">
-            Play again
+            {m.playAgain}
           </GameButton>
         )}
       </div>
@@ -324,9 +358,9 @@ export default function WordGuess() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Score" value={score} highlight />
-        <ScoreDisplay label="Tries left" value={MAX_ROWS - rows.length} />
-        <ScoreDisplay label="Solved" value={solved} />
+        <ScoreDisplay label={m.score} value={score} highlight />
+        <ScoreDisplay label={m.triesLeft} value={MAX_ROWS - rows.length} />
+        <ScoreDisplay label={m.solved} value={solved} />
       </div>
 
       <div className="flex flex-col gap-2 items-center">
@@ -360,7 +394,7 @@ export default function WordGuess() {
         })}
       </div>
 
-      {notice !== null && <GameMessage type="warning">{notice}</GameMessage>}
+      {notice !== null && <GameMessage type="warning">{m.notices[notice]}</GameMessage>}
 
       <div className="flex flex-col gap-2 items-center">
         {KEY_ROWS.map((keyRow, index) => (
@@ -371,7 +405,7 @@ export default function WordGuess() {
                 onClick={() => press("Enter")}
                 className="px-3 h-11 rounded-lg border-2 border-game-accent bg-game-accent-light text-xs font-bold uppercase tracking-wide text-game-accent transition-all duration-150 hover:bg-game-accent/20"
               >
-                Enter
+                {m.enter}
               </button>
             )}
             {keyRow.split("").map((letter) => (
@@ -394,7 +428,7 @@ export default function WordGuess() {
                 onClick={() => press("Backspace")}
                 className="px-3 h-11 rounded-lg border-2 border-game-border bg-game-surface text-xs font-bold uppercase tracking-wide text-game-text-dim transition-all duration-150 hover:bg-game-muted/15"
               >
-                Del
+                {m.del}
               </button>
             )}
           </div>
@@ -402,7 +436,7 @@ export default function WordGuess() {
       </div>
 
       <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-        Quit
+        {m.quit}
       </GameButton>
     </div>
   );

@@ -1,0 +1,21 @@
+<script is:inline>
+  (function () {
+    function syncIcons() {
+      var dark = document.documentElement.classList.contains("dark");
+      document.querySelectorAll(".theme-icon-light").forEach(function (el) {
+        el.classList.toggle("hidden", dark);
+      });
+      document.querySelectorAll(".theme-icon-dark").forEach(function (el) {
+        el.classList.toggle("hidden", !dark);
+      });
+    }
+    syncIcons();
+    document.querySelectorAll(".theme-toggle").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var dark = document.documentElement.classList.toggle("dark");
+        localStorage.setItem("ctrlcat-theme", dark ? "dark" : "light");
+        syncIcons();
+      });
+    });
+  })();
+</script>

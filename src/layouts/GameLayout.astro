@@ -1,10 +1,12 @@
 ---
 import { getCollection } from "astro:content";
 import "../styles/global.css";
+import SeoHead from "../components/SeoHead.astro";
+import ThemeToggleScript from "../components/ThemeToggleScript.astro";
 import GameSidebar from "../components/games/Sidebar.astro";
 import Icon from "../components/Icon.astro";
-import type { Locale } from "../i18n";
-import { t } from "../i18n";
+import { difficultyClass } from "../components/games/difficulty";
+import { t, localePath, type Locale } from "../i18n";
 
 interface Props {
   title: string;
@@ -32,86 +34,48 @@ const {
 
 const tr = t(lang);
 const pageTitle = `${title} — ${tr.games.siteTitle}`;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const enURL = new URL(Astro.url.pathname.replace(/^\/ko\//, "/"), Astro.site);
-const koURL = new URL("/ko" + Astro.url.pathname.replace(/^\/ko\//, "/"), Astro.site);
-
-const difficultyLabel = tr.games.difficulty[difficulty ?? 0] ?? "";
-const difficultyColor = ["", "text-green-600 dark:text-green-400", "text-lime-600 dark:text-lime-400", "text-yellow-600 dark:text-yellow-400", "text-orange-600 dark:text-orange-400", "text-red-600 dark:text-red-400"][difficulty ?? 0] ?? "";
+const pageURL = new URL(Astro.url.pathname, Astro.site).href;
 
 const allGames = await getCollection("games", ({ data }) => data.status === "published");
 allGames.sort((a, b) => a.data.title.localeCompare(b.data.title));
 
-const jsonLd = currentSlug ? {
-  "@context": "https://schema.org",
-  "@type": "VideoGame",
-  "name": title,
-  "description": description,
-  "url": canonicalURL.href,
-  "applicationCategory": "Game",
-  "operatingSystem": "Web",
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-} : {
-  "@context": "https://schema.org",
-  "@type": "CollectionPage",
-  "name": pageTitle,
-  "description": description,
-  "url": canonicalURL.href,
-};
+const jsonLd = currentSlug
+  ? {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      name: title,
+      description,
+      url: pageURL,
+      applicationCategory: "Game",
+      operatingSystem: "Web",
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    }
+  : { "@context": "https://schema.org", "@type": "CollectionPage", name: pageTitle, description, url: pageURL };
 ---
 
 <!doctype html>
 <html lang={lang} class="realm-game">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{pageTitle}</title>
-    <meta name="description" content={description} />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href={canonicalURL} />
-    <link rel="alternate" hreflang="en" href={enURL} />
-    <link rel="alternate" hreflang="ko" href={koURL} />
-    <link rel="alternate" hreflang="x-default" href={enURL} />
-    <meta property="og:title" content={pageTitle} />
-    <meta property="og:description" content={description} />
-    <meta property="og:type" content={currentSlug ? "article" : "website"} />
-    <meta property="og:url" content={canonicalURL} />
-    <meta property="og:site_name" content="ctrlcat.dev" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content={pageTitle} />
-    <meta name="twitter:description" content={description} />
-    <link rel="icon" href="/favicon-game.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-    <!-- Dark mode: apply before first paint to prevent flash -->
-    <script is:inline>
-      (function () {
-        const s = localStorage.getItem("ctrlcat-theme");
-        const dark = s === "dark" || (!s && window.matchMedia("(prefers-color-scheme: dark)").matches);
-        if (dark) document.documentElement.classList.add("dark");
-      })();
-    </script>
+    <SeoHead
+      title={pageTitle}
+      description={description}
+      lang={lang}
+      favicon="/favicon-game.svg"
+      ogType={currentSlug ? "article" : "website"}
+      jsonLd={jsonLd}
+    />
   </head>
 
   <body class="bg-game-bg text-game-text font-game min-h-screen flex">
+    <GameSidebar games={allGames} currentSlug={currentSlug} lang={lang} url={Astro.url} />
 
-    <GameSidebar
-      games={allGames}
-      currentSlug={currentSlug}
-      lang={lang}
-      url={Astro.url}
-    />
-
-    <div class="flex-1 lg:ml-64 flex flex-col min-h-screen">
-
-      <!-- Mobile top bar — MD3 Top App Bar (Small) -->
+    <div class="flex-1 min-w-0 lg:ml-64 flex flex-col min-h-screen">
+      <!-- Mobile top bar -->
       <header class="lg:hidden sticky top-0 z-30 h-14 flex items-center gap-3 px-4
-                     bg-game-surface border-b border-game-border-dim shrink-0
-                     shadow-md-1">
+                     bg-game-surface border-b border-game-border-dim shrink-0 shadow-md-1">
         <button
           id="sidebar-menu-btn"
-          aria-label="Open navigation"
+          aria-label={tr.nav.openMenu}
           class="w-10 h-10 flex items-center justify-center rounded-full text-game-text
                  hover:bg-game-text/[.08] transition-colors"
         >
@@ -121,7 +85,7 @@ const jsonLd = currentSlug ? {
             <rect y="19" width="24" height="2" rx="1"/>
           </svg>
         </button>
-        <a href="/" class="flex items-center gap-1.5 font-bold text-sm flex-1 min-w-0">
+        <a href={localePath("/", lang)} class="flex items-center gap-1.5 font-bold text-sm flex-1 min-w-0">
           <svg width="18" height="18" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect width="32" height="32" rx="8" fill="#1c1b1f"/>
             <path d="M9 18 L16 9 L23 18" stroke="#d0bcff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -130,14 +94,12 @@ const jsonLd = currentSlug ? {
           <span class="text-game-text font-medium">ctrl</span><span class="text-game-accent font-medium">cat</span>
           <span class="text-game-muted font-normal text-xs ml-1">games</span>
         </a>
-        {currentSlug && (
-          <span class="text-sm text-game-text font-medium truncate">{title}</span>
-        )}
+        {currentSlug && <span class="text-sm text-game-text font-medium truncate">{title}</span>}
         <button
           class="theme-toggle w-10 h-10 flex items-center justify-center rounded-full
                  text-game-text hover:bg-game-text/[.08] transition-colors ml-auto"
-          aria-label="Toggle dark mode"
-          title="Toggle dark mode"
+          aria-label={tr.nav.toggleTheme}
+          title={tr.nav.toggleTheme}
         >
           <svg class="theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none"
                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -158,7 +120,6 @@ const jsonLd = currentSlug ? {
         </button>
       </header>
 
-      <!-- Page header — MD3 style with category chip + title -->
       {showHeader && (
         <div class="bg-game-bg">
           <div class="px-6 pt-8 pb-6 max-w-4xl">
@@ -180,15 +141,11 @@ const jsonLd = currentSlug ? {
                 {(difficulty || playTime) && (
                   <div class="flex items-center gap-3 mt-3">
                     {difficulty && (
-                      <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${difficultyColor} bg-game-text/[.05]`}>
-                        {difficultyLabel}
+                      <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${difficultyClass(difficulty)} bg-game-text/[.05]`}>
+                        {tr.games.difficulty[difficulty]}
                       </span>
                     )}
-                    {playTime && (
-                      <span class="text-xs text-game-muted">
-                        {tr.games.playTime(playTime)}
-                      </span>
-                    )}
+                    {playTime && <span class="text-xs text-game-muted">{tr.games.playTime(playTime)}</span>}
                   </div>
                 )}
               </div>
@@ -204,37 +161,15 @@ const jsonLd = currentSlug ? {
       <footer class="border-t border-game-border-dim px-6 py-4 flex flex-wrap items-center justify-between gap-3
                      text-xs text-game-muted">
         <div class="flex items-center gap-4">
-          <a href="/" class="font-semibold text-game-text-dim hover:text-game-text transition-colors">
+          <a href={localePath("/", lang)} class="font-semibold text-game-text-dim hover:text-game-text transition-colors">
             ctrl<span class="text-game-accent">cat</span>
           </a>
-          <a href="/tools/" class="hover:text-game-text transition-colors">Tools</a>
-          <a href="/games/" class="hover:text-game-text transition-colors">Games</a>
+          <a href={localePath("/tools/", lang)} class="hover:text-game-text transition-colors">{tr.nav.tools}</a>
+          <a href={localePath("/games/", lang)} class="hover:text-game-text transition-colors">{tr.nav.games}</a>
         </div>
         <span>ctrlcat.dev</span>
       </footer>
-
     </div>
+    <ThemeToggleScript />
   </body>
-
-  <script is:inline>
-    (function () {
-      function syncIcons() {
-        var dark = document.documentElement.classList.contains("dark");
-        document.querySelectorAll(".theme-icon-light").forEach(function (el) {
-          el.classList.toggle("hidden", dark);
-        });
-        document.querySelectorAll(".theme-icon-dark").forEach(function (el) {
-          el.classList.toggle("hidden", !dark);
-        });
-      }
-      syncIcons();
-      document.querySelectorAll(".theme-toggle").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          var dark = document.documentElement.classList.toggle("dark");
-          localStorage.setItem("ctrlcat-theme", dark ? "dark" : "light");
-          syncIcons();
-        });
-      });
-    })();
-  </script>
 </html>

@@ -3,24 +3,85 @@ import { ToolButton } from "../../components/tools/ui/Button";
 import { ToolTextarea } from "../../components/tools/ui/Textarea";
 import { StatCard } from "../../components/tools/ui/StatCard";
 import { CopyButton } from "../../components/tools/ui/CopyButton";
+import { ToolNotice } from "../../components/tools/ui/Notice";
+import { useMessages } from "../../i18n/react";
 
 type Direction = "csv-to-json" | "json-to-csv";
 type JsonValue = string | number | boolean | null;
+type SeparatorId = "comma" | "tab" | "semicolon" | "pipe";
+type ErrorCode = "noRows" | "invalidJson" | "emptyArray" | "noFields";
 
-const separators = [
-  { id: "comma", label: "Comma", char: "," },
-  { id: "tab", label: "Tab", char: "\t" },
-  { id: "semicolon", label: "Semicolon", char: ";" },
-  { id: "pipe", label: "Pipe", char: "|" },
-];
+const SEPARATORS: Record<SeparatorId, string> = { comma: ",", tab: "\t", semicolon: ";", pipe: "|" };
 
+const messages = {
+  en: {
+    toJson: "CSV to JSON",
+    toCsv: "JSON to CSV",
+    separator: "Separator",
+    separators: { comma: "Comma", tab: "Tab", semicolon: "Semicolon", pipe: "Pipe" } as Record<SeparatorId, string>,
+    header: "First row holds the field names",
+    detectTypes: "Detect numbers and true or false",
+    csvInput: "CSV input",
+    jsonInput: "JSON input",
+    convert: "Convert",
+    clear: "Clear",
+    rows: "Rows",
+    columns: "Columns",
+    characters: "Characters",
+    jsonOutput: "JSON output",
+    csvOutput: "CSV output",
+    errors: {
+      noRows: "No rows found in the input.",
+      invalidJson: "That is not valid JSON.",
+      emptyArray: "The JSON array is empty.",
+      noFields: "The records have no fields.",
+    } as Record<ErrorCode, string>,
+  },
+  ko: {
+    toJson: "CSV → JSON",
+    toCsv: "JSON → CSV",
+    separator: "구분자",
+    separators: { comma: "쉼표", tab: "탭", semicolon: "세미콜론", pipe: "파이프" } as Record<SeparatorId, string>,
+    header: "첫 줄을 필드 이름으로 사용",
+    detectTypes: "숫자와 true/false 자동 인식",
+    csvInput: "CSV 입력",
+    jsonInput: "JSON 입력",
+    convert: "변환",
+    clear: "지우기",
+    rows: "행",
+    columns: "열",
+    characters: "글자",
+    jsonOutput: "JSON 결과",
+    csvOutput: "CSV 결과",
+    errors: {
+      noRows: "입력에서 행을 찾을 수 없습니다.",
+      invalidJson: "올바른 JSON이 아닙니다.",
+      emptyArray: "JSON 배열이 비어 있습니다.",
+      noFields: "레코드에 필드가 없습니다.",
+    } as Record<ErrorCode, string>,
+  },
+};
+
+const PLACEHOLDER: Record<Direction, string> = {
+  "csv-to-json": "name,city\nAda,London\nGrace,New York",
+  "json-to-csv": '[{ "name": "Ada", "city": "London" }]',
+};
+
+const maxLength = (rows: unknown[][]) => rows.reduce((max, row) => Math.max(max, row.length), 0);
+
+class ConvertError extends Error {
+  constructor(readonly code: ErrorCode) {
+    super(code);
+  }
+}
+
+/** RFC 4180-style parser: quoted fields, doubled quotes, CR/LF/CRLF line ends. */
 function parseCsv(text: string, sep: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
   let field = "";
   let quoted = false;
   let inQuotes = false;
-  let i = 0;
 
   const endField = () => {
     row.push(field);
@@ -33,46 +94,26 @@ function parseCsv(text: string, sep: string): string[][] {
     row = [];
   };
 
-  while (i < text.length) {
+  for (let i = 0; i < text.length; i += 1) {
     const ch = text[i];
-
     if (inQuotes) {
-      if (ch === '"') {
-        if (text[i + 1] === '"') {
-          field += '"';
-          i += 2;
-          continue;
-        }
-        inQuotes = false;
+      if (ch !== '"') field += ch;
+      else if (text[i + 1] === '"') {
+        field += '"';
         i += 1;
-        continue;
-      }
-      field += ch;
-      i += 1;
-      continue;
-    }
-
-    if (ch === '"' && field === "") {
+      } else inQuotes = false;
+    } else if (ch === '"' && field === "") {
       inQuotes = true;
       quoted = true;
-      i += 1;
-      continue;
-    }
-    if (ch === sep) {
+    } else if (ch === sep) {
       endField();
-      i += 1;
-      continue;
-    }
-    if (ch === "\r" || ch === "\n") {
+    } else if (ch === "\r" || ch === "\n") {
       if (ch === "\r" && text[i + 1] === "\n") i += 1;
       endRow();
-      i += 1;
-      continue;
+    } else {
+      field += ch;
     }
-    field += ch;
-    i += 1;
   }
-
   if (field !== "" || quoted || row.length > 0) endRow();
 
   return rows.filter((r) => r.length > 1 || r[0] !== "");
@@ -83,7 +124,7 @@ function coerce(raw: string): JsonValue {
   if (trimmed === "true") return true;
   if (trimmed === "false") return false;
   if (trimmed === "null") return null;
-  if (trimmed !== "" && /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/.test(trimmed)) {
+  if (/^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/.test(trimmed)) {
     const n = Number(trimmed);
     if (Number.isFinite(n)) return n;
   }
@@ -91,54 +132,29 @@ function coerce(raw: string): JsonValue {
 }
 
 function escapeCsv(value: string, sep: string): string {
-  const needsQuotes =
-    value.includes(sep) ||
-    value.includes('"') ||
-    value.includes("\n") ||
-    value.includes("\r") ||
-    value !== value.trim();
+  const needsQuotes = /["\r\n]/.test(value) || value.includes(sep) || value !== value.trim();
   return needsQuotes ? `"${value.replace(/"/g, '""')}"` : value;
 }
 
 function cellToText(value: unknown): string {
   if (value === null || value === undefined) return "";
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
+  return typeof value === "object" ? JSON.stringify(value) : String(value);
 }
 
 type Result = { text: string; rows: number; columns: number };
 
-function csvToJson(
-  input: string,
-  sep: string,
-  header: boolean,
-  detectTypes: boolean,
-): Result {
+function csvToJson(input: string, sep: string, header: boolean, detectTypes: boolean): Result {
   const grid = parseCsv(input, sep);
-  if (grid.length === 0) throw new Error("No rows found in the input.");
+  if (grid.length === 0) throw new ConvertError("noRows");
 
-  const width = grid.reduce((max, row) => Math.max(max, row.length), 0);
-  const names: string[] = [];
-  for (let c = 0; c < width; c += 1) {
-    const raw = header ? (grid[0][c] ?? "").trim() : "";
-    names.push(raw === "" ? `field_${c + 1}` : raw);
-  }
+  const width = maxLength(grid);
+  const names = Array.from({ length: width }, (_, c) => (header ? grid[0][c]?.trim() : "") || `field_${c + 1}`);
 
-  const body = header ? grid.slice(1) : grid;
-  const records = body.map((row) => {
-    const record: Record<string, JsonValue> = {};
-    names.forEach((name, c) => {
-      const cell = row[c] ?? "";
-      record[name] = detectTypes ? coerce(cell) : cell;
-    });
-    return record;
-  });
+  const records = (header ? grid.slice(1) : grid).map((row) =>
+    Object.fromEntries(names.map((name, c) => [name, detectTypes ? coerce(row[c] ?? "") : (row[c] ?? "")])),
+  );
 
-  return {
-    text: JSON.stringify(records, null, 2),
-    rows: records.length,
-    columns: width,
-  };
+  return { text: JSON.stringify(records, null, 2), rows: records.length, columns: width };
 }
 
 function jsonToCsv(input: string, sep: string): Result {
@@ -146,136 +162,94 @@ function jsonToCsv(input: string, sep: string): Result {
   try {
     parsed = JSON.parse(input);
   } catch {
-    throw new Error("That is not valid JSON.");
+    throw new ConvertError("invalidJson");
   }
 
   const items = Array.isArray(parsed) ? parsed : [parsed];
-  if (items.length === 0) throw new Error("The JSON array is empty.");
-
-  const objects = items.every(
-    (item) => item !== null && typeof item === "object" && !Array.isArray(item),
-  );
+  if (items.length === 0) throw new ConvertError("emptyArray");
 
   let names: string[];
   let grid: string[][];
 
-  if (objects) {
-    const seen: string[] = [];
-    (items as Record<string, unknown>[]).forEach((item) => {
-      Object.keys(item).forEach((key) => {
-        if (!seen.includes(key)) seen.push(key);
-      });
-    });
-    if (seen.length === 0) throw new Error("The records have no fields.");
-    names = seen;
-    grid = (items as Record<string, unknown>[]).map((item) =>
-      names.map((name) => cellToText(item[name])),
-    );
+  if (items.every((item) => item !== null && typeof item === "object" && !Array.isArray(item))) {
+    const records = items as Record<string, unknown>[];
+    names = [...new Set(records.flatMap((item) => Object.keys(item)))];
+    if (names.length === 0) throw new ConvertError("noFields");
+    grid = records.map((item) => names.map((name) => cellToText(item[name])));
   } else if (items.every((item) => Array.isArray(item))) {
-    const width = (items as unknown[][]).reduce(
-      (max, row) => Math.max(max, row.length),
-      0,
-    );
+    const rows = items as unknown[][];
+    const width = maxLength(rows);
     names = Array.from({ length: width }, (_, c) => `field_${c + 1}`);
-    grid = (items as unknown[][]).map((row) =>
-      names.map((_, c) => cellToText(row[c])),
-    );
+    grid = rows.map((row) => names.map((_, c) => cellToText(row[c])));
   } else {
     names = ["value"];
     grid = items.map((item) => [cellToText(item)]);
   }
 
-  const lines = [names.map((name) => escapeCsv(name, sep)).join(sep)];
-  grid.forEach((row) => {
-    lines.push(row.map((cell) => escapeCsv(cell, sep)).join(sep));
-  });
-
+  const lines = [names, ...grid].map((row) => row.map((cell) => escapeCsv(cell, sep)).join(sep));
   return { text: lines.join("\n"), rows: grid.length, columns: names.length };
 }
 
 export default function CsvToJsonConverter() {
+  const m = useMessages(messages);
   const [direction, setDirection] = useState<Direction>("csv-to-json");
-  const [separator, setSeparator] = useState("comma");
+  const [separator, setSeparator] = useState<SeparatorId>("comma");
   const [header, setHeader] = useState(true);
   const [detectTypes, setDetectTypes] = useState(false);
   const [input, setInput] = useState("");
   const [result, setResult] = useState<Result | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<ErrorCode | null>(null);
 
-  const sepChar = separators.find((s) => s.id === separator)?.char ?? ",";
   const toJson = direction === "csv-to-json";
 
+  const reset = () => {
+    setResult(null);
+    setError(null);
+  };
+
   const convert = () => {
+    reset();
+    const sep = SEPARATORS[separator];
     try {
-      setResult(
-        toJson
-          ? csvToJson(input, sepChar, header, detectTypes)
-          : jsonToCsv(input, sepChar),
-      );
-      setError("");
+      setResult(toJson ? csvToJson(input, sep, header, detectTypes) : jsonToCsv(input, sep));
     } catch (e) {
-      setResult(null);
-      setError(e instanceof Error ? e.message : "Could not convert that input.");
+      if (!(e instanceof ConvertError)) throw e;
+      setError(e.code);
     }
-  };
-
-  const switchDirection = (next: Direction) => {
-    setDirection(next);
-    setResult(null);
-    setError("");
-  };
-
-  const clear = () => {
-    setInput("");
-    setResult(null);
-    setError("");
   };
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
       <div className="flex flex-wrap gap-2">
-        <ToolButton
-          size="sm"
-          variant={toJson ? "primary" : "secondary"}
-          onClick={() => switchDirection("csv-to-json")}
-        >
-          CSV to JSON
-        </ToolButton>
-        <ToolButton
-          size="sm"
-          variant={toJson ? "secondary" : "primary"}
-          onClick={() => switchDirection("json-to-csv")}
-        >
-          JSON to CSV
-        </ToolButton>
+        {(["csv-to-json", "json-to-csv"] as const).map((d) => (
+          <ToolButton
+            key={d}
+            size="sm"
+            variant={direction === d ? "primary" : "secondary"}
+            onClick={() => {
+              setDirection(d);
+              reset();
+            }}
+          >
+            {d === "csv-to-json" ? m.toJson : m.toCsv}
+          </ToolButton>
+        ))}
       </div>
 
       <div className="flex flex-col gap-3 rounded-lg border border-tool-border bg-tool-surface p-4">
-        <span className="text-xs font-medium text-tool-muted uppercase tracking-wider">
-          Separator
-        </span>
+        <span className="text-xs font-medium text-tool-muted uppercase tracking-wider">{m.separator}</span>
         <div className="flex flex-wrap gap-2">
-          {separators.map((s) => (
-            <ToolButton
-              key={s.id}
-              size="sm"
-              variant={s.id === separator ? "primary" : "ghost"}
-              onClick={() => setSeparator(s.id)}
-            >
-              {s.label}
+          {(Object.keys(SEPARATORS) as SeparatorId[]).map((id) => (
+            <ToolButton key={id} size="sm" variant={id === separator ? "primary" : "ghost"} onClick={() => setSeparator(id)}>
+              {m.separators[id]}
             </ToolButton>
           ))}
         </div>
         {toJson && (
           <div className="flex flex-wrap gap-x-6 gap-y-2 pt-1">
             <label className="flex items-center gap-2 text-sm text-tool-text-dim">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-tool-accent"
-                checked={header}
-                onChange={(e) => setHeader(e.target.checked)}
-              />
-              First row holds the field names
+              <input type="checkbox" className="h-4 w-4 accent-tool-accent" checked={header} onChange={(e) => setHeader(e.target.checked)} />
+              {m.header}
             </label>
             <label className="flex items-center gap-2 text-sm text-tool-text-dim">
               <input
@@ -284,51 +258,48 @@ export default function CsvToJsonConverter() {
                 checked={detectTypes}
                 onChange={(e) => setDetectTypes(e.target.checked)}
               />
-              Detect numbers and true or false
+              {m.detectTypes}
             </label>
           </div>
         )}
       </div>
 
       <ToolTextarea
-        label={toJson ? "CSV input" : "JSON input"}
-        placeholder={
-          toJson
-            ? "name,city\nAda,London\nGrace,New York"
-            : '[{ "name": "Ada", "city": "London" }]'
-        }
+        label={toJson ? m.csvInput : m.jsonInput}
+        placeholder={PLACEHOLDER[direction]}
         value={input}
         onChange={(e) => setInput(e.target.value)}
         rows={10}
-        className="font-mono"
       />
 
       <div className="flex gap-2">
         <ToolButton onClick={convert} disabled={input.trim() === ""}>
-          Convert
+          {m.convert}
         </ToolButton>
-        <ToolButton variant="ghost" onClick={clear}>
-          Clear
+        <ToolButton
+          variant="ghost"
+          onClick={() => {
+            setInput("");
+            reset();
+          }}
+        >
+          {m.clear}
         </ToolButton>
       </div>
 
-      {error !== "" && (
-        <div className="rounded-lg border border-tool-border bg-tool-surface p-4 text-sm text-tool-text-dim">
-          {error}
-        </div>
-      )}
+      {error && <ToolNotice>{m.errors[error]}</ToolNotice>}
 
       {result && (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <StatCard label="Rows" value={result.rows} accent />
-            <StatCard label="Columns" value={result.columns} />
-            <StatCard label="Characters" value={result.text.length} />
+            <StatCard label={m.rows} value={result.rows} accent />
+            <StatCard label={m.columns} value={result.columns} />
+            <StatCard label={m.characters} value={result.text.length} />
           </div>
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-tool-muted uppercase tracking-wider">
-                {toJson ? "JSON output" : "CSV output"}
+                {toJson ? m.jsonOutput : m.csvOutput}
               </span>
               <CopyButton text={result.text} />
             </div>

@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
+import { useBestScore } from "../lib/useBestScore";
 import { GameCanvas } from "../lib/GameCanvas";
 import { useGameLoop } from "../lib/useGameLoop";
 import { useKeys, useSwipe } from "../lib/useInput";
@@ -41,6 +44,7 @@ const MAX_LEVEL = 10;
 const DAS = 0.16;
 const ARR = 0.045;
 const CLEAR_FLASH = 0.18;
+/* Kept from the game's earlier name so saved best scores carry over. */
 const BEST_KEY = "ctrlcat-tetris-best";
 
 /* Seven tetrominoes, each in a square box so rotation is a plain matrix turn. */
@@ -202,7 +206,63 @@ function createState(): GameState {
   };
 }
 
-export default function Tetris() {
+const messages = {
+  en: {
+    ...common.en,
+    intro1:
+      "Falling blocks stack up in a well that is ten columns wide. Slide and turn each piece so every gap in a row gets filled, and the row disappears.",
+    intro2: "Clear one hundred rows to win. Let the stack reach the top and the game ends.",
+    rowsCleared: "Rows cleared",
+    won: "One hundred rows cleared. You finished the last level.",
+    lost: "The stack reached the top.",
+    next: "NEXT",
+    levelCaps: "LEVEL",
+    lines: "LINES",
+    toWin: "TO WIN",
+    paused: "Paused",
+    resumeHint: "Press P to resume",
+    moveLeft: "Move left",
+    left: "Left",
+    rotate: "Rotate",
+    turn: "Turn",
+    moveRight: "Move right",
+    right: "Right",
+    moveDown: "Move down one row",
+    down: "Down",
+    hardDrop: "Drop to the bottom",
+    drop: "Drop",
+    help: "Arrow keys move and turn the piece, space drops it, P pauses. On a touch screen, swipe to move, swipe up to turn and swipe down to drop.",
+  },
+  ko: {
+    ...common.ko,
+    intro1:
+      "떨어지는 블록이 가로 열 칸짜리 우물에 쌓입니다. 블록을 옮기고 돌려 가로줄의 빈틈을 모두 메우면 그 줄이 사라집니다.",
+    intro2: "100줄을 지우면 승리합니다. 블록이 천장에 닿으면 게임이 끝납니다.",
+    rowsCleared: "지운 줄",
+    won: "100줄을 모두 지웠습니다. 마지막 레벨까지 마쳤습니다.",
+    lost: "블록이 천장에 닿았습니다.",
+    next: "다음",
+    levelCaps: "레벨",
+    lines: "지운 줄",
+    toWin: "남은 줄",
+    paused: "일시 정지",
+    resumeHint: "P를 누르면 계속합니다",
+    moveLeft: "왼쪽으로 이동",
+    left: "왼쪽",
+    rotate: "회전",
+    turn: "회전",
+    moveRight: "오른쪽으로 이동",
+    right: "오른쪽",
+    moveDown: "한 칸 내리기",
+    down: "내리기",
+    hardDrop: "바닥까지 떨어뜨리기",
+    drop: "떨구기",
+    help: "방향키로 옮기고 돌리며, 스페이스로 떨어뜨리고, P로 일시 정지합니다. 터치 화면에서는 밀어서 옮기고, 위로 밀어 돌리고, 아래로 밀어 떨어뜨립니다.",
+  },
+};
+
+export default function BlockDrop() {
+  const m = useMessages(messages);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createState());
   const phaseRef = useRef<Phase>("idle");
@@ -211,19 +271,10 @@ export default function Tetris() {
   const [score, setScore] = useState(0);
   const [lines, setLines] = useState(0);
   const [level, setLevel] = useState(1);
-  const [best, setBest] = useState(0);
+  const { best, record } = useBestScore(BEST_KEY);
   const [scale, setScale] = useState(1);
 
   const { held, consume } = useKeys();
-
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(BEST_KEY);
-      if (stored) setBest(Number(stored) || 0);
-    } catch {
-      /* storage unavailable, best score stays in memory only */
-    }
-  }, []);
 
   useEffect(() => {
     const fit = () => setScale(Math.min(1, (window.innerWidth - 40) / CANVAS_W));
@@ -238,17 +289,8 @@ export default function Tetris() {
   }, []);
 
   const saveBest = useCallback(() => {
-    const final = stateRef.current.score;
-    setBest((prev) => {
-      if (final <= prev) return prev;
-      try {
-        window.localStorage.setItem(BEST_KEY, String(final));
-      } catch {
-        /* storage unavailable, best score stays in memory only */
-      }
-      return final;
-    });
-  }, []);
+    record(stateRef.current.score);
+  }, [record]);
 
   const takeNext = useCallback(() => {
     const s = stateRef.current;
@@ -260,11 +302,11 @@ export default function Tetris() {
     const s = stateRef.current;
     const index = s.nextIndex;
     s.nextIndex = takeNext();
-    const m = PIECES[index];
+    const shape = PIECES[index];
     const piece: Piece = {
       index,
-      m,
-      x: Math.floor((COLS - m.length) / 2),
+      m: shape,
+      x: Math.floor((COLS - shape.length) / 2),
       y: 0,
     };
     if (collides(s.board, piece.m, piece.x, piece.y)) {
@@ -333,18 +375,18 @@ export default function Tetris() {
     const s = stateRef.current;
     const p = s.piece;
     if (!p || s.clearing) return;
-    const m = dir > 0 ? rotateCW(p.m) : rotateCCW(p.m);
+    const turned = dir > 0 ? rotateCW(p.m) : rotateCCW(p.m);
     for (const dx of [0, -1, 1, -2, 2]) {
-      if (!collides(s.board, m, p.x + dx, p.y)) {
-        p.m = m;
+      if (!collides(s.board, turned, p.x + dx, p.y)) {
+        p.m = turned;
         p.x += dx;
         return;
       }
     }
     /* Last resort: lift the piece one row, which frees rotations against the floor. */
     for (const dx of [0, -1, 1]) {
-      if (!collides(s.board, m, p.x + dx, p.y - 1)) {
-        p.m = m;
+      if (!collides(s.board, turned, p.x + dx, p.y - 1)) {
+        p.m = turned;
         p.x += dx;
         p.y -= 1;
         return;
@@ -574,7 +616,7 @@ export default function Tetris() {
           ctx.fillText(text, PANEL_X, y);
         };
 
-        label("NEXT", 2);
+        label(m.next, 2);
         roundRect(ctx, PANEL_X, 18, PANEL_W, 74, 10);
         ctx.fillStyle = t.well;
         ctx.fill();
@@ -605,11 +647,11 @@ export default function Tetris() {
           }
         }
 
-        label("LEVEL", 110);
+        label(m.levelCaps, 110);
         value(String(s.level), 124);
-        label("LINES", 164);
+        label(m.lines, 164);
         value(String(s.lines), 178);
-        label("TO WIN", 218);
+        label(m.toWin, 218);
         value(String(Math.max(0, WIN_LINES - s.lines)), 232);
 
         roundRect(ctx, PANEL_X, 274, PANEL_W, 6, 3);
@@ -631,10 +673,10 @@ export default function Tetris() {
           ctx.textAlign = "center";
           ctx.fillStyle = t.text;
           ctx.font = "700 24px Roboto, Inter, system-ui, sans-serif";
-          ctx.fillText("Paused", BOARD_W / 2, BOARD_H / 2 - 22);
+          ctx.fillText(m.paused, BOARD_W / 2, BOARD_H / 2 - 22);
           ctx.fillStyle = t.textDim;
           ctx.font = "400 13px Roboto, Inter, system-ui, sans-serif";
-          ctx.fillText("Press P to resume", BOARD_W / 2, BOARD_H / 2 + 12);
+          ctx.fillText(m.resumeHint, BOARD_W / 2, BOARD_H / 2 + 12);
           ctx.textAlign = "left";
         }
       },
@@ -646,18 +688,13 @@ export default function Tetris() {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
         <div className="flex flex-col gap-3">
-          <p className="text-game-text-dim">
-            Falling blocks stack up in a well that is ten columns wide. Slide and turn each piece so
-            every gap in a row gets filled, and the row disappears.
-          </p>
-          <p className="text-game-text-dim">
-            Clear one hundred rows to win. Let the stack reach the top and the game ends.
-          </p>
+          <p className="text-game-text-dim">{m.intro1}</p>
+          <p className="text-game-text-dim">{m.intro2}</p>
         </div>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
-        {best > 0 && <ScoreDisplay label="Best" value={best} />}
+        {best !== null && <ScoreDisplay label={m.best} value={best} />}
       </div>
     );
   }
@@ -665,18 +702,18 @@ export default function Tetris() {
   if (phase === "over" || phase === "won") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
-        <ScoreDisplay label="Score" value={score} size="lg" highlight />
+        <ScoreDisplay label={m.score} value={score} size="lg" highlight />
         <div className="grid grid-cols-2 gap-3 w-full">
-          <ScoreDisplay label="Rows cleared" value={lines} />
-          <ScoreDisplay label="Best" value={Math.max(best, score)} />
+          <ScoreDisplay label={m.rowsCleared} value={lines} />
+          <ScoreDisplay label={m.best} value={Math.max(best ?? 0, score)} />
         </div>
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? "One hundred rows cleared. You finished the last level."
-            : "The stack reached the top."}
+            ? m.won
+            : m.lost}
         </GameMessage>
         <GameButton onClick={startGame} size="xl">
-          Play again
+          {m.playAgain}
         </GameButton>
       </div>
     );
@@ -685,8 +722,8 @@ export default function Tetris() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-5 animate-fade-in">
       <div className="grid grid-cols-2 gap-3">
-        <ScoreDisplay label="Score" value={score} highlight />
-        <ScoreDisplay label="Best" value={best > 0 ? best : "—"} />
+        <ScoreDisplay label={m.score} value={score} highlight />
+        <ScoreDisplay label={m.best} value={best ?? "-"} />
       </div>
 
       <div className="flex justify-center">
@@ -701,34 +738,33 @@ export default function Tetris() {
       </div>
 
       <div className="grid grid-cols-5 gap-2">
-        <GameButton variant="secondary" size="sm" onClick={() => move(-1)} aria-label="Move left">
-          Left
+        <GameButton variant="secondary" size="sm" onClick={() => move(-1)} aria-label={m.moveLeft}>
+          {m.left}
         </GameButton>
-        <GameButton variant="secondary" size="sm" onClick={() => rotate(1)} aria-label="Rotate">
-          Turn
+        <GameButton variant="secondary" size="sm" onClick={() => rotate(1)} aria-label={m.rotate}>
+          {m.turn}
         </GameButton>
-        <GameButton variant="secondary" size="sm" onClick={() => move(1)} aria-label="Move right">
-          Right
+        <GameButton variant="secondary" size="sm" onClick={() => move(1)} aria-label={m.moveRight}>
+          {m.right}
         </GameButton>
-        <GameButton variant="secondary" size="sm" onClick={() => stepDown(true)} aria-label="Move down one row">
-          Down
+        <GameButton variant="secondary" size="sm" onClick={() => stepDown(true)} aria-label={m.moveDown}>
+          {m.down}
         </GameButton>
-        <GameButton variant="primary" size="sm" onClick={hardDrop} aria-label="Drop to the bottom">
-          Drop
+        <GameButton variant="primary" size="sm" onClick={hardDrop} aria-label={m.hardDrop}>
+          {m.drop}
         </GameButton>
       </div>
 
       <p className="text-center text-xs text-game-text-dim">
-        Arrow keys move and turn the piece, space drops it, P pauses. On a touch screen, swipe to
-        move, swipe up to turn and swipe down to drop.
+        {m.help}
       </p>
 
       <div className="flex justify-center gap-2">
         <GameButton variant="ghost" size="sm" onClick={togglePause}>
-          {phase === "paused" ? "Resume" : "Pause"}
+          {phase === "paused" ? m.resume : m.pause}
         </GameButton>
         <GameButton variant="ghost" size="sm" onClick={quit}>
-          Quit
+          {m.quit}
         </GameButton>
       </div>
     </div>

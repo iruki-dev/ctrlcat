@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -88,7 +90,89 @@ function Pip({ suit, className }: { suit: Suit; className: string }) {
   );
 }
 
+const messages = {
+  en: {
+    ...common.en,
+    suits: { spades: "spades", hearts: "hearts", diamonds: "diamonds", clubs: "clubs" } as Record<Suit, string>,
+    card: (rank: string, suit: string) => `${rank} of ${suit}`,
+    outcomes: {
+      blackjack: (o: OutcomeInfo) => `Blackjack. You win ${o.payout} chips.`,
+      win: (o: OutcomeInfo) => `Your ${o.player} beats the dealer. You win ${o.wager} chips.`,
+      "dealer-bust": (o: OutcomeInfo) => `The dealer busts with ${o.dealer}. You win ${o.wager} chips.`,
+      push: () => "A push. Your bet comes back.",
+      lose: (o: OutcomeInfo) => `The dealer wins with ${o.dealer}. You lose ${o.wager} chips.`,
+      bust: (o: OutcomeInfo) => `You bust with ${o.player}. The bet goes to the dealer.`,
+    } as Record<Outcome, (o: OutcomeInfo) => string>,
+    intro: (start: number, target: number) =>
+      `You start with ${start} virtual chips. Bet a few, then get closer to 21 than the dealer without going over. Run your stack up to ${target} chips to win the night.`,
+    keys: "Keys: H to hit, S to stand, D to double, Enter to deal.",
+    chips: "Chips",
+    bestStack: "Best stack",
+    handsPlayed: "Hands played",
+    won: (target: number, hands: number) => `You reached ${target} chips in ${hands} hands. The table is yours.`,
+    lost: "Your stack is gone. No chips left for another bet.",
+    bet: "Bet",
+    goal: "Goal",
+    dealer: "Dealer",
+    waiting: "Waiting for your bet.",
+    you: "You",
+    soft: (n: number) => `${n} soft`,
+    pickBet: "Pick a bet to be dealt in.",
+    lowerBet: "Lower bet",
+    raiseBet: "Raise bet",
+    allIn: "All in",
+    deal: "Deal",
+    hit: "Hit",
+    stand: "Stand",
+    double: "Double",
+    dealerPlaying: "The dealer is playing out the hand.",
+    nextHand: "Next hand",
+    handsPlayedLabel: "Hands played:",
+  },
+  ko: {
+    ...common.ko,
+    suits: { spades: "스페이드", hearts: "하트", diamonds: "다이아몬드", clubs: "클럽" } as Record<Suit, string>,
+    card: (rank: string, suit: string) => `${suit} ${rank}`,
+    outcomes: {
+      blackjack: (o: OutcomeInfo) => `블랙잭! 칩 ${o.payout}개를 땁니다.`,
+      win: (o: OutcomeInfo) => `${o.player}로 딜러를 이겼습니다. 칩 ${o.wager}개를 땁니다.`,
+      "dealer-bust": (o: OutcomeInfo) => `딜러가 ${o.dealer}로 버스트했습니다. 칩 ${o.wager}개를 땁니다.`,
+      push: () => "무승부입니다. 건 칩을 돌려받습니다.",
+      lose: (o: OutcomeInfo) => `딜러가 ${o.dealer}로 이겼습니다. 칩 ${o.wager}개를 잃습니다.`,
+      bust: (o: OutcomeInfo) => `${o.player}로 버스트했습니다. 건 칩은 딜러에게 갑니다.`,
+    } as Record<Outcome, (o: OutcomeInfo) => string>,
+    intro: (start: number, target: number) =>
+      `가상 칩 ${start}개로 시작합니다. 칩을 걸고, 21을 넘지 않으면서 딜러보다 21에 가깝게 만드세요. 칩을 ${target}개까지 불리면 승리합니다.`,
+    keys: "키: H 히트, S 스탠드, D 더블, Enter 딜.",
+    chips: "칩",
+    bestStack: "최다 보유",
+    handsPlayed: "플레이한 판",
+    won: (target: number, hands: number) => `${hands}판 만에 칩 ${target}개를 모았습니다. 오늘 밤은 당신의 것입니다.`,
+    lost: "칩을 모두 잃었습니다. 더 걸 칩이 없습니다.",
+    bet: "베팅",
+    goal: "목표",
+    dealer: "딜러",
+    waiting: "베팅을 기다리는 중입니다.",
+    you: "나",
+    soft: (n: number) => `소프트 ${n}`,
+    pickBet: "베팅할 금액을 고르면 카드를 받습니다.",
+    lowerBet: "베팅 줄이기",
+    raiseBet: "베팅 늘리기",
+    allIn: "올인",
+    deal: "딜",
+    hit: "히트",
+    stand: "스탠드",
+    double: "더블",
+    dealerPlaying: "딜러가 카드를 받는 중입니다.",
+    nextHand: "다음 판",
+    handsPlayedLabel: "플레이한 판:",
+  },
+};
+
+type OutcomeInfo = { wager: number; payout: number; player: number; dealer: number };
+
 function CardView({ card, facedown }: { card?: Card; facedown?: boolean }) {
+  const m = useMessages(messages);
   if (facedown || !card) {
     return (
       <div className="h-24 w-16 shrink-0 rounded-xl border-2 border-game-border bg-game-accent/15 flex items-center justify-center animate-slide-up">
@@ -100,7 +184,7 @@ function CardView({ card, facedown }: { card?: Card; facedown?: boolean }) {
   return (
     <div
       className="relative h-24 w-16 shrink-0 rounded-xl border-2 border-game-border bg-game-surface shadow-sm animate-slide-up"
-      aria-label={`${rankLabel(card.rank)} of ${card.suit}`}
+      aria-label={m.card(rankLabel(card.rank), m.suits[card.suit])}
     >
       <span className={`absolute left-1.5 top-1 text-sm font-black tabular-nums ${tone}`}>
         {rankLabel(card.rank)}
@@ -122,6 +206,7 @@ function Hand({ cards, hideSecond }: { cards: Card[]; hideSecond: boolean }) {
 }
 
 export default function Blackjack() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [chips, setChipsState] = useState(START_CHIPS);
   const [best, setBest] = useState(START_CHIPS);
@@ -320,13 +405,11 @@ export default function Blackjack() {
   const dealerValue = handValue(dealer);
   const dealerShown = dealer.length > 0 ? handValue([dealer[0]]).total : 0;
 
-  const outcomeText: Record<Outcome, string> = {
-    blackjack: `Blackjack. You win ${Math.floor(wager * 1.5)} chips.`,
-    win: `Your ${playerValue.total} beats the dealer. You win ${wager} chips.`,
-    "dealer-bust": `The dealer busts with ${dealerValue.total}. You win ${wager} chips.`,
-    push: "A push. Your bet comes back.",
-    lose: `The dealer wins with ${dealerValue.total}. You lose ${wager} chips.`,
-    bust: `You bust with ${playerValue.total}. The bet goes to the dealer.`,
+  const outcomeInfo: OutcomeInfo = {
+    wager,
+    payout: Math.floor(wager * 1.5),
+    player: playerValue.total,
+    dealer: dealerValue.total,
   };
   const outcomeTone: Record<Outcome, "success" | "error" | "info"> = {
     blackjack: "success",
@@ -340,15 +423,10 @@ export default function Blackjack() {
   if (phase === "idle") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
-        <p className="text-game-text-dim">
-          You start with {START_CHIPS} virtual chips. Bet a few, then get closer to 21 than the
-          dealer without going over. Run your stack up to {TARGET_CHIPS} chips to win the night.
-        </p>
-        <p className="text-sm text-game-muted">
-          Keys: H to hit, S to stand, D to double, Enter to deal.
-        </p>
+        <p className="text-game-text-dim">{m.intro(START_CHIPS, TARGET_CHIPS)}</p>
+        <p className="text-sm text-game-muted">{m.keys}</p>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -357,18 +435,18 @@ export default function Blackjack() {
   if (phase === "won" || phase === "lost") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
-        <ScoreDisplay label="Chips" value={chips} size="lg" highlight />
+        <ScoreDisplay label={m.chips} value={chips} size="lg" highlight />
         <div className="grid grid-cols-2 gap-3 w-full">
-          <ScoreDisplay label="Best stack" value={best} size="sm" />
-          <ScoreDisplay label="Hands played" value={hands} size="sm" />
+          <ScoreDisplay label={m.bestStack} value={best} size="sm" />
+          <ScoreDisplay label={m.handsPlayed} value={hands} size="sm" />
         </div>
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? `You reached ${TARGET_CHIPS} chips in ${hands} hands. The table is yours.`
-            : "Your stack is gone. No chips left for another bet."}
+            ? m.won(TARGET_CHIPS, hands)
+            : m.lost}
         </GameMessage>
         <GameButton onClick={startGame} size="xl">
-          Play again
+          {m.playAgain}
         </GameButton>
       </div>
     );
@@ -379,14 +457,14 @@ export default function Blackjack() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-5 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Chips" value={chips} size="sm" highlight />
-        <ScoreDisplay label="Bet" value={phase === "bet" ? bet : wager} size="sm" />
-        <ScoreDisplay label="Best" value={best} size="sm" />
+        <ScoreDisplay label={m.chips} value={chips} size="sm" highlight />
+        <ScoreDisplay label={m.bet} value={phase === "bet" ? bet : wager} size="sm" />
+        <ScoreDisplay label={m.best} value={best} size="sm" />
       </div>
 
       <div>
         <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-game-muted mb-1">
-          <span>Goal</span>
+          <span>{m.goal}</span>
           <span className="tabular-nums">
             {chips} / {TARGET_CHIPS}
           </span>
@@ -401,14 +479,14 @@ export default function Blackjack() {
 
       <section className="rounded-2xl border-2 border-game-border bg-game-surface p-4 flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
-          <span className="text-xs font-bold uppercase tracking-widest text-game-muted">Dealer</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-game-muted">{m.dealer}</span>
           <span className="text-lg font-black tabular-nums text-game-text">
-            {dealer.length === 0 ? "—" : revealed ? dealerValue.total : `${dealerShown} +`}
+            {dealer.length === 0 ? "-" : revealed ? dealerValue.total : `${dealerShown} +`}
           </span>
         </div>
         {dealer.length === 0 ? (
           <p className="text-sm text-game-text-dim min-h-[6rem] flex items-center">
-            Waiting for your bet.
+            {m.waiting}
           </p>
         ) : (
           <Hand cards={dealer} hideSecond={!revealed} />
@@ -417,18 +495,18 @@ export default function Blackjack() {
 
       <section className="rounded-2xl border-2 border-game-accent/40 bg-game-accent/[.06] p-4 flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
-          <span className="text-xs font-bold uppercase tracking-widest text-game-muted">You</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-game-muted">{m.you}</span>
           <span className="text-lg font-black tabular-nums text-game-accent">
             {player.length === 0
-              ? "—"
+              ? "-"
               : playerValue.soft && playerValue.total <= 21
-                ? `${playerValue.total} soft`
+                ? m.soft(playerValue.total)
                 : playerValue.total}
           </span>
         </div>
         {player.length === 0 ? (
           <p className="text-sm text-game-text-dim min-h-[6rem] flex items-center">
-            Pick a bet to be dealt in.
+            {m.pickBet}
           </p>
         ) : (
           <Hand cards={player} hideSecond={false} />
@@ -443,7 +521,7 @@ export default function Blackjack() {
               size="sm"
               onClick={() => adjustBet(-BET_STEP)}
               disabled={bet <= MIN_BET}
-              aria-label="Lower bet"
+              aria-label={m.lowerBet}
             >
               −
             </GameButton>
@@ -455,7 +533,7 @@ export default function Blackjack() {
               size="sm"
               onClick={() => adjustBet(BET_STEP)}
               disabled={bet >= chips}
-              aria-label="Raise bet"
+              aria-label={m.raiseBet}
             >
               +
             </GameButton>
@@ -473,11 +551,11 @@ export default function Blackjack() {
               </GameButton>
             ))}
             <GameButton variant="ghost" size="sm" onClick={() => setBet(chips)}>
-              All in
+              {m.allIn}
             </GameButton>
           </div>
           <GameButton onClick={deal} size="lg">
-            Deal
+            {m.deal}
           </GameButton>
         </div>
       )}
@@ -485,36 +563,36 @@ export default function Blackjack() {
       {phase === "player" && (
         <div className="grid grid-cols-3 gap-2">
           <GameButton onClick={hit} size="lg">
-            Hit
+            {m.hit}
           </GameButton>
           <GameButton onClick={stand} variant="secondary" size="lg">
-            Stand
+            {m.stand}
           </GameButton>
           <GameButton onClick={double} variant="secondary" size="lg" disabled={!canDouble}>
-            Double
+            {m.double}
           </GameButton>
         </div>
       )}
 
       {(phase === "dealer" || phase === "reveal") && (
-        <GameMessage type="info">The dealer is playing out the hand.</GameMessage>
+        <GameMessage type="info">{m.dealerPlaying}</GameMessage>
       )}
 
       {phase === "result" && outcome && (
         <div className="flex flex-col gap-3 animate-slide-up">
-          <GameMessage type={outcomeTone[outcome]}>{outcomeText[outcome]}</GameMessage>
+          <GameMessage type={outcomeTone[outcome]}>{m.outcomes[outcome](outcomeInfo)}</GameMessage>
           <GameButton onClick={nextHand} size="lg">
-            Next hand
+            {m.nextHand}
           </GameButton>
         </div>
       )}
 
       <div className="flex items-center justify-between">
         <span className="text-xs text-game-muted">
-          Hands played: <span className="tabular-nums">{hands}</span>
+          {m.handsPlayedLabel} <span className="tabular-nums">{hands}</span>
         </span>
         <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-          Quit
+          {m.quit}
         </GameButton>
       </div>
     </div>

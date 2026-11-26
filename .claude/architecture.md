@@ -5,74 +5,62 @@
 ```
 src/
 ├── components/
+│   ├── SeoHead.astro                 # <head> 공통: 메타, hreflang, og, 테마 초기화 스크립트
+│   ├── ThemeToggleScript.astro       # 다크 모드 토글 버튼 동작
+│   ├── DocArticle.astro              # 상세 페이지 본문 (KO 문서 → 영어 본문 폴백)
 │   ├── Icon.astro                    # 소형 SVG 아이콘 (사이드바·헤더·카드)
 │   ├── GameIllustration.astro        # 대형 컬러 SVG 일러스트 (게임 카드 전용)
 │   ├── games/
-│   │   ├── GameRenderer.tsx          # lazy() 게임 컴포넌트 로더
+│   │   ├── GameRenderer.tsx          # lazy() 게임 로더 + LangProvider
+│   │   ├── GameShell.tsx             # 게임 틀: 음소거·전체 화면 버튼, SoundProvider
+│   │   ├── SoundContext.tsx          # useSound(): 효과음 합성
+│   │   ├── difficulty.ts             # 난이도 배지 색상 클래스
 │   │   ├── Sidebar.astro
-│   │   └── ui/
-│   │       ├── Button.tsx
-│   │       ├── GameMessage.tsx       # info/success/warning/error/hint 상태 메시지
-│   │       ├── Input.tsx
-│   │       └── ScoreDisplay.tsx
+│   │   └── ui/                       # Button · GameMessage · Input · ScoreDisplay
 │   └── tools/
-│       ├── ToolRenderer.tsx          # lazy() 툴 컴포넌트 로더
+│       ├── ToolRenderer.tsx          # lazy() 툴 로더 + LangProvider
 │       ├── Sidebar.astro
-│       └── ui/
-│           ├── Button.tsx
-│           ├── CopyButton.tsx
-│           ├── Input.tsx
-│           ├── StatCard.tsx
-│           └── Textarea.tsx
+│       └── ui/                       # Button · CopyButton · Input · Notice · StatCard · Textarea
 ├── content/
 │   ├── config.ts                     # 컬렉션 스키마 (수정하지 않음)
-│   ├── docs/
-│   │   ├── games/<slug>/ko.md
-│   │   └── tools/<slug>/ko.md
-│   ├── games/
-│   │   ├── number-guesser.md
-│   │   └── tic-tac-toe.md
-│   └── tools/
-│       ├── base64-encoder.md
-│       ├── color-converter.md
-│       ├── json-formatter.md
-│       ├── password-generator.md
-│       └── word-counter.md
+│   ├── docs/{tools,games}/<slug>/ko.md
+│   ├── games/<slug>.md
+│   └── tools/<slug>.md
 ├── games/
 │   ├── lib/
-│   │   ├── GameCanvas.tsx            # DPR-aware <canvas> 컴포넌트
+│   │   ├── GameCanvas.tsx            # DPR 대응 <canvas>
 │   │   ├── useGameLoop.ts            # requestAnimationFrame 루프 훅
-│   │   └── useInput.ts               # 키보드(useKeys) + 터치(useSwipe) 훅
-│   ├── number-guesser/NumberGuesser.tsx
-│   └── tic-tac-toe/TicTacToe.tsx
+│   │   ├── useInput.ts               # 키보드(useKeys) + 터치(useSwipe) 훅
+│   │   ├── useBestScore.ts           # localStorage 최고 기록 훅
+│   │   └── messages.ts               # 게임 공통 UI 문자열 (common.en / common.ko)
+│   └── <slug>/<Component>.tsx        # 게임 하나당 디렉토리 하나 (보조 .ts 파일 가능)
 ├── i18n/
-│   ├── en.ts                         # 타입 소스
-│   ├── ko.ts
-│   └── index.ts                      # 헬퍼 함수
+│   ├── en.ts · ko.ts                 # Astro 레이아웃·뷰용 문자열
+│   ├── index.ts                      # Locale 타입, t(), localePath(), localize() 등
+│   └── react.tsx                     # LangProvider, useLang(), useMessages()
 ├── layouts/
-│   ├── GameLayout.astro
-│   ├── LandingLayout.astro
-│   └── ToolLayout.astro
-├── pages/
-│   ├── index.astro
-│   ├── games/[slug].astro · index.astro
-│   ├── tools/[slug].astro · index.astro
-│   └── ko/
-│       ├── index.astro
-│       ├── games/[slug].astro · index.astro
-│       └── tools/[slug].astro · index.astro
+│   ├── GameLayout.astro · ToolLayout.astro · LandingLayout.astro
+├── pages/                            # 얇은 라우트 래퍼 (lang만 정해서 views/에 넘김)
+│   ├── index.astro · tools/ · games/
+│   └── ko/                           # 같은 구조, lang="ko"
+├── views/                            # 실제 페이지 본체 (en/ko 공용)
+│   ├── HomeView.astro
+│   ├── ToolIndexView.astro · ToolDetailView.astro
+│   └── GameIndexView.astro · GameDetailView.astro
+├── scripts/
+│   └── catalogFilter.ts              # 목록 페이지 검색·카테고리 필터 (?cat=, ?q= 지원)
 ├── styles/
-│   └── global.css                    # Fonts, 스크롤바, 기본 리셋
+│   └── global.css                    # 디자인 토큰(CSS 변수), 폰트, 스크롤바
 └── tools/
-    ├── base64-encoder/Base64Encoder.tsx
-    ├── color-converter/ColorConverter.tsx
-    ├── json-formatter/JsonFormatter.tsx
-    ├── password-generator/PasswordGenerator.tsx
-    └── word-counter/WordCounter.tsx
+    ├── lib/
+    │   ├── format.ts                 # formatBytes
+    │   └── color.ts                  # hex/RGB/HSL 변환
+    └── <slug>/<Component>.tsx        # 툴 하나당 디렉토리 하나 (보조 .ts 파일 가능)
 
 public/
-├── CNAME                            # ctrlcat.dev
-├── favicon.svg · favicon-tool.svg · favicon-game.svg
+├── CNAME                             # ctrlcat.dev
+├── robots.txt                        # sitemap-index.xml 안내
+└── favicon.svg · favicon-tool.svg · favicon-game.svg
 ```
 
 ---
@@ -81,16 +69,19 @@ public/
 
 페이지 파일을 직접 만들 필요 없습니다. 콘텐츠 컬렉션에 `.md`를 추가하면 `[slug].astro`가 자동으로 페이지를 생성합니다.
 
-| URL | 파일 |
-|---|---|
-| `/` | `pages/index.astro` |
-| `/tools/` | `pages/tools/index.astro` |
-| `/tools/<slug>/` | `pages/tools/[slug].astro` |
-| `/games/` | `pages/games/index.astro` |
-| `/games/<slug>/` | `pages/games/[slug].astro` |
-| `/ko/` | `pages/ko/index.astro` |
-| `/ko/tools/<slug>/` | `pages/ko/tools/[slug].astro` |
-| `/ko/games/<slug>/` | `pages/ko/games/[slug].astro` |
+| URL | 라우트 파일 | 뷰 |
+|---|---|---|
+| `/` · `/ko/` | `pages/index.astro` · `pages/ko/index.astro` | `HomeView` |
+| `/tools/` · `/ko/tools/` | `pages/(ko/)tools/index.astro` | `ToolIndexView` |
+| `/tools/<slug>/` · `/ko/tools/<slug>/` | `pages/(ko/)tools/[slug].astro` | `ToolDetailView` |
+| `/games/` · `/ko/games/` | `pages/(ko/)games/index.astro` | `GameIndexView` |
+| `/games/<slug>/` · `/ko/games/<slug>/` | `pages/(ko/)games/[slug].astro` | `GameDetailView` |
+
+라우트 파일은 `getStaticPaths`와 `lang` 지정만 합니다. 화면을 바꿀 때는 `views/`만 고치면 en/ko 양쪽에 반영됩니다.
+
+리다이렉트: `/games/tetris` → `/games/block-drop` (`astro.config.mjs`의 `redirects`). 이름을 바꾼 게임의 옛 링크를 살려 두기 위한 것입니다.
+
+사이트맵: `@astrojs/sitemap` 3.2.1 (Astro 4용으로 고정)이 빌드 때 `sitemap-index.xml`을 만듭니다. 리다이렉트 페이지는 포함되지 않습니다.
 
 ---
 
@@ -99,26 +90,29 @@ public/
 ```
 content/tools/<slug>.md
   component: "word-counter/WordCounter"
-    └─ ToolRenderer.tsx
+    └─ ToolDetailView.astro → <ToolRenderer component=... lang=... client:load />
          └─ import.meta.glob("/src/tools/**/*.tsx")
               └─ key: "word-counter/WordCounter"
-                   └─ lazy(importFn) → <Suspense> → <WordCounter />
+                   └─ <LangProvider lang> → <Suspense> → lazy(<WordCounter />)
 ```
 
-`component` 필드값이 glob key로 사용됩니다 (확장자 없음). 올바른 경로에 파일을 두면 자동으로 감지되므로 ToolRenderer/GameRenderer는 수정하지 않아도 됩니다.
+`component` 필드값이 glob key로 사용됩니다 (확장자 없음). glob은 `.tsx`만 잡으므로 같은 디렉토리에 둔 `.ts` 보조 파일(파서, 데이터 등)은 컴포넌트로 취급되지 않습니다.
+
+게임은 `GameRenderer` → `LangProvider` → `GameShell`(효과음·전체 화면) → 게임 컴포넌트 순서입니다.
 
 ---
 
-## 문서 폴백 흐름 (KO 상세 페이지)
+## 문서 폴백 흐름 (상세 페이지 본문)
+
+`DocArticle.astro`가 처리합니다.
 
 ```
-ko/tools/[slug].astro
-  1. getEntry("docs", "tools/<slug>/ko") 시도
+lang === "ko"
+  1. getEntry("docs", "<kind>s/<slug>/ko") 시도
   2. 있으면 → KO 문서 렌더링
   3. 없으면 → 영어 content body 렌더링 (폴백)
+lang === "en" → 영어 content body
 ```
-
-게임도 동일: `ko/games/[slug].astro` → `docs/games/<slug>/ko`
 
 ---
 

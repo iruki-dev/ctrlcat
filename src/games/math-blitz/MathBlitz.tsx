@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { GameInput } from "../../components/games/ui/Input";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
@@ -17,7 +19,8 @@ interface Problem {
 interface Feedback {
   id: number;
   kind: "correct" | "wrong";
-  text: string;
+  /** Points gained when correct, the right answer when wrong. */
+  value: number;
 }
 
 const GOAL = 25;
@@ -74,7 +77,49 @@ function makeProblem(level: number): Problem {
   return { a: b * answer, b, op: "/", answer };
 }
 
+const messages = {
+  en: {
+    ...common.en,
+    intro: (goal: number) =>
+      `Solve ${goal} arithmetic problems before the clock runs out. Every correct answer adds a little time and raises your streak. A wrong answer costs four seconds and drops you back to easy problems.`,
+    solved: "Solved",
+    bestStreak: "Best streak",
+    won: (s: string) => `Blitz cleared with ${s} seconds to spare.`,
+    lost: "Time is up.",
+    streak: "Streak",
+    solvedOf: (n: number, goal: number) => `Solved ${n} / ${goal}`,
+    levelN: (n: number) => `Level ${n}`,
+    seconds: (s: string) => `${s}s`,
+    answer: "Your answer",
+    answerHint: "Type your answer and press Enter",
+    back: "Back",
+    enter: "Enter",
+    correct: (points: number) => `Correct, +${points} points`,
+    wrong: (answer: number) => `Wrong, the answer was ${answer}`,
+  },
+  ko: {
+    ...common.ko,
+    intro: (goal: number) =>
+      `시간이 다 되기 전에 사칙연산 ${goal}문제를 풀어 보세요. 맞힐 때마다 시간이 조금 늘고 연속 정답이 쌓입니다. 틀리면 4초가 줄고 쉬운 문제로 돌아갑니다.`,
+    solved: "푼 문제",
+    bestStreak: "최고 연속",
+    won: (s: string) => `${s}초를 남기고 모두 풀었습니다.`,
+    lost: "시간이 끝났습니다.",
+    streak: "연속 정답",
+    solvedOf: (n: number, goal: number) => `${goal}문제 중 ${n}개`,
+    levelN: (n: number) => `레벨 ${n}`,
+    seconds: (s: string) => `${s}초`,
+    answer: "답",
+    answerHint: "답을 입력하고 Enter를 누르세요",
+    back: "지우기",
+    enter: "입력",
+    correct: (points: number) => `정답, +${points}점`,
+    wrong: (answer: number) => `오답, 정답은 ${answer}`,
+  },
+};
+
 export default function MathBlitz() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState<number | null>(null);
@@ -148,7 +193,7 @@ export default function MathBlitz() {
       setStreak(nextStreak);
       setBestStreak((b) => Math.max(b, nextStreak));
       setSolved(nextSolved);
-      setFeedback({ id: feedbackId.current, kind: "correct", text: `Correct, +${gained} points` });
+      setFeedback({ id: feedbackId.current, kind: "correct", value: gained });
 
       if (nextSolved >= GOAL) {
         finish(true, nextScore);
@@ -163,7 +208,7 @@ export default function MathBlitz() {
     setFeedback({
       id: feedbackId.current,
       kind: "wrong",
-      text: `Wrong, the answer was ${problem.answer}`,
+      value: problem.answer,
     });
     setTimeMs((t) => Math.max(0, t - PENALTY_MS));
     setProblem(makeProblem(1));
@@ -187,13 +232,9 @@ export default function MathBlitz() {
   if (phase === "idle") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
-        <p className="text-game-text-dim">
-          Solve {GOAL} arithmetic problems before the clock runs out. Every correct answer adds a
-          little time and raises your streak. A wrong answer costs four seconds and drops you back
-          to easy problems.
-        </p>
+        <p className="text-game-text-dim">{m.intro(GOAL)}</p>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -202,18 +243,18 @@ export default function MathBlitz() {
   if (phase === "won" || phase === "lost") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
-        <ScoreDisplay label="Score" value={score} size="lg" highlight />
+        <ScoreDisplay label={m.score} value={score} size="lg" highlight />
         <div className="grid grid-cols-2 gap-3 w-full">
-          <ScoreDisplay label="Solved" value={`${solved} / ${GOAL}`} size="sm" />
-          <ScoreDisplay label="Best streak" value={bestStreak} size="sm" />
+          <ScoreDisplay label={m.solved} value={`${solved} / ${GOAL}`} size="sm" />
+          <ScoreDisplay label={m.bestStreak} value={bestStreak} size="sm" />
         </div>
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? `Blitz cleared with ${(timeMs / 1000).toFixed(1)} seconds to spare.`
-            : "Time is up."}
+            ? m.won((timeMs / 1000).toFixed(1))
+            : m.lost}
         </GameMessage>
         <GameButton onClick={startGame} size="xl">
-          Play again
+          {m.playAgain}
         </GameButton>
       </div>
     );
@@ -226,21 +267,19 @@ export default function MathBlitz() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Score" value={score} highlight />
-        <ScoreDisplay label="Streak" value={streak} />
-        <ScoreDisplay label="Best" value={bestScore ?? "—"} />
+        <ScoreDisplay label={m.score} value={score} highlight />
+        <ScoreDisplay label={m.streak} value={streak} />
+        <ScoreDisplay label={m.best} value={bestScore ?? "-"} />
       </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between text-xs font-bold uppercase tracking-widest text-game-muted">
-          <span>
-            Solved {solved} / {GOAL}
-          </span>
-          <span>Level {level}</span>
+          <span>{m.solvedOf(solved, GOAL)}</span>
+          <span>{m.levelN(level)}</span>
           <span
             className={`tabular-nums ${lowTime ? "text-game-secondary" : "text-game-text-dim"}`}
           >
-            {(timeMs / 1000).toFixed(1)}s
+            {m.seconds((timeMs / 1000).toFixed(1))}
           </span>
         </div>
         <div className="h-2 w-full rounded-full bg-game-surface border border-game-border overflow-hidden">
@@ -276,8 +315,8 @@ export default function MathBlitz() {
           inputMode="numeric"
           autoComplete="off"
           placeholder="?"
-          aria-label="Your answer"
-          hint="Type your answer and press Enter"
+          aria-label={m.answer}
+          hint={m.answerHint}
         />
         <div className="grid grid-cols-3 gap-2">
           {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((key) => (
@@ -299,7 +338,7 @@ export default function MathBlitz() {
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => pressKey("back")}
           >
-            Back
+            {m.back}
           </GameButton>
           <GameButton
             type="button"
@@ -311,7 +350,7 @@ export default function MathBlitz() {
             0
           </GameButton>
           <GameButton type="submit" size="lg" disabled={entry.trim() === ""}>
-            Enter
+            {m.enter}
           </GameButton>
         </div>
       </form>
@@ -320,14 +359,14 @@ export default function MathBlitz() {
         {feedback && (
           <div className="animate-fade-in">
             <GameMessage type={feedback.kind === "correct" ? "success" : "error"}>
-              {feedback.text}
+              {feedback.kind === "correct" ? m.correct(feedback.value) : m.wrong(feedback.value)}
             </GameMessage>
           </div>
         )}
       </div>
 
       <GameButton variant="ghost" size="sm" onClick={() => finish(false, score)}>
-        Quit
+        {m.quit}
       </GameButton>
     </div>
   );

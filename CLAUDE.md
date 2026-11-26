@@ -16,8 +16,9 @@ Tools: cyan 테마 (`#0891b2`) · Games: violet 테마 (`#7c3aed`)
 
 - Tools ↔ Games 간 링크나 공유 컴포넌트는 없습니다
 - 이모지는 어디에도 쓰지 않습니다 (UI, 문서, 아이콘 모두)
-- 사용자에게 보이는 문자열은 `t(lang).key`로 처리합니다 — 하드코딩 없음
-- 색상은 Tailwind 토큰을 씁니다 — hex 직접 지정 없음
+- 사용자에게 보이는 문자열은 하드코딩하지 않습니다 — Astro는 `t(lang).key`, React 툴·게임은 컴포넌트 안 `messages` + `useMessages()`
+- 모든 툴·게임은 en/ko 두 언어를 다 갖춥니다 (UI 문자열, 제목·설명, 본문 문서)
+- 색상은 Tailwind 토큰을 씁니다 — hex 직접 지정 없음 (canvas 드로잉 상수만 예외)
 - 전역 CSS는 추가하지 않습니다 (Tailwind 클래스만)
 - DB나 서버사이드 로직은 없습니다
 - 문서는 일반 사용자 대상 — 코드 블록·수식·알고리즘 설명 없음
@@ -28,7 +29,7 @@ Tools: cyan 테마 (`#0891b2`) · Games: violet 테마 (`#7c3aed`)
 
 새 툴/게임을 추가할 때 이 파일들은 수정할 필요 없습니다:
 
-`src/layouts/` · `src/pages/` · `src/content/config.ts` · `tailwind.config.mjs` · `astro.config.mjs`
+`src/layouts/` · `src/views/` · `src/pages/` · `src/content/config.ts` · `tailwind.config.mjs` · `astro.config.mjs`
 
 ---
 
@@ -40,7 +41,9 @@ npm run build    # dist/ 생성
 npm run preview  # dist/ 서빙
 ```
 
-커밋 전에 빌드를 돌려봅니다. TypeScript 에러가 있으면 빌드가 막힙니다.
+커밋 전에 빌드를 돌려봅니다. TypeScript 에러가 있으면 빌드가 막힙니다. 타입만 빠르게 볼 때는 `npx tsc --noEmit`.
+
+`main`에 push하면 GitHub Actions(`.github/workflows/deploy.yml`)가 GitHub Pages로 배포합니다.
 
 ---
 
@@ -51,7 +54,7 @@ npm run preview  # dist/ 서빙
 | 파일 구조, 라우팅, 렌더링 파이프라인 | `.claude/architecture.md` |
 | 디자인 토큰, 아이콘 시스템, UI 규칙 | `.claude/design.md` |
 | 컬렉션 스키마, 현재 콘텐츠 목록 | `.claude/content.md` |
-| i18n 시스템 | `.claude/i18n.md` |
+| i18n 시스템 (Astro `t()`, React `useMessages`) | `.claude/i18n.md` |
 | 툴 추가 절차 | `.claude/add-tool.md` |
 | 게임 추가 절차 | `.claude/add-game.md` |
 | 콘텐츠 문서 작성 규칙 | `.claude/docs-guide.md` |

@@ -1,4 +1,6 @@
 import { lazy, Suspense } from "react";
+import { LangProvider } from "../../i18n/react";
+import type { Locale } from "../../i18n";
 import GameShell from "./GameShell";
 
 const gameModules = import.meta.glob<{ default: React.ComponentType }>(
@@ -7,16 +9,16 @@ const gameModules = import.meta.glob<{ default: React.ComponentType }>(
 
 const gameLazy: Record<string, React.LazyExoticComponent<React.ComponentType>> = {};
 for (const [path, importFn] of Object.entries(gameModules)) {
-  // '/src/games/number-guesser/NumberGuesser.tsx' → 'number-guesser/NumberGuesser'
   const key = path.replace("/src/games/", "").replace(".tsx", "");
   gameLazy[key] = lazy(importFn);
 }
 
 interface Props {
   component: string;
+  lang: Locale;
 }
 
-export default function GameRenderer({ component }: Props) {
+export default function GameRenderer({ component, lang }: Props) {
   const Game = gameLazy[component];
 
   if (!Game) {
@@ -32,11 +34,13 @@ export default function GameRenderer({ component }: Props) {
   }
 
   return (
-    <Suspense fallback={<GameSkeleton />}>
-      <GameShell>
-        <Game />
-      </GameShell>
-    </Suspense>
+    <LangProvider lang={lang}>
+      <Suspense fallback={<GameSkeleton />}>
+        <GameShell>
+          <Game />
+        </GameShell>
+      </Suspense>
+    </LangProvider>
   );
 }
 

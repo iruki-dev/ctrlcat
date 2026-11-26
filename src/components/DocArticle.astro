@@ -1,0 +1,36 @@
+---
+import { getEntry, render, type CollectionEntry } from "astro:content";
+import type { Locale } from "../i18n";
+
+interface Props {
+  kind: "tool" | "game";
+  entry: CollectionEntry<"tools"> | CollectionEntry<"games">;
+  lang: Locale;
+}
+
+const { kind, entry, lang } = Astro.props;
+
+// English docs live in the entry body; other locales in src/content/docs/<kind>s/<slug>/<lang>.md.
+const localized = lang === "en" ? undefined : await getEntry("docs", `${kind}s/${entry.slug}/${lang}`);
+const { Content, headings } = await render(localized ?? entry);
+
+const realmClass = {
+  tool: "prose-tool prose-code:bg-tool-surface-2 prose-code:border-tool-border-dim",
+  game: "prose-game prose-code:bg-game-surface-2 prose-code:border-game-border-dim",
+}[kind];
+---
+
+{headings.length > 0 && (
+  <article class:list={[
+    "prose max-w-none",
+    "prose-headings:font-semibold prose-headings:tracking-tight",
+    "prose-h2:text-base prose-h2:mt-8 prose-h2:mb-3 prose-h3:text-sm prose-h3:mt-6 prose-h3:mb-2",
+    "prose-p:text-sm prose-p:leading-relaxed prose-li:text-sm prose-li:leading-relaxed",
+    "prose-table:text-sm prose-th:font-semibold",
+    "prose-code:text-xs prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:border",
+    "prose-code:before:content-none prose-code:after:content-none",
+    realmClass,
+  ]}>
+    <Content />
+  </article>
+)}

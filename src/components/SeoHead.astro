@@ -1,0 +1,50 @@
+---
+import { locales, localePath, unlocalizedPath, defaultLocale, type Locale } from "../i18n";
+
+interface Props {
+  title: string;
+  description: string;
+  lang: Locale;
+  favicon: string;
+  ogType?: "website" | "article";
+  jsonLd: Record<string, unknown>;
+}
+
+const { title, description, lang, favicon, ogType = "website", jsonLd } = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const basePath = unlocalizedPath(Astro.url);
+const alternates = locales.map((l) => ({ lang: l, href: new URL(localePath(basePath, l), Astro.site) }));
+const defaultHref = new URL(localePath(basePath, defaultLocale), Astro.site);
+---
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href={canonicalURL} />
+{alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+<link rel="alternate" hreflang="x-default" href={defaultHref} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={ogType} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:site_name" content="ctrlcat.dev" />
+<meta property="og:locale" content={lang === "ko" ? "ko_KR" : "en_US"} />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<link rel="icon" href={favicon} type="image/svg+xml" />
+<link rel="sitemap" href="/sitemap-index.xml" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+<!-- Apply the saved theme before first paint to avoid a flash. -->
+<script is:inline>
+  (function () {
+    var s = localStorage.getItem("ctrlcat-theme");
+    var dark = s === "dark" || (!s && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    if (dark) document.documentElement.classList.add("dark");
+  })();
+</script>
