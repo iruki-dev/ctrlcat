@@ -6,3 +6,4 @@ export const none: PortalProvider = {
   async init() {},
   host: {},
 };
+export default none;

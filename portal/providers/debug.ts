@@ -23,3 +23,4 @@ export const debug: PortalProvider = {
     },
   },
 };
+export default debug;
