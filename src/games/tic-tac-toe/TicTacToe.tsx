@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { useSound } from "../../components/games/SoundContext";
@@ -167,7 +169,7 @@ function WinParticles({ cellIndex }: { cellIndex: number }) {
       tx: Math.cos(angle) * dist,
       ty: Math.sin(angle) * dist,
       size: 3 + Math.random() * 3,
-      color: i % 2 === 0 ? "#a855f7" : "#c4b5fd",
+      color: i % 2 === 0 ? "rgb(var(--game-secondary))" : "rgb(var(--game-accent) / 0.5)",
     };
   });
 
@@ -274,7 +276,7 @@ function Board({
         if (!cell) return null;
         const { x, y } = cellCenter(i);
         const isWin = winLine?.includes(i) ?? false;
-        const winColor = "#a855f7";
+        const winColor = "rgb(var(--game-secondary))";
         if (cell === "X") return <XMark key={i} cx={x} cy={y} color={isWin ? winColor : X_CLR} />;
         return <OMark key={i} cx={x} cy={y} color={isWin ? winColor : O_CLR} />;
       })}
@@ -303,32 +305,88 @@ function Board({
   );
 }
 
+const messages = {
+  en: {
+    ...common.en,
+    levels: { easy: "Easy", hard: "Hard" } as Record<Difficulty, string>,
+    levelDesc: { easy: "Random AI, always beatable", hard: "Perfect AI, a draw is the best result" } as Record<Difficulty, string>,
+    title: "Tic-Tac-Toe",
+    tagline: "Choose your settings before starting",
+    difficulty: "Difficulty",
+    playAs: "You play as",
+    first: "(goes first)",
+    second: "(goes second)",
+    win: "You win!",
+    draw: "Draw!",
+    lose: "AI wins.",
+    winHard: "Impressive, you beat a perfect AI.",
+    winEasy: "Nice work. Try Hard mode for a real challenge.",
+    drawHard: "That is the best result against a perfect AI.",
+    drawEasy: "A tie! See if you can win on Hard.",
+    loseHard: "Corners and center are the strongest openings.",
+    loseEasy: "Unlucky, try again!",
+    settings: "Settings",
+    youAre: (mark: string) => `You are ${mark}`,
+    you: "You",
+    drawLabel: "Draw",
+    ai: "AI",
+    thinking: "AI is thinking",
+    yourTurn: (mark: string) => `Your turn, you are ${mark}`,
+    changeSettings: "Change settings",
+  },
+  ko: {
+    ...common.ko,
+    levels: { easy: "쉬움", hard: "어려움" } as Record<Difficulty, string>,
+    levelDesc: { easy: "무작위로 두는 AI, 언제든 이길 수 있습니다", hard: "완벽한 AI, 비기는 것이 최선입니다" } as Record<Difficulty, string>,
+    title: "틱택토",
+    tagline: "시작하기 전에 설정을 고르세요",
+    difficulty: "난이도",
+    playAs: "내 기호",
+    first: "(먼저 둠)",
+    second: "(나중에 둠)",
+    win: "승리!",
+    draw: "무승부!",
+    lose: "AI가 이겼습니다.",
+    winHard: "대단합니다. 완벽한 AI를 이겼습니다.",
+    winEasy: "잘했습니다. 어려움 난이도에도 도전해 보세요.",
+    drawHard: "완벽한 AI를 상대로는 최선의 결과입니다.",
+    drawEasy: "비겼습니다! 어려움 난이도에서 이겨 보세요.",
+    loseHard: "모서리와 가운데가 가장 강한 첫수입니다.",
+    loseEasy: "아쉽네요. 다시 도전해 보세요!",
+    settings: "설정",
+    youAre: (mark: string) => `나는 ${mark}`,
+    you: "나",
+    drawLabel: "무승부",
+    ai: "AI",
+    thinking: "AI가 생각하는 중",
+    yourTurn: (mark: string) => `내 차례, 나는 ${mark}`,
+    changeSettings: "설정 바꾸기",
+  },
+};
+
 function SetupScreen({
   onStart,
 }: {
   onStart: (difficulty: Difficulty, playerMark: PlayerMark) => void;
 }) {
+  const m = useMessages(messages);
   const [diff, setDiff] = useState<Difficulty>("hard");
   const [mark, setMark] = useState<PlayerMark>("X");
-
-  const DIFF_INFO: Record<Difficulty, { label: string; desc: string }> = {
-    easy:  { label: "Easy",  desc: "Random AI — always beatable" },
-    hard:  { label: "Hard",  desc: "Perfect AI — draw is the best" },
-  };
 
   return (
     <div className="flex flex-col gap-5 px-4 py-5 animate-slide-up">
       <div className="text-center">
-        <div className="text-xl font-black text-game-text tracking-tight">Tic-Tac-Toe</div>
-        <div className="text-xs text-game-muted mt-1">Choose your settings before starting</div>
+        <div className="text-xl font-black text-game-text tracking-tight">{m.title}</div>
+        <div className="text-xs text-game-muted mt-1">{m.tagline}</div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="text-xs font-bold text-game-muted uppercase tracking-widest">Difficulty</div>
+        <div className="text-xs font-bold text-game-muted uppercase tracking-widest">{m.difficulty}</div>
         <div className="grid grid-cols-2 gap-2">
           {(["easy", "hard"] as Difficulty[]).map((d) => (
             <button
               key={d}
+              type="button"
               onClick={() => setDiff(d)}
               className={[
                 "flex flex-col items-start gap-1 p-3 rounded-2xl border-2 text-left transition-all duration-150",
@@ -338,45 +396,45 @@ function SetupScreen({
               ].join(" ")}
             >
               <span className={`text-sm font-black ${diff === d ? "text-game-accent" : "text-game-text"}`}>
-                {DIFF_INFO[d].label}
+                {m.levels[d]}
               </span>
-              <span className="text-[11px] text-game-muted leading-snug">{DIFF_INFO[d].desc}</span>
+              <span className="text-[11px] text-game-muted leading-snug">{m.levelDesc[d]}</span>
             </button>
           ))}
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="text-xs font-bold text-game-muted uppercase tracking-widest">You play as</div>
+        <div className="text-xs font-bold text-game-muted uppercase tracking-widest">{m.playAs}</div>
         <div className="grid grid-cols-2 gap-2">
-          {(["X", "O"] as PlayerMark[]).map((m) => (
+          {(["X", "O"] as PlayerMark[]).map((option) => (
             <button
-              key={m}
-              onClick={() => setMark(m)}
+              key={option}
+              type="button"
+              onClick={() => setMark(option)}
               className={[
                 "flex items-center justify-center gap-2 py-3 rounded-2xl border-2 font-black text-sm transition-all duration-150",
-                mark === m
+                mark === option
                   ? "border-game-accent bg-game-accent/10 text-game-accent"
                   : "border-game-border bg-game-surface text-game-text hover:border-game-accent/40",
               ].join(" ")}
             >
-              <span className="text-lg">{m}</span>
-              <span className="text-xs font-normal text-game-muted">
-                {m === "X" ? "(goes first)" : "(goes second)"}
-              </span>
+              <span className="text-lg">{option}</span>
+              <span className="text-xs font-normal text-game-muted">{option === "X" ? m.first : m.second}</span>
             </button>
           ))}
         </div>
       </div>
 
       <GameButton size="lg" className="w-full" onClick={() => onStart(diff, mark)}>
-        Start game
+        {m.start}
       </GameButton>
     </div>
   );
 }
 
 export default function TicTacToe() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<"setup" | "playing">("setup");
   const [difficulty, setDifficulty] = useState<Difficulty>("hard");
   const [playerMark, setPlayerMark] = useState<PlayerMark>("X");
@@ -503,49 +561,39 @@ export default function TicTacToe() {
     return <SetupScreen onStart={handleStart} />;
   }
 
-  const diffLabel = difficulty === "hard" ? "Hard" : "Easy";
-  const resultMsg =
-    result === "player"
-      ? "You win!"
-      : result === "draw"
-        ? "Draw!"
-        : "AI wins.";
+  const hard = difficulty === "hard";
+  const resultMsg = result === "player" ? m.win : result === "draw" ? m.draw : m.lose;
   const resultSub =
     result === "player"
-      ? difficulty === "hard"
-        ? "Impressive — you beat a perfect AI."
-        : "Nice work. Try Hard mode for a real challenge."
+      ? hard ? m.winHard : m.winEasy
       : result === "draw"
-        ? difficulty === "hard"
-          ? "That is the best result against a perfect AI."
-          : "A tie! See if you can win on Hard."
-        : difficulty === "hard"
-          ? "Corners and center are the strongest openings."
-          : "Unlucky — try again!";
+        ? hard ? m.drawHard : m.drawEasy
+        : hard ? m.loseHard : m.loseEasy;
 
   return (
     <div className="max-w-sm mx-auto flex flex-col gap-4 animate-slide-up p-4">
       {/* Header bar */}
       <div className="flex items-center justify-between">
         <button
+          type="button"
           onClick={() => setPhase("setup")}
           className="text-xs font-bold text-game-muted hover:text-game-accent transition-colors flex items-center gap-1"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Settings
+          {m.settings}
         </button>
         <span className="text-xs font-bold text-game-muted px-2 py-1 rounded-full bg-game-surface border border-game-border">
-          {diffLabel} · You are {playerMark}
+          {m.levels[difficulty]} · {m.youAre(playerMark)}
         </span>
       </div>
 
       {/* Score strip */}
       <div className="grid grid-cols-3 gap-2">
-        <ScoreDisplay label="You" value={playerWins} size="sm" />
-        <ScoreDisplay label="Draw" value={draws} size="sm" />
-        <ScoreDisplay label="AI" value={aiWins} size="sm" />
+        <ScoreDisplay label={m.you} value={playerWins} size="sm" />
+        <ScoreDisplay label={m.drawLabel} value={draws} size="sm" />
+        <ScoreDisplay label={m.ai} value={aiWins} size="sm" />
       </div>
 
       {/* Board card */}
@@ -562,11 +610,11 @@ export default function TicTacToe() {
         <div className="text-center text-sm text-game-muted h-5 flex items-center justify-center gap-2">
           {gameOver ? null : aiThinking ? (
             <>
-              <span>AI is thinking</span>
+              <span>{m.thinking}</span>
               <ThinkingDots />
             </>
           ) : (
-            <span>Your turn — you are {playerMark}</span>
+            <span>{m.yourTurn(playerMark)}</span>
           )}
         </div>
       </div>
@@ -596,10 +644,10 @@ export default function TicTacToe() {
       {gameOver && (
         <div className="flex gap-2">
           <GameButton onClick={resetGame} size="lg" className="flex-1">
-            Play again
+            {m.playAgain}
           </GameButton>
           <GameButton onClick={() => setPhase("setup")} size="lg" variant="secondary" className="flex-1">
-            Change settings
+            {m.changeSettings}
           </GameButton>
         </div>
       )}

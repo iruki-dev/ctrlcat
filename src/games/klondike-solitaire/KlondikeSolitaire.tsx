@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -243,6 +245,90 @@ function Pip({ suit, className }: { suit: Suit; className: string }) {
   );
 }
 
+type FlashKey =
+  | "recycled" | "empty" | "sent" | "nothingHome" | "noUndo" | "undone" | "faceDown"
+  | "kingOnly" | "badRun" | "wrongSuit" | "noFit" | "emptyColumn" | "nowhere";
+type Flash = { key: FlashKey; n?: number } | null;
+
+const messages = {
+  en: {
+    ...common.en,
+    suits: { spades: "spades", hearts: "hearts", diamonds: "diamonds", clubs: "clubs" } as Record<Suit, string>,
+    card: (rank: string, suit: string) => `${rank} of ${suit}`,
+    faceDownCard: "Face down card",
+    flash: {
+      recycled: () => "Deck recycled. That costs 20 points.",
+      empty: () => "The deck and the pile are both empty.",
+      sent: (n: number) => `Sent ${n} card${n > 1 ? "s" : ""} home.`,
+      nothingHome: () => "Nothing can go home yet.",
+      noUndo: () => "No move to take back.",
+      undone: () => "Move taken back.",
+      faceDown: () => "That card is still face down.",
+      kingOnly: () => "Only a king can start an empty column.",
+      badRun: () => "Pick up a run that goes down in alternating colors.",
+      wrongSuit: () => "That card does not follow this suit pile.",
+      noFit: () => "That move does not fit there.",
+      emptyColumn: () => "That column is empty.",
+      nowhere: () => "That card has nowhere to go yet.",
+    } as Record<FlashKey, (n: number) => string>,
+    intro:
+      "Build the four suit piles from ace to king. Move cards between the seven columns in descending order, alternating red and black, and turn the deck when you run out of plays.",
+    introKeys:
+      "Click a card, then click where it goes. Keys 1-7 pick a column, D draws, F sends a card home, A collects everything it can, U takes back a move.",
+    cardsHome: "Cards home",
+    won: "Every suit is complete. You cleared the board.",
+    lost: "No legal moves are left. This deal is blocked.",
+    bestWin: (n: number) => `Best winning score: ${n}`,
+    home: "Home",
+    recycle: "Recycle the pile",
+    emptyPile: "Empty pile",
+    foundation: (suit: string) => `${suit} foundation`,
+    emptyCol: (n: number) => `Empty column ${n}`,
+    collect: "Collect",
+    undo: "Undo",
+    newDeal: "New deal",
+    keys: "Keys: 1-7 columns, W pile, D draw, F send home, A collect, U undo, N new deal, Esc clears the selection.",
+  },
+  ko: {
+    ...common.ko,
+    suits: { spades: "스페이드", hearts: "하트", diamonds: "다이아몬드", clubs: "클럽" } as Record<Suit, string>,
+    card: (rank: string, suit: string) => `${suit} ${rank}`,
+    faceDownCard: "뒤집힌 카드",
+    flash: {
+      recycled: () => "덱을 다시 돌렸습니다. 20점이 깎입니다.",
+      empty: () => "덱과 버림 더미가 모두 비었습니다.",
+      sent: (n: number) => `카드 ${n}장을 기반 더미로 보냈습니다.`,
+      nothingHome: () => "아직 기반 더미로 보낼 카드가 없습니다.",
+      noUndo: () => "되돌릴 수가 없습니다.",
+      undone: () => "한 수 되돌렸습니다.",
+      faceDown: () => "아직 뒤집혀 있는 카드입니다.",
+      kingOnly: () => "빈 열에는 킹만 놓을 수 있습니다.",
+      badRun: () => "빨강과 검정이 번갈아 내려가는 줄을 집으세요.",
+      wrongSuit: () => "이 기반 더미에 이어서 놓을 수 없는 카드입니다.",
+      noFit: () => "그 자리에는 놓을 수 없습니다.",
+      emptyColumn: () => "빈 열입니다.",
+      nowhere: () => "그 카드는 아직 갈 곳이 없습니다.",
+    } as Record<FlashKey, (n: number) => string>,
+    intro:
+      "네 가지 무늬별로 에이스부터 킹까지 기반 더미를 쌓으세요. 일곱 개 열 사이에서는 빨강과 검정을 번갈아 내림차순으로 옮기고, 더 둘 곳이 없으면 덱을 넘깁니다.",
+    introKeys:
+      "카드를 클릭한 뒤 옮길 곳을 클릭하세요. 1~7 키로 열 선택, D로 카드 넘기기, F로 기반 더미에 보내기, A로 보낼 수 있는 카드 모두 보내기, U로 되돌리기.",
+    cardsHome: "모은 카드",
+    won: "모든 무늬를 완성했습니다. 판을 모두 정리했습니다.",
+    lost: "둘 수 있는 수가 없습니다. 이번 판은 막혔습니다.",
+    bestWin: (n: number) => `승리 최고 점수: ${n}`,
+    home: "모은 카드",
+    recycle: "더미 다시 돌리기",
+    emptyPile: "빈 더미",
+    foundation: (suit: string) => `${suit} 기반 더미`,
+    emptyCol: (n: number) => `${n}번 빈 열`,
+    collect: "모두 보내기",
+    undo: "되돌리기",
+    newDeal: "새 판",
+    keys: "키: 1~7 열, W 버림 더미, D 넘기기, F 보내기, A 모두 보내기, U 되돌리기, N 새 판, Esc 선택 해제.",
+  },
+};
+
 function Slot({
   children,
   onClick,
@@ -278,13 +364,14 @@ function CardView({
   onClick?: () => void;
   onDoubleClick?: () => void;
 }) {
+  const m = useMessages(messages);
   const style = { width: CARD_W, height: CARD_H, marginTop };
   if (!card.up) {
     return (
       <button
         type="button"
         onClick={onClick}
-        aria-label="Face down card"
+        aria-label={m.faceDownCard}
         style={style}
         className="relative shrink-0 rounded-md border border-game-accent-dim bg-game-accent shadow-md-1 transition-transform duration-150 focus:outline-none focus:ring-2 focus:ring-game-secondary"
       >
@@ -298,7 +385,7 @@ function CardView({
       type="button"
       onClick={onClick}
       onDoubleClick={onDoubleClick}
-      aria-label={`${RANK_LABEL[card.rank]} of ${card.suit}`}
+      aria-label={m.card(RANK_LABEL[card.rank], m.suits[card.suit])}
       style={style}
       className={`relative shrink-0 rounded-md border bg-game-surface shadow-md-1 transition-all duration-150 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-game-secondary ${
         selected
@@ -316,6 +403,7 @@ function CardView({
 }
 
 export default function KlondikeSolitaire() {
+  const m = useMessages(messages);
   const [game, setGame] = useState<Game>({
     board: EMPTY_BOARD,
     score: 0,
@@ -324,7 +412,7 @@ export default function KlondikeSolitaire() {
     history: [],
   });
   const [sel, setSel] = useState<Selection>(null);
-  const [flash, setFlash] = useState("");
+  const [flash, setFlash] = useState<Flash>(null);
   const [best, setBest] = useState<number | null>(null);
 
   const gameRef = useRef(game);
@@ -332,7 +420,7 @@ export default function KlondikeSolitaire() {
   gameRef.current = game;
   selRef.current = sel;
 
-  const commit = useCallback((next: Game, message: string) => {
+  const commit = useCallback((next: Game, message: Flash) => {
     gameRef.current = next;
     setGame(next);
     setFlash(message);
@@ -352,7 +440,7 @@ export default function KlondikeSolitaire() {
     gameRef.current = next;
     setGame(next);
     setSel(null);
-    setFlash("");
+    setFlash(null);
   }, []);
 
   const attemptMove = useCallback(
@@ -392,7 +480,7 @@ export default function KlondikeSolitaire() {
       if (target.kind === "foundation") board.foundations[target.index].push(cards[0]);
       else board.tableau[target.col].push(...cards);
 
-      commit(advance(current, board, delta), "");
+      commit(advance(current, board, delta), null);
       setSel(null);
       return true;
     },
@@ -418,16 +506,16 @@ export default function KlondikeSolitaire() {
       const card = board.stock.pop() as Card;
       card.up = true;
       board.waste.push(card);
-      commit(advance(current, board, 0), "");
+      commit(advance(current, board, 0), null);
       return;
     }
     if (board.waste.length > 0) {
       board.stock = board.waste.reverse().map((c) => ({ ...c, up: false }));
       board.waste = [];
-      commit(advance(current, board, -20), "Deck recycled. That costs 20 points.");
+      commit(advance(current, board, -20), { key: "recycled" });
       return;
     }
-    setFlash("The deck and the pile are both empty.");
+    setFlash({ key: "empty" });
   }, [commit]);
 
   const autoCollect = useCallback(() => {
@@ -451,14 +539,14 @@ export default function KlondikeSolitaire() {
         }
       }
     }
-    setFlash(moved > 0 ? `Sent ${moved} card${moved > 1 ? "s" : ""} home.` : "Nothing can go home yet.");
+    setFlash(moved > 0 ? { key: "sent", n: moved } : { key: "nothingHome" });
   }, [sendToFoundation]);
 
   const undo = useCallback(() => {
     const current = gameRef.current;
     const last = current.history[current.history.length - 1];
     if (!last) {
-      setFlash("No move to take back.");
+      setFlash({ key: "noUndo" });
       return;
     }
     const next: Game = {
@@ -471,7 +559,7 @@ export default function KlondikeSolitaire() {
     gameRef.current = next;
     setGame(next);
     setSel(null);
-    setFlash("Move taken back.");
+    setFlash({ key: "undone" });
   }, []);
 
   const clickTableau = useCallback(
@@ -483,7 +571,7 @@ export default function KlondikeSolitaire() {
       const active = selRef.current;
 
       if (card && !card.up) {
-        setFlash("That card is still face down.");
+        setFlash({ key: "faceDown" });
         return;
       }
       if (active && sameSpot(active, { zone: "tableau", col, index })) {
@@ -492,17 +580,17 @@ export default function KlondikeSolitaire() {
       }
       if (active && attemptMove(active, { kind: "tableau", col })) return;
       if (!card) {
-        setFlash(active ? "Only a king can start an empty column." : "");
+        setFlash(active ? { key: "kingOnly" } : null);
         setSel(null);
         return;
       }
       const run = pile.slice(index);
       if (!isRun(run)) {
-        setFlash("Pick up a run that goes down in alternating colors.");
+        setFlash({ key: "badRun" });
         return;
       }
       setSel({ zone: "tableau", col, index });
-      setFlash("");
+      setFlash(null);
     },
     [attemptMove],
   );
@@ -517,7 +605,7 @@ export default function KlondikeSolitaire() {
       return;
     }
     setSel({ zone: "waste" });
-    setFlash("");
+    setFlash(null);
   }, []);
 
   const clickFoundation = useCallback(
@@ -527,7 +615,7 @@ export default function KlondikeSolitaire() {
       const active = selRef.current;
       if (active && !sameSpot(active, { zone: "foundation", index })) {
         if (attemptMove(active, { kind: "foundation", index })) return;
-        setFlash("That card does not follow this suit pile.");
+        setFlash({ key: "wrongSuit" });
         return;
       }
       if (active && active.zone === "foundation" && active.index === index) {
@@ -536,7 +624,7 @@ export default function KlondikeSolitaire() {
       }
       if (current.board.foundations[index].length === 0) return;
       setSel({ zone: "foundation", index });
-      setFlash("");
+      setFlash(null);
     },
     [attemptMove],
   );
@@ -550,18 +638,18 @@ export default function KlondikeSolitaire() {
       const pile = current.board.tableau[col];
       const start = runStart(pile);
       if (start === null) {
-        setFlash(active ? "That move does not fit there." : "That column is empty.");
+        setFlash(active ? { key: "noFit" } : { key: "emptyColumn" });
         return;
       }
       setSel({ zone: "tableau", col, index: start });
-      setFlash("");
+      setFlash(null);
     },
     [attemptMove],
   );
 
   useEffect(() => {
     if (!flash) return;
-    const timer = window.setTimeout(() => setFlash(""), 2600);
+    const timer = window.setTimeout(() => setFlash(null), 2600);
     return () => window.clearTimeout(timer);
   }, [flash]);
 
@@ -593,7 +681,7 @@ export default function KlondikeSolitaire() {
           break;
         case "f":
           event.preventDefault();
-          if (!sendToFoundation(selRef.current)) setFlash("That card has nowhere to go yet.");
+          if (!sendToFoundation(selRef.current)) setFlash({ key: "nowhere" });
           break;
         case "a":
           event.preventDefault();
@@ -624,17 +712,11 @@ export default function KlondikeSolitaire() {
   if (phase === "idle") {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-8 py-8 text-center animate-fade-in">
-        <p className="text-game-text-dim">
-          Build the four suit piles from ace to king. Move cards between the seven columns in
-          descending order, alternating red and black, and turn the deck when you run out of plays.
-        </p>
+        <p className="text-game-text-dim">{m.intro}</p>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
-        <p className="text-xs text-game-muted">
-          Click a card, then click where it goes. Keys 1-7 pick a column, D draws, F sends a card
-          home, A collects everything it can, U takes back a move.
-        </p>
+        <p className="text-xs text-game-muted">{m.introKeys}</p>
       </div>
     );
   }
@@ -642,19 +724,19 @@ export default function KlondikeSolitaire() {
   if (phase === "won" || phase === "lost") {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-6 py-8 text-center animate-slide-up">
-        <ScoreDisplay label="Score" value={score} size="lg" highlight />
+        <ScoreDisplay label={m.score} value={score} size="lg" highlight />
         <div className="grid w-full grid-cols-2 gap-3">
-          <ScoreDisplay label="Moves" value={moves} size="sm" />
-          <ScoreDisplay label="Cards home" value={`${collected(board)} / 52`} size="sm" />
+          <ScoreDisplay label={m.moves} value={moves} size="sm" />
+          <ScoreDisplay label={m.cardsHome} value={`${collected(board)} / 52`} size="sm" />
         </div>
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? "Every suit is complete. You cleared the board."
-            : "No legal moves are left. This deal is blocked."}
+            ? m.won
+            : m.lost}
         </GameMessage>
-        {best !== null && <p className="text-xs text-game-muted">Best winning score: {best}</p>}
+        {best !== null && <p className="text-xs text-game-muted">{m.bestWin(best)}</p>}
         <GameButton onClick={startGame} size="xl">
-          Play again
+          {m.playAgain}
         </GameButton>
       </div>
     );
@@ -663,9 +745,9 @@ export default function KlondikeSolitaire() {
   return (
     <div className="mx-auto flex w-full flex-col items-center gap-5 animate-fade-in">
       <div className="grid w-full max-w-md grid-cols-3 gap-3">
-        <ScoreDisplay label="Score" value={score} size="sm" highlight />
-        <ScoreDisplay label="Moves" value={moves} size="sm" />
-        <ScoreDisplay label="Home" value={`${collected(board)}/52`} size="sm" />
+        <ScoreDisplay label={m.score} value={score} size="sm" highlight />
+        <ScoreDisplay label={m.moves} value={moves} size="sm" />
+        <ScoreDisplay label={m.home} value={`${collected(board)}/52`} size="sm" />
       </div>
 
       <div style={{ width: BOARD_W }} className="flex flex-col gap-4">
@@ -678,7 +760,7 @@ export default function KlondikeSolitaire() {
                 onClick={draw}
               />
             ) : (
-              <Slot onClick={draw} label="Recycle the pile">
+              <Slot onClick={draw} label={m.recycle}>
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -701,7 +783,7 @@ export default function KlondikeSolitaire() {
                 onDoubleClick={() => sendToFoundation({ zone: "waste" })}
               />
             ) : (
-              <Slot label="Empty pile" />
+              <Slot label={m.emptyPile} />
             )}
           </div>
 
@@ -719,7 +801,7 @@ export default function KlondikeSolitaire() {
                 <Slot
                   key={SUITS[index]}
                   onClick={() => clickFoundation(index)}
-                  label={`${SUITS[index]} foundation`}
+                  label={m.foundation(m.suits[SUITS[index]])}
                 >
                   <Pip suit={SUITS[index]} className="h-4 w-4 text-game-border" />
                 </Slot>
@@ -736,7 +818,7 @@ export default function KlondikeSolitaire() {
               className="flex flex-col items-center"
             >
               {pile.length === 0 ? (
-                <Slot onClick={() => clickTableau(col, 0)} label={`Empty column ${col + 1}`} />
+                <Slot onClick={() => clickTableau(col, 0)} label={m.emptyCol(col + 1)} />
               ) : (
                 pile.map((card, index) => (
                   <CardView
@@ -759,24 +841,23 @@ export default function KlondikeSolitaire() {
       </div>
 
       <div className="min-h-[2.5rem] w-full max-w-md">
-        {flash && <GameMessage type="hint">{flash}</GameMessage>}
+        {flash && <GameMessage type="hint">{m.flash[flash.key](flash.n ?? 0)}</GameMessage>}
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-2">
         <GameButton size="sm" onClick={autoCollect}>
-          Collect
+          {m.collect}
         </GameButton>
         <GameButton size="sm" variant="secondary" onClick={undo} disabled={game.history.length === 0}>
-          Undo
+          {m.undo}
         </GameButton>
         <GameButton size="sm" variant="ghost" onClick={startGame}>
-          New deal
+          {m.newDeal}
         </GameButton>
       </div>
 
       <p className="max-w-md text-center text-xs text-game-muted">
-        Keys: 1-7 columns, W pile, D draw, F send home, A collect, U undo, N new deal, Esc clears
-        the selection.
+        {m.keys}
       </p>
     </div>
   );

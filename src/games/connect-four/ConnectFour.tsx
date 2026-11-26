@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -165,7 +167,47 @@ function chooseColumn(board: Board): number {
   return bestCol;
 }
 
+const messages = {
+  en: {
+    ...common.en,
+    intro:
+      "Drop a disc into a column and line up four of your own discs in a row. Rows, columns and diagonals all count. The computer plays the other colour and looks several moves ahead.",
+    win: "Four in a row. You win!",
+    lose: "The computer connected four.",
+    draw: "The grid is full. It is a draw.",
+    yourTurn: "Your turn. Pick a column.",
+    thinking: "The computer is thinking.",
+    yourWins: "Your wins",
+    computer: "Computer",
+    yourMoves: "Your moves",
+    grid: "Connect four grid",
+    dropIn: (col: number) => `Drop in column ${col}`,
+    backToStart: "Back to start",
+    help: "Arrow keys move, Enter drops. You are the purple disc.",
+    restart: "Restart",
+  },
+  ko: {
+    ...common.ko,
+    intro:
+      "열을 골라 원판을 떨어뜨리고, 내 원판 네 개를 한 줄로 이으세요. 가로, 세로, 대각선 모두 인정됩니다. 컴퓨터는 다른 색으로 두며 몇 수 앞을 내다봅니다.",
+    win: "네 개를 이었습니다. 승리!",
+    lose: "컴퓨터가 네 개를 이었습니다.",
+    draw: "판이 가득 찼습니다. 무승부입니다.",
+    yourTurn: "내 차례입니다. 열을 고르세요.",
+    thinking: "컴퓨터가 생각하는 중입니다.",
+    yourWins: "내 승리",
+    computer: "컴퓨터",
+    yourMoves: "내 수",
+    grid: "사목 게임판",
+    dropIn: (col: number) => `${col}번 열에 놓기`,
+    backToStart: "처음 화면으로",
+    help: "방향키로 옮기고 Enter로 떨어뜨립니다. 나는 보라색 원판입니다.",
+    restart: "다시 시작",
+  },
+};
+
 export default function ConnectFour() {
+  const m = useMessages(messages);
   const [board, setBoard] = useState<Board>(createBoard);
   const [phase, setPhase] = useState<Phase>("idle");
   const [turn, setTurn] = useState<Turn>("you");
@@ -203,7 +245,7 @@ export default function ConnectFour() {
       const next = cloneBoard(board);
       next[row][col] = 1;
       setBoard(next);
-      setMoves((m) => m + 1);
+      setMoves((n) => n + 1);
       setCursor(col);
       const won = winningLine(next, 1);
       if (won) finish("win", won);
@@ -260,12 +302,9 @@ export default function ConnectFour() {
   if (phase === "idle") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
-        <p className="text-game-text-dim">
-          Drop a disc into a column and line up four of your own discs in a row. Rows, columns and diagonals all count.
-          The computer plays the other colour and looks several moves ahead.
-        </p>
+        <p className="text-game-text-dim">{m.intro}</p>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -273,27 +312,27 @@ export default function ConnectFour() {
 
   const statusText =
     result === "win"
-      ? "Four in a row. You win!"
+      ? m.win
       : result === "lose"
-        ? "The computer connected four."
+        ? m.lose
         : result === "draw"
-          ? "The grid is full. It is a draw."
+          ? m.draw
           : turn === "you"
-            ? "Your turn. Pick a column."
-            : "The computer is thinking.";
+            ? m.yourTurn
+            : m.thinking;
 
   return (
     <div className="max-w-md mx-auto flex flex-col gap-5 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Your wins" value={wins} size="sm" highlight />
-        <ScoreDisplay label="Computer" value={losses} size="sm" />
-        <ScoreDisplay label="Your moves" value={moves} size="sm" />
+        <ScoreDisplay label={m.yourWins} value={wins} size="sm" highlight />
+        <ScoreDisplay label={m.computer} value={losses} size="sm" />
+        <ScoreDisplay label={m.yourMoves} value={moves} size="sm" />
       </div>
 
       <div
         ref={boardRef}
         tabIndex={0}
-        aria-label="Connect four grid"
+        aria-label={m.grid}
         className="rounded-3xl border-2 border-game-border bg-game-surface p-3 focus:outline-none focus:ring-2 focus:ring-game-accent"
       >
         <div className="grid grid-cols-7 gap-1.5">
@@ -306,7 +345,7 @@ export default function ConnectFour() {
                 onClick={() => drop(c)}
                 onMouseEnter={() => phase === "playing" && setCursor(c)}
                 disabled={!playable}
-                aria-label={`Drop in column ${c + 1}`}
+                aria-label={m.dropIn(c + 1)}
                 className={`flex flex-col gap-1.5 rounded-2xl p-1 transition-colors duration-200 ${
                   playable ? "cursor-pointer hover:bg-game-accent/[.10]" : "cursor-default"
                 } ${cursor === c && playable ? "bg-game-accent/[.08]" : ""}`}
@@ -344,19 +383,19 @@ export default function ConnectFour() {
       {phase === "over" ? (
         <div className="flex flex-col items-center gap-3 animate-slide-up">
           <GameButton onClick={startGame} size="xl">
-            Play again
+            {m.playAgain}
           </GameButton>
           <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-            Back to start
+            {m.backToStart}
           </GameButton>
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3">
           <span className="text-xs text-game-text-dim">
-            Arrow keys move, Enter drops. You are the purple disc.
+            {m.help}
           </span>
           <GameButton variant="ghost" size="sm" onClick={startGame}>
-            Restart
+            {m.restart}
           </GameButton>
         </div>
       )}

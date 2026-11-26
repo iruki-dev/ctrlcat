@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
+import { useBestScore } from "../lib/useBestScore";
 import { GameCanvas } from "../lib/GameCanvas";
 import { useGameLoop } from "../lib/useGameLoop";
 import { useKeys, useSwipe } from "../lib/useInput";
@@ -38,7 +41,8 @@ const GOAL = 25;
    time between them. */
 const MAX_DRIFT = 96;
 
-/* Canvas colours. The violet/pink game palette, hand-mixed for the sky. */
+/* Canvas colours. Canvas drawing cannot read Tailwind classes, so the violet/pink
+   game palette is mixed here by hand for the sky. */
 const SKY_TOP = "#faf5ff";
 const SKY_BOTTOM = "#ede9fe";
 const CLOUD = "#ffffff";
@@ -110,11 +114,46 @@ function freshWorld(): World {
   };
 }
 
+const messages = {
+  en: {
+    ...common.en,
+    intro1: "Keep the bird in the air with one button. Every tap lifts it, gravity does the rest.",
+    intro2: (goal: number) =>
+      `Fly through ${goal} gaps to finish the flight. Touching a pipe, the ground or the sky ends the run.`,
+    tip: "Space, arrow up or a click flaps. Short, steady taps beat long ones.",
+    gapsCleared: "Gaps cleared",
+    won: (goal: number) => `Flight complete. You cleared all ${goal} gaps.`,
+    firstGap: "Down on the first gap. Tap a little earlier next time.",
+    crashed: (n: number) => `Crashed after ${n} ${n === 1 ? "gap" : "gaps"}.`,
+    backToStart: "Back to start",
+    goal: "Goal",
+    paused: "Paused",
+    resumeHint: "Click or press space to resume",
+    controls: "Space or click to flap, P to pause",
+  },
+  ko: {
+    ...common.ko,
+    intro1: "버튼 하나로 새를 공중에 띄워 두세요. 누를 때마다 위로 솟고, 나머지는 중력이 맡습니다.",
+    intro2: (goal: number) => `틈 ${goal}개를 통과하면 비행이 끝납니다. 기둥, 땅, 하늘 끝에 닿으면 실패입니다.`,
+    tip: "스페이스, 위쪽 방향키, 클릭으로 날갯짓합니다. 길게 누르기보다 짧고 꾸준하게 누르는 편이 좋습니다.",
+    gapsCleared: "통과한 틈",
+    won: (goal: number) => `비행 완료! 틈 ${goal}개를 모두 통과했습니다.`,
+    firstGap: "첫 번째 틈에서 떨어졌습니다. 조금 더 일찍 눌러 보세요.",
+    crashed: (n: number) => `틈 ${n}개를 지나고 부딪혔습니다.`,
+    backToStart: "처음 화면으로",
+    goal: "목표",
+    paused: "일시 정지",
+    resumeHint: "클릭하거나 스페이스를 누르면 계속합니다",
+    controls: "스페이스나 클릭으로 날갯짓, P로 일시 정지",
+  },
+};
+
 export default function FlappyFlyer() {
+  const m = useMessages(messages);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [phase, setPhase] = useState<Phase>("idle");
   const [score, setScore] = useState(0);
-  const [best, setBest] = useState(0);
+  const { best, record } = useBestScore(BEST_KEY);
   const { consume } = useKeys();
   const worldRef = useRef<World>(freshWorld());
   /* Flaps queued by pointer or swipe, drained by the next update tick. */
@@ -123,26 +162,6 @@ export default function FlappyFlyer() {
      that killed you does not skip past the result screen. */
   const keyLockRef = useRef(0);
 
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(BEST_KEY);
-      if (raw) setBest(Number(raw) || 0);
-    } catch {
-      /* storage unavailable, best score stays in memory */
-    }
-  }, []);
-
-  const saveBest = useCallback((value: number) => {
-    setBest((prev) => {
-      if (value <= prev) return prev;
-      try {
-        window.localStorage.setItem(BEST_KEY, String(value));
-      } catch {
-        /* storage unavailable, best score stays in memory */
-      }
-      return value;
-    });
-  }, []);
 
   const startGame = useCallback(() => {
     worldRef.current = freshWorld();
@@ -153,11 +172,11 @@ export default function FlappyFlyer() {
 
   const endGame = useCallback(
     (won: boolean) => {
-      saveBest(worldRef.current.score);
+      record(worldRef.current.score);
       keyLockRef.current = performance.now() + 700;
       setPhase(won ? "won" : "lost");
     },
-    [saveBest],
+    [record],
   );
 
   const flap = useCallback(() => {
@@ -341,21 +360,16 @@ export default function FlappyFlyer() {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
         <div className="flex flex-col gap-3">
-          <p className="text-game-text-dim">
-            Keep the bird in the air with one button. Every tap lifts it, gravity does the rest.
-          </p>
-          <p className="text-game-text-dim">
-            Fly through {GOAL} gaps to finish the flight. Touching a pipe, the ground or the sky ends
-            the run.
-          </p>
+          <p className="text-game-text-dim">{m.intro1}</p>
+          <p className="text-game-text-dim">{m.intro2(GOAL)}</p>
         </div>
         <GameMessage type="hint">
-          Space, arrow up or a click flaps. Short, steady taps beat long ones.
+          {m.tip}
         </GameMessage>
         <GameButton onClick={startGame} size="xl" autoFocus>
-          Start Game
+          {m.start}
         </GameButton>
-        {best > 0 && <ScoreDisplay label="Best" value={best} size="sm" />}
+        {best !== null && <ScoreDisplay label={m.best} value={best} size="sm" />}
       </div>
     );
   }
@@ -364,21 +378,21 @@ export default function FlappyFlyer() {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
         <div className="grid grid-cols-2 gap-3 w-full">
-          <ScoreDisplay label="Gaps cleared" value={score} size="lg" highlight />
-          <ScoreDisplay label="Best" value={best} size="lg" />
+          <ScoreDisplay label={m.gapsCleared} value={score} size="lg" highlight />
+          <ScoreDisplay label={m.best} value={best ?? 0} size="lg" />
         </div>
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? `Flight complete. You cleared all ${GOAL} gaps.`
+            ? m.won(GOAL)
             : score === 0
-              ? "Down on the first gap. Tap a little earlier next time."
-              : `Crashed after ${score} ${score === 1 ? "gap" : "gaps"}.`}
+              ? m.firstGap
+              : m.crashed(score)}
         </GameMessage>
         <GameButton onClick={startGame} size="xl" autoFocus>
-          Play again
+          {m.playAgain}
         </GameButton>
         <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-          Back to start
+          {m.backToStart}
         </GameButton>
       </div>
     );
@@ -387,9 +401,9 @@ export default function FlappyFlyer() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-4 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Score" value={score} size="sm" highlight />
-        <ScoreDisplay label="Goal" value={`${score}/${GOAL}`} size="sm" />
-        <ScoreDisplay label="Best" value={best} size="sm" />
+        <ScoreDisplay label={m.score} value={score} size="sm" highlight />
+        <ScoreDisplay label={m.goal} value={`${score}/${GOAL}`} size="sm" />
+        <ScoreDisplay label={m.best} value={best ?? 0} size="sm" />
       </div>
 
       <div
@@ -409,24 +423,24 @@ export default function FlappyFlyer() {
         />
         {phase === "paused" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-2xl bg-game-bg/80 animate-fade-in">
-            <span className="text-lg font-bold text-game-text">Paused</span>
-            <span className="text-sm text-game-text-dim">Click or press space to resume</span>
+            <span className="text-lg font-bold text-game-text">{m.paused}</span>
+            <span className="text-sm text-game-text-dim">{m.resumeHint}</span>
           </div>
         )}
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs text-game-text-dim">Space or click to flap, P to pause</span>
+        <span className="text-xs text-game-text-dim">{m.controls}</span>
         <div className="flex gap-2">
           <GameButton
             variant="secondary"
             size="sm"
             onClick={() => setPhase(phase === "paused" ? "playing" : "paused")}
           >
-            {phase === "paused" ? "Resume" : "Pause"}
+            {phase === "paused" ? m.resume : m.pause}
           </GameButton>
           <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-            Quit
+            {m.quit}
           </GameButton>
         </div>
       </div>

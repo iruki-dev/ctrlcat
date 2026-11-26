@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -74,6 +76,39 @@ const shapes = [
   />,
 ];
 
+const messages = {
+  en: {
+    ...common.en,
+    intro: (turns: number) =>
+      `Sixteen cards lie face down in eight matching pairs. Turn two cards at a time and remember what you saw. Clear every pair within ${turns} turns to win, and the turns you save are worth extra points.`,
+    pairs: "Pairs",
+    turnsUsed: "Turns used",
+    turnsLeft: "Turns left",
+    won: (left: number) => `All pairs cleared with ${left} turns to spare.`,
+    lost: "Out of turns. The board still had pairs left.",
+    bestSession: (score: number) => `Best score this session: ${score}`,
+    board: "Memory board",
+    cardUp: (n: number, shape: number) => `Card ${n}, shape ${shape}`,
+    cardDown: (n: number) => `Card ${n}, face down`,
+    help: "Click a card, or use the arrow keys and Enter. Escape quits.",
+  },
+  ko: {
+    ...common.ko,
+    intro: (turns: number) =>
+      `카드 16장이 8쌍으로 뒤집혀 있습니다. 한 번에 두 장씩 뒤집으며 본 그림을 기억하세요. ${turns}번 안에 모든 쌍을 찾으면 승리하며, 남은 횟수만큼 추가 점수를 받습니다.`,
+    pairs: "찾은 쌍",
+    turnsUsed: "사용한 횟수",
+    turnsLeft: "남은 횟수",
+    won: (left: number) => `모든 쌍을 찾았습니다. ${left}번이 남았습니다.`,
+    lost: "횟수를 모두 썼습니다. 아직 찾지 못한 쌍이 있습니다.",
+    bestSession: (score: number) => `이번 방문 최고 점수: ${score}`,
+    board: "카드 판",
+    cardUp: (n: number, shape: number) => `${n}번 카드, 모양 ${shape}`,
+    cardDown: (n: number) => `${n}번 카드, 뒤집힘`,
+    help: "카드를 클릭하거나 방향키와 Enter로 뒤집으세요. Esc를 누르면 그만둡니다.",
+  },
+};
+
 function CardFace({ sym }: { sym: number }) {
   return (
     <svg
@@ -89,6 +124,7 @@ function CardFace({ sym }: { sym: number }) {
 }
 
 export default function MemoryMatch() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [deck, setDeck] = useState<Card[]>(buildDeck);
   const [flipped, setFlipped] = useState<number[]>([]);
@@ -177,13 +213,9 @@ export default function MemoryMatch() {
   if (phase === "idle") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
-        <p className="text-game-text-dim">
-          Sixteen cards lie face down in eight matching pairs. Turn two cards at a time
-          and remember what you saw. Clear every pair within {MAX_ATTEMPTS} turns to win,
-          and the turns you save are worth extra points.
-        </p>
+        <p className="text-game-text-dim">{m.intro(MAX_ATTEMPTS)}</p>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -192,21 +224,21 @@ export default function MemoryMatch() {
   if (phase === "won" || phase === "lost") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
-        <ScoreDisplay label="Score" value={score} size="lg" highlight />
+        <ScoreDisplay label={m.score} value={score} size="lg" highlight />
         <div className="grid grid-cols-2 gap-3 w-full">
-          <ScoreDisplay label="Pairs" value={`${pairsFound} / ${PAIRS}`} size="sm" />
-          <ScoreDisplay label="Turns used" value={attempts} size="sm" />
+          <ScoreDisplay label={m.pairs} value={`${pairsFound} / ${PAIRS}`} size="sm" />
+          <ScoreDisplay label={m.turnsUsed} value={attempts} size="sm" />
         </div>
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? `All pairs cleared with ${attemptsLeft} turns to spare.`
-            : "Out of turns. The board still had pairs left."}
+            ? m.won(attemptsLeft)
+            : m.lost}
         </GameMessage>
         {bestScore !== null && (
-          <p className="text-sm text-game-muted">Best score this session: {bestScore}</p>
+          <p className="text-sm text-game-muted">{m.bestSession(bestScore)}</p>
         )}
         <GameButton onClick={startGame} size="xl">
-          Play again
+          {m.playAgain}
         </GameButton>
       </div>
     );
@@ -215,15 +247,15 @@ export default function MemoryMatch() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Score" value={score} highlight />
-        <ScoreDisplay label="Pairs" value={`${pairsFound}/${PAIRS}`} />
-        <ScoreDisplay label="Turns left" value={attemptsLeft} />
+        <ScoreDisplay label={m.score} value={score} highlight />
+        <ScoreDisplay label={m.pairs} value={`${pairsFound}/${PAIRS}`} />
+        <ScoreDisplay label={m.turnsLeft} value={attemptsLeft} />
       </div>
 
       <div
         className="grid grid-cols-4 gap-2 sm:gap-3 select-none"
         role="grid"
-        aria-label="Memory board"
+        aria-label={m.board}
       >
         {deck.map((card, i) => {
           const isMatched = matched.includes(i);
@@ -233,9 +265,7 @@ export default function MemoryMatch() {
               key={card.id}
               type="button"
               tabIndex={-1}
-              aria-label={
-                isUp ? `Card ${i + 1}, shape ${card.sym + 1}` : `Card ${i + 1}, face down`
-              }
+              aria-label={isUp ? m.cardUp(i + 1, card.sym + 1) : m.cardDown(i + 1)}
               onClick={() => {
                 setCursor(i);
                 flip(i);
@@ -269,11 +299,11 @@ export default function MemoryMatch() {
       </div>
 
       <p className="text-xs text-center text-game-muted">
-        Click a card, or use the arrow keys and Enter. Escape quits.
+        {m.help}
       </p>
 
       <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-        Quit
+        {m.quit}
       </GameButton>
     </div>
   );

@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -106,7 +108,48 @@ function litCount(board: boolean[]): number {
   return board.reduce((sum, lit) => sum + (lit ? 1 : 0), 0);
 }
 
+const messages = {
+  en: {
+    ...common.en,
+    intro1: "Every tap flips a light and its four neighbours. Turn the whole grid dark to clear the level.",
+    intro2: "Six levels, from three by three up to five by five. Each level gives you a limited number of taps.",
+    won: "All six grids are dark. You cleared the set.",
+    lost: (level: number, lit: number) => `Out of taps on level ${level}. ${lit} lights still on.`,
+    bestSoFar: (score: number) => `Best score so far: ${score}`,
+    tapsLeft: "Taps left",
+    lightsOn: "Lights on:",
+    par: "Par",
+    grid: (n: number) => `Grid ${n} x ${n}`,
+    gridLabel: (n: number) => `Lights out grid, ${n} by ${n}`,
+    cell: (row: number, col: number, lit: boolean) => `Row ${row}, column ${col}, ${lit ? "on" : "off"}`,
+    cleared: (level: number, taps: number, gain: number) =>
+      `Level ${level} cleared in ${taps} ${taps === 1 ? "tap" : "taps"}. Plus ${gain} points.`,
+    nextLevel: "Next level",
+    restartLevel: "Restart level",
+    help: "Click a cell, or use the arrow keys and Enter. Press R to reshuffle the level.",
+  },
+  ko: {
+    ...common.ko,
+    intro1: "칸을 누르면 그 칸과 상하좌우 네 칸의 불이 뒤바뀝니다. 모든 불을 끄면 레벨을 통과합니다.",
+    intro2: "3x3부터 5x5까지 여섯 레벨이 있습니다. 레벨마다 누를 수 있는 횟수가 정해져 있습니다.",
+    won: "여섯 판의 불을 모두 껐습니다. 전 레벨 통과입니다.",
+    lost: (level: number, lit: number) => `${level}레벨에서 횟수를 모두 썼습니다. 아직 ${lit}개가 켜져 있습니다.`,
+    bestSoFar: (score: number) => `지금까지 최고 점수: ${score}`,
+    tapsLeft: "남은 횟수",
+    lightsOn: "켜진 불:",
+    par: "기준 횟수",
+    grid: (n: number) => `${n} x ${n} 격자`,
+    gridLabel: (n: number) => `라이트 아웃 격자, ${n} x ${n}`,
+    cell: (row: number, col: number, lit: boolean) => `${row}행 ${col}열, ${lit ? "켜짐" : "꺼짐"}`,
+    cleared: (level: number, taps: number, gain: number) => `${level}레벨을 ${taps}번 만에 통과했습니다. ${gain}점 획득.`,
+    nextLevel: "다음 레벨",
+    restartLevel: "레벨 다시 하기",
+    help: "칸을 클릭하거나 방향키와 Enter를 쓰세요. R을 누르면 새 배치로 다시 시작합니다.",
+  },
+};
+
 export default function LightsOut() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [levelIndex, setLevelIndex] = useState(0);
   const [board, setBoard] = useState<boolean[]>([]);
@@ -218,15 +261,11 @@ export default function LightsOut() {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
         <div className="flex flex-col gap-3">
-          <p className="text-game-text-dim">
-            Every tap flips a light and its four neighbours. Turn the whole grid dark to clear the level.
-          </p>
-          <p className="text-game-text-dim text-sm">
-            Six levels, from three by three up to five by five. Each level gives you a limited number of taps.
-          </p>
+          <p className="text-game-text-dim">{m.intro1}</p>
+          <p className="text-game-text-dim text-sm">{m.intro2}</p>
         </div>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -235,17 +274,17 @@ export default function LightsOut() {
   if (phase === "won" || phase === "lost") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
-        <ScoreDisplay label="Score" value={score} size="lg" highlight />
+        <ScoreDisplay label={m.score} value={score} size="lg" highlight />
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? "All six grids are dark. You cleared the set."
-            : `Out of taps on level ${levelIndex + 1}. ${litCount(board)} lights still on.`}
+            ? m.won
+            : m.lost(levelIndex + 1, litCount(board))}
         </GameMessage>
         {bestScore !== null && (
-          <p className="text-game-text-dim text-sm">Best score so far: {bestScore}</p>
+          <p className="text-game-text-dim text-sm">{m.bestSoFar(bestScore)}</p>
         )}
         <GameButton onClick={startGame} size="xl">
-          Play again
+          {m.playAgain}
         </GameButton>
       </div>
     );
@@ -256,17 +295,17 @@ export default function LightsOut() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Score" value={score} highlight />
-        <ScoreDisplay label="Level" value={`${levelIndex + 1} / ${LEVELS.length}`} />
-        <ScoreDisplay label="Taps left" value={movesLeft} />
+        <ScoreDisplay label={m.score} value={score} highlight />
+        <ScoreDisplay label={m.level} value={`${levelIndex + 1} / ${LEVELS.length}`} />
+        <ScoreDisplay label={m.tapsLeft} value={movesLeft} />
       </div>
 
       <div className="flex items-center justify-between text-sm">
         <span className="text-game-text-dim">
-          Lights on: <span className="text-game-text font-semibold">{remaining}</span>
+          {m.lightsOn} <span className="text-game-text font-semibold">{remaining}</span>
         </span>
         <span className="text-game-text-dim">
-          Par <span className="text-game-accent font-semibold">{par}</span> · Grid {size} x {size}
+          {m.par} <span className="text-game-accent font-semibold">{par}</span> · {m.grid(size)}
         </span>
       </div>
 
@@ -274,7 +313,7 @@ export default function LightsOut() {
         className="grid gap-2 sm:gap-3 p-3 sm:p-4 rounded-2xl bg-game-surface border-2 border-game-border"
         style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
         role="grid"
-        aria-label={`Lights out grid, ${size} by ${size}`}
+        aria-label={m.gridLabel(size)}
       >
         {board.map((lit, index) => {
           const isCursor = index === cursor;
@@ -285,7 +324,7 @@ export default function LightsOut() {
               onClick={() => press(index)}
               onMouseEnter={() => setCursor(index)}
               disabled={phase !== "playing"}
-              aria-label={`Row ${Math.floor(index / size) + 1}, column ${(index % size) + 1}, ${lit ? "on" : "off"}`}
+              aria-label={m.cell(Math.floor(index / size) + 1, (index % size) + 1, lit)}
               aria-pressed={lit}
               className={`aspect-square rounded-xl border-2 transition-all duration-200 focus:outline-none active:scale-95 disabled:cursor-not-allowed ${
                 lit
@@ -306,25 +345,25 @@ export default function LightsOut() {
       {phase === "levelCleared" ? (
         <div className="flex flex-col gap-3 animate-slide-up">
           <GameMessage type="success">
-            Level {levelIndex + 1} cleared in {moves} {moves === 1 ? "tap" : "taps"}. Plus {lastGain} points.
+            {m.cleared(levelIndex + 1, moves, lastGain)}
           </GameMessage>
           <GameButton onClick={() => loadLevel(levelIndex + 1)} size="lg">
-            Next level
+            {m.nextLevel}
           </GameButton>
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3">
           <GameButton variant="secondary" size="sm" onClick={restartLevel}>
-            Restart level
+            {m.restartLevel}
           </GameButton>
           <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-            Quit
+            {m.quit}
           </GameButton>
         </div>
       )}
 
       <p className="text-game-text-dim text-xs text-center">
-        Click a cell, or use the arrow keys and Enter. Press R to reshuffle the level.
+        {m.help}
       </p>
     </div>
   );

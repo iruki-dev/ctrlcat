@@ -11,4 +11,9 @@ export default defineConfig({
     sitemap({ i18n: { defaultLocale: "en", locales: { en: "en", ko: "ko" } } }),
   ],
   output: "static",
+  // The block game was published under an earlier name; keep its old links working.
+  redirects: {
+    "/games/tetris": "/games/block-drop",
+    "/ko/games/tetris": "/ko/games/block-drop",
+  },
 });

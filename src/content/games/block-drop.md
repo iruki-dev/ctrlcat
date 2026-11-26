@@ -1,18 +1,18 @@
 ---
-title: "Tetris"
+title: "Block Drop"
 description: "Slide and turn falling blocks to fill complete rows in a ten-column well. Clear one hundred rows before the stack reaches the top."
 category: arcade
-icon: "tetris"
+icon: "block-drop"
 tags: [blocks, classic, lines, keyboard, arcade]
 status: published
 featured: false
 publishedAt: 2026-10-29
-component: "tetris/Tetris"
+component: "block-drop/BlockDrop"
 difficulty: 3
 playTime: 8
 localizations:
   ko:
-    title: "테트리스"
+    title: "블록 드롭"
     description: "떨어지는 블록을 움직이고 돌려 열 칸짜리 우물에서 가로줄을 완성합니다. 블록이 천장에 닿기 전에 100줄을 지우세요."
 ---
 

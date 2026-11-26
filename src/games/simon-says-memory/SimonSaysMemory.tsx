@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -41,11 +43,51 @@ const PADS: Pad[] = [
   },
 ];
 
+const messages = {
+  en: {
+    ...common.en,
+    intro1: "Four pads flash in order. Repeat the order back by clicking the pads or pressing 1 to 4.",
+    intro2: (rounds: number) => `Every round adds one more flash. Clear ${rounds} rounds to win.`,
+    roundsCleared: "Rounds cleared",
+    won: (rounds: number) => `Perfect memory. You repeated all ${rounds} rounds.`,
+    lost: (len: number) => `Wrong pad on round ${len}. The sequence was ${len} flashes long.`,
+    back: "Back",
+    watch: "Watch the sequence",
+    correct: "Correct. Next round coming up.",
+    yourTurn: (step: number, len: number) => `Your turn: flash ${step} of ${len}`,
+    rounds: "Rounds",
+    length: "Length",
+    pads: "Colour pads",
+    padNames: ["Violet", "Pink", "Sky", "Amber"],
+    padLabel: (name: string, key: number) => `${name} pad, key ${key}`,
+    roundOf: (n: number, total: number) => `Round ${n} / ${total}`,
+  },
+  ko: {
+    ...common.ko,
+    intro1: "네 개의 패드가 순서대로 빛납니다. 패드를 클릭하거나 숫자 1~4를 눌러 같은 순서로 따라 하세요.",
+    intro2: (rounds: number) => `라운드마다 깜빡임이 하나씩 늘어납니다. ${rounds}라운드를 통과하면 승리합니다.`,
+    roundsCleared: "통과한 라운드",
+    won: (rounds: number) => `완벽한 기억력입니다. ${rounds}라운드를 모두 따라 했습니다.`,
+    lost: (len: number) => `${len}라운드에서 다른 패드를 눌렀습니다. 순서는 ${len}번 깜빡임이었습니다.`,
+    back: "처음으로",
+    watch: "순서를 잘 보세요",
+    correct: "정답입니다. 곧 다음 라운드가 시작됩니다.",
+    yourTurn: (step: number, len: number) => `내 차례: ${len}개 중 ${step}번째`,
+    rounds: "라운드",
+    length: "길이",
+    pads: "색상 패드",
+    padNames: ["보라", "분홍", "하늘", "주황"],
+    padLabel: (name: string, key: number) => `${name} 패드, ${key}번 키`,
+    roundOf: (n: number, total: number) => `라운드 ${n} / ${total}`,
+  },
+};
+
 function randomPad(): number {
   return Math.floor(Math.random() * PADS.length);
 }
 
 export default function SimonSaysMemory() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [sequence, setSequence] = useState<number[]>([]);
   const [step, setStep] = useState(0);
@@ -173,14 +215,8 @@ export default function SimonSaysMemory() {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
         <div className="flex flex-col gap-3">
-          <p className="text-game-text-dim">
-            Four pads flash in order. Repeat the order back by clicking the pads
-            or pressing 1 to 4.
-          </p>
-          <p className="text-game-text-dim">
-            Every round adds one more flash. Clear {TARGET_ROUNDS} rounds to
-            win.
-          </p>
+          <p className="text-game-text-dim">{m.intro1}</p>
+          <p className="text-game-text-dim">{m.intro2(TARGET_ROUNDS)}</p>
         </div>
         <div className="grid grid-cols-2 gap-3 w-40">
           {PADS.map((pad) => (
@@ -191,7 +227,7 @@ export default function SimonSaysMemory() {
           ))}
         </div>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -200,19 +236,19 @@ export default function SimonSaysMemory() {
   if (phase === "won" || phase === "lost") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
-        <ScoreDisplay label="Rounds cleared" value={score} size="lg" highlight />
+        <ScoreDisplay label={m.roundsCleared} value={score} size="lg" highlight />
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? `Perfect memory. You repeated all ${TARGET_ROUNDS} rounds.`
-            : `Wrong pad on round ${sequence.length}. The sequence was ${sequence.length} flashes long.`}
+            ? m.won(TARGET_ROUNDS)
+            : m.lost(sequence.length)}
         </GameMessage>
-        <ScoreDisplay label="Best" value={bestScore ?? "—"} />
+        <ScoreDisplay label={m.best} value={bestScore ?? "-"} />
         <div className="flex gap-3">
           <GameButton onClick={startGame} size="xl">
-            Play again
+            {m.playAgain}
           </GameButton>
           <GameButton variant="ghost" size="xl" onClick={quitGame}>
-            Back
+            {m.back}
           </GameButton>
         </div>
       </div>
@@ -221,17 +257,17 @@ export default function SimonSaysMemory() {
 
   const statusText =
     phase === "watch"
-      ? "Watch the sequence"
+      ? m.watch
       : phase === "pause"
-        ? "Correct. Next round coming up."
-        : `Your turn — flash ${step + 1} of ${sequence.length}`;
+        ? m.correct
+        : m.yourTurn(step + 1, sequence.length);
 
   return (
     <div className="max-w-md mx-auto flex flex-col gap-4 animate-fade-in">
       <div className="grid grid-cols-3 gap-2">
-        <ScoreDisplay label="Rounds" value={score} size="sm" highlight />
-        <ScoreDisplay label="Length" value={sequence.length} size="sm" />
-        <ScoreDisplay label="Best" value={bestScore ?? "—"} size="sm" />
+        <ScoreDisplay label={m.rounds} value={score} size="sm" highlight />
+        <ScoreDisplay label={m.length} value={sequence.length} size="sm" />
+        <ScoreDisplay label={m.best} value={bestScore ?? "-"} size="sm" />
       </div>
 
       <GameMessage type={phase === "input" ? "hint" : "info"}>
@@ -241,7 +277,7 @@ export default function SimonSaysMemory() {
       <div
         className="grid grid-cols-2 gap-2.5 w-full max-w-[260px] mx-auto"
         role="group"
-        aria-label="Colour pads"
+        aria-label={m.pads}
       >
         {PADS.map((pad, index) => {
           const isLit = activePad === index;
@@ -257,7 +293,7 @@ export default function SimonSaysMemory() {
               type="button"
               onClick={() => press(index)}
               disabled={phase !== "input"}
-              aria-label={`${pad.name} pad, key ${index + 1}`}
+              aria-label={m.padLabel(m.padNames[index], index + 1)}
               className={`aspect-square rounded-2xl border-2 flex items-center justify-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-game-accent focus:ring-offset-2 disabled:cursor-default ${look}`}
             >
               <span className="text-2xl font-black text-white tabular-nums drop-shadow">
@@ -270,10 +306,10 @@ export default function SimonSaysMemory() {
 
       <div className="flex items-center justify-between">
         <span className="text-xs font-bold uppercase tracking-widest text-game-muted">
-          Round {sequence.length} / {TARGET_ROUNDS}
+          {m.roundOf(sequence.length, TARGET_ROUNDS)}
         </span>
         <GameButton variant="ghost" size="sm" onClick={quitGame}>
-          Quit
+          {m.quit}
         </GameButton>
       </div>
     </div>

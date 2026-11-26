@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
+import { useBestScore } from "../lib/useBestScore";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -140,31 +143,45 @@ function tileFont(value: number) {
   return "text-xl";
 }
 
+const messages = {
+  en: {
+    ...common.en,
+    intro1: "Swipe the board with the arrow keys, the WASD keys, the on-screen pad, or a finger swipe.",
+    intro2: "Every tile slides as far as it can. Two tiles with the same number join into one that is twice as large.",
+    intro3: "Reach the 2048 tile before the board runs out of room.",
+    topTile: "Top tile",
+    won: "You built the 2048 tile.",
+    lost: "No moves left. The board is full.",
+    keepPlaying: "Keep playing",
+    moveUp: "Move up",
+    moveLeft: "Move left",
+    moveDown: "Move down",
+    moveRight: "Move right",
+  },
+  ko: {
+    ...common.ko,
+    intro1: "방향키, WASD 키, 화면의 버튼, 또는 손가락으로 밀어서 타일을 움직이세요.",
+    intro2: "모든 타일은 갈 수 있는 끝까지 미끄러집니다. 같은 숫자 두 개가 만나면 두 배 크기의 타일 하나로 합쳐집니다.",
+    intro3: "판이 가득 차기 전에 2048 타일을 만드세요.",
+    topTile: "최고 타일",
+    won: "2048 타일을 만들었습니다.",
+    lost: "더 움직일 수 없습니다. 판이 가득 찼습니다.",
+    keepPlaying: "계속하기",
+    moveUp: "위로",
+    moveLeft: "왼쪽으로",
+    moveDown: "아래로",
+    moveRight: "오른쪽으로",
+  },
+};
+
 export default function Game2048() {
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [tiles, setTiles] = useState<Tile[]>([]);
   const [score, setScore] = useState(0);
-  const [best, setBest] = useState(0);
+  const { best, record } = useBestScore(BEST_KEY);
   const [keepPlaying, setKeepPlaying] = useState(false);
   const nextId = useRef(1);
-
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(BEST_KEY);
-      if (raw) setBest(Number(raw) || 0);
-    } catch {
-      /* storage unavailable, best score stays in memory */
-    }
-  }, []);
-
-  const saveBest = useCallback((value: number) => {
-    setBest(value);
-    try {
-      window.localStorage.setItem(BEST_KEY, String(value));
-    } catch {
-      /* storage unavailable, best score stays in memory */
-    }
-  }, []);
 
   const spawn = useCallback((current: Tile[], count: number) => {
     const out = [...current];
@@ -201,7 +218,7 @@ export default function Game2048() {
       const newScore = score + gained;
       setTiles(withNew);
       setScore(newScore);
-      if (newScore > best) saveBest(newScore);
+      record(newScore);
 
       if (!keepPlaying && withNew.some((t) => t.value >= TARGET)) {
         setPhase("won");
@@ -209,7 +226,7 @@ export default function Game2048() {
       }
       if (!hasMoves(withNew)) setPhase("lost");
     },
-    [phase, tiles, score, best, keepPlaying, spawn, saveBest]
+    [phase, tiles, score, keepPlaying, spawn, record]
   );
 
   useEffect(() => {
@@ -239,33 +256,25 @@ export default function Game2048() {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
         <div className="flex flex-col gap-3">
-          <p className="text-game-text-dim">
-            Swipe the board with the arrow keys, the WASD keys, the on-screen
-            pad, or a finger swipe.
-          </p>
-          <p className="text-game-text-dim">
-            Every tile slides as far as it can. Two tiles with the same number
-            join into one that is twice as large.
-          </p>
-          <p className="text-game-text-dim">
-            Reach the 2048 tile before the board runs out of room.
-          </p>
+          <p className="text-game-text-dim">{m.intro1}</p>
+          <p className="text-game-text-dim">{m.intro2}</p>
+          <p className="text-game-text-dim">{m.intro3}</p>
         </div>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
   }
 
-  const highest = tiles.reduce((m, t) => Math.max(m, t.value), 0);
+  const highest = tiles.reduce((max, t) => Math.max(max, t.value), 0);
 
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Score" value={score} highlight />
-        <ScoreDisplay label="Best" value={best || "—"} />
-        <ScoreDisplay label="Top tile" value={highest || "—"} />
+        <ScoreDisplay label={m.score} value={score} highlight />
+        <ScoreDisplay label={m.best} value={best ?? "-"} />
+        <ScoreDisplay label={m.topTile} value={highest || "-"} />
       </div>
 
       <div className="relative w-full aspect-square rounded-2xl border-2 border-game-border bg-game-surface p-1 select-none touch-none">
@@ -310,11 +319,9 @@ export default function Game2048() {
         {(phase === "won" || phase === "lost") && (
           <div className="absolute inset-0 rounded-2xl bg-game-bg/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4 p-6 text-center animate-fade-in">
             <GameMessage type={phase === "won" ? "success" : "error"}>
-              {phase === "won"
-                ? "You built the 2048 tile."
-                : "No moves left. The board is full."}
+              {phase === "won" ? m.won : m.lost}
             </GameMessage>
-            <ScoreDisplay label="Score" value={score} size="sm" highlight />
+            <ScoreDisplay label={m.score} value={score} size="sm" highlight />
             <div className="flex flex-wrap items-center justify-center gap-3">
               {phase === "won" && (
                 <GameButton
@@ -324,10 +331,10 @@ export default function Game2048() {
                     setPhase("playing");
                   }}
                 >
-                  Keep playing
+                  {m.keepPlaying}
                 </GameButton>
               )}
-              <GameButton onClick={startGame}>Play again</GameButton>
+              <GameButton onClick={startGame}>{m.playAgain}</GameButton>
             </div>
           </div>
         )}
@@ -337,7 +344,7 @@ export default function Game2048() {
         <div />
         <GameButton
           variant="secondary"
-          aria-label="Move up"
+          aria-label={m.moveUp}
           onClick={() => move("up")}
         >
           ↑
@@ -345,21 +352,21 @@ export default function Game2048() {
         <div />
         <GameButton
           variant="secondary"
-          aria-label="Move left"
+          aria-label={m.moveLeft}
           onClick={() => move("left")}
         >
           ←
         </GameButton>
         <GameButton
           variant="secondary"
-          aria-label="Move down"
+          aria-label={m.moveDown}
           onClick={() => move("down")}
         >
           ↓
         </GameButton>
         <GameButton
           variant="secondary"
-          aria-label="Move right"
+          aria-label={m.moveRight}
           onClick={() => move("right")}
         >
           →
@@ -368,10 +375,10 @@ export default function Game2048() {
 
       <div className="flex items-center justify-center gap-3">
         <GameButton variant="ghost" size="sm" onClick={startGame}>
-          New game
+          {m.newGame}
         </GameButton>
         <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-          Quit
+          {m.quit}
         </GameButton>
       </div>
     </div>

@@ -1,10 +1,8 @@
 ---
 kind: game
-ref: tetris
+ref: block-drop
 lang: ko
 ---
-
-## 테트리스
 
 ## 게임 방식
 

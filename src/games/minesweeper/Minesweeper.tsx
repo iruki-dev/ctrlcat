@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
@@ -13,7 +15,6 @@ interface Cell {
 }
 
 interface Level {
-  label: string;
   size: number;
   mines: number;
   cols: string;
@@ -21,9 +22,9 @@ interface Level {
 }
 
 const LEVELS: Level[] = [
-  { label: "Easy", size: 8, mines: 10, cols: "grid-cols-8", text: "text-[0.625rem] sm:text-base" },
-  { label: "Medium", size: 10, mines: 18, cols: "grid-cols-10", text: "text-[0.625rem] sm:text-sm" },
-  { label: "Hard", size: 12, mines: 30, cols: "grid-cols-12", text: "text-[0.5rem] sm:text-xs" },
+  { size: 8, mines: 10, cols: "grid-cols-8", text: "text-[0.625rem] sm:text-base" },
+  { size: 10, mines: 18, cols: "grid-cols-10", text: "text-[0.625rem] sm:text-sm" },
+  { size: 12, mines: 30, cols: "grid-cols-12", text: "text-[0.5rem] sm:text-xs" },
 ];
 
 const NUMBER_COLOR = [
@@ -145,7 +146,49 @@ function FlagIcon() {
   );
 }
 
+const messages = {
+  en: {
+    ...common.en,
+    levels: ["Easy", "Medium", "Hard"],
+    intro1: "Clear every safe tile without setting off a mine. Each number tells you how many mines touch that tile.",
+    intro2: "Click to reveal, right-click or long-press to flag. Your first tile is always safe.",
+    boardSize: "Board size",
+    mines: "Mines",
+    won: (time: string) => `Board cleared in ${time}.`,
+    lost: "You hit a mine. Board revealed.",
+    board: (n: number) => `Minesweeper board, ${n} by ${n}`,
+    flagged: "Flagged tile",
+    hidden: "Hidden tile",
+    mine: "Mine",
+    neighbours: (n: number) => `${n} neighbouring mines`,
+    flagMode: "Flag mode",
+    restart: "Restart",
+    changeLevel: "Level",
+    help: "Arrow keys move · Enter reveals · F, right-click or long-press flags",
+  },
+  ko: {
+    ...common.ko,
+    levels: ["쉬움", "보통", "어려움"],
+    intro1: "지뢰를 건드리지 않고 안전한 칸을 모두 여세요. 숫자는 그 칸에 맞닿은 지뢰의 개수입니다.",
+    intro2: "클릭해서 열고, 오른쪽 클릭이나 길게 눌러 깃발을 꽂습니다. 처음 여는 칸은 항상 안전합니다.",
+    boardSize: "판 크기",
+    mines: "지뢰",
+    won: (time: string) => `${time} 만에 모두 찾았습니다.`,
+    lost: "지뢰를 밟았습니다. 판을 모두 공개합니다.",
+    board: (n: number) => `지뢰 찾기 판, ${n} x ${n}`,
+    flagged: "깃발 꽂은 칸",
+    hidden: "닫힌 칸",
+    mine: "지뢰",
+    neighbours: (n: number) => `주변 지뢰 ${n}개`,
+    flagMode: "깃발 모드",
+    restart: "다시 시작",
+    changeLevel: "난이도",
+    help: "방향키로 이동 · Enter로 열기 · F, 오른쪽 클릭, 길게 누르기로 깃발",
+  },
+};
+
 export default function Minesweeper() {
+  const m = useMessages(messages);
   const [levelIndex, setLevelIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("idle");
   const [board, setBoard] = useState<Cell[]>(() => emptyBoard(LEVELS[0].size));
@@ -326,20 +369,15 @@ export default function Minesweeper() {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
         <div className="flex flex-col gap-3">
-          <p className="text-game-text-dim">
-            Clear every safe tile without setting off a mine. Each number tells you how many
-            mines touch that tile.
-          </p>
-          <p className="text-game-text-dim text-sm">
-            Click to reveal, right-click or long-press to flag. Your first tile is always safe.
-          </p>
+          <p className="text-game-text-dim">{m.intro1}</p>
+          <p className="text-game-text-dim text-sm">{m.intro2}</p>
         </div>
         <div className="flex flex-col gap-3 w-full">
-          <span className="text-xs uppercase tracking-wide text-game-text-dim">Board size</span>
+          <span className="text-xs uppercase tracking-wide text-game-text-dim">{m.boardSize}</span>
           <div className="grid grid-cols-3 gap-2">
             {LEVELS.map((item, index) => (
               <button
-                key={item.label}
+                key={item.size}
                 type="button"
                 onClick={() => setLevelIndex(index)}
                 className={`rounded-2xl border-2 px-3 py-3 transition-all duration-200 ${
@@ -348,7 +386,7 @@ export default function Minesweeper() {
                     : "border-game-border bg-game-surface text-game-text-dim hover:border-game-accent"
                 }`}
               >
-                <span className="block text-sm">{item.label}</span>
+                <span className="block text-sm">{m.levels[index]}</span>
                 <span className="block text-xs opacity-70">
                   {item.size} x {item.size} · {item.mines}
                 </span>
@@ -357,7 +395,7 @@ export default function Minesweeper() {
           </div>
         </div>
         <GameButton onClick={() => startGame(levelIndex)} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
       </div>
     );
@@ -369,17 +407,17 @@ export default function Minesweeper() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-3 animate-fade-in">
       <div className="grid grid-cols-3 gap-2">
-        <ScoreDisplay label="Mines" value={minesLeft} size="sm" highlight />
-        <ScoreDisplay label="Time" value={formatTime(time)} size="sm" />
-        <ScoreDisplay label="Best" value={bestTime === null ? "—" : formatTime(bestTime)} size="sm" />
+        <ScoreDisplay label={m.mines} value={minesLeft} size="sm" highlight />
+        <ScoreDisplay label={m.time} value={formatTime(time)} size="sm" />
+        <ScoreDisplay label={m.best} value={bestTime === null ? "-" : formatTime(bestTime)} size="sm" />
       </div>
 
       {over && (
         <div className="animate-slide-up">
           <GameMessage type={phase === "won" ? "success" : "error"}>
             {phase === "won"
-              ? `Board cleared in ${formatTime(time)}.`
-              : "You hit a mine. Board revealed."}
+              ? m.won(formatTime(time))
+              : m.lost}
           </GameMessage>
         </div>
       )}
@@ -389,7 +427,7 @@ export default function Minesweeper() {
         ref={boardRef}
         tabIndex={0}
         role="grid"
-        aria-label={`Minesweeper board, ${level.size} by ${level.size}`}
+        aria-label={m.board(level.size)}
         onKeyDown={handleKeyDown}
         className={`grid ${level.cols} gap-1 p-1.5 w-full max-w-[min(100%,calc(75svh_-_11rem),calc(85svw_-_11rem))] rounded-2xl bg-game-surface border-2 border-game-border select-none touch-manipulation focus:outline-none focus:ring-2 focus:ring-game-accent`}
       >
@@ -420,12 +458,12 @@ export default function Minesweeper() {
               disabled={over}
               aria-label={
                 cell.state === "flagged"
-                  ? "Flagged tile"
+                  ? m.flagged
                   : cell.state === "hidden"
-                    ? "Hidden tile"
+                    ? m.hidden
                     : cell.mine
-                      ? "Mine"
-                      : `${cell.adj} neighbouring mines`
+                      ? m.mine
+                      : m.neighbours(cell.adj)
               }
               onPointerDown={(event) => handlePointerDown(index, event.button)}
               onPointerUp={(event) => handlePointerUp(index, event.button)}
@@ -460,19 +498,19 @@ export default function Minesweeper() {
             size="sm"
             onClick={() => setFlagMode((f) => !f)}
           >
-            Flag mode
+            {m.flagMode}
           </GameButton>
         )}
         <GameButton variant="secondary" size="sm" onClick={() => startGame(levelIndex)}>
-          {over ? "Play again" : "Restart"}
+          {over ? m.playAgain : m.restart}
         </GameButton>
         <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-          Level
+          {m.changeLevel}
         </GameButton>
       </div>
 
       <p className="text-center text-[11px] leading-tight text-game-text-dim">
-        Arrow keys move · Enter reveals · F, right-click or long-press flags
+        {m.help}
       </p>
     </div>
   );

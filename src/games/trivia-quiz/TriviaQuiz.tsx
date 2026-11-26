@@ -1,16 +1,12 @@
 import { useEffect, useRef, useState } from "react";
+import { useLang, useMessages } from "../../i18n/react";
+import { common } from "../lib/messages";
+import { QUESTIONS, type Category, type Question } from "./questions";
 import { GameButton } from "../../components/games/ui/Button";
 import { ScoreDisplay } from "../../components/games/ui/ScoreDisplay";
 import { GameMessage } from "../../components/games/ui/GameMessage";
 
 type Phase = "idle" | "playing" | "reveal" | "won" | "lost";
-
-interface Question {
-  q: string;
-  a: [string, string, string, string];
-  c: number;
-  cat: string;
-}
 
 const ROUND_LENGTH = 10;
 const QUESTION_SECONDS = 15;
@@ -19,60 +15,56 @@ const BASE_POINTS = 100;
 const STREAK_BONUS = 25;
 const TIME_BONUS = 5;
 
-const POOL: Question[] = [
-  { q: "What is the capital of Australia?", a: ["Sydney", "Melbourne", "Canberra", "Perth"], c: 2, cat: "Geography" },
-  { q: "Which planet is the largest in the solar system?", a: ["Saturn", "Jupiter", "Neptune", "Uranus"], c: 1, cat: "Science" },
-  { q: "What is the chemical symbol for gold?", a: ["Go", "Gd", "Au", "Ag"], c: 2, cat: "Science" },
-  { q: "Who painted the Mona Lisa?", a: ["Leonardo da Vinci", "Raphael", "Michelangelo", "Donatello"], c: 0, cat: "Art" },
-  { q: "Which is the largest ocean on Earth?", a: ["Atlantic", "Indian", "Arctic", "Pacific"], c: 3, cat: "Geography" },
-  { q: "How many players from one team are on a soccer field at kickoff?", a: ["9", "10", "11", "12"], c: 2, cat: "Sport" },
-  { q: "Which gas do plants absorb from the air?", a: ["Oxygen", "Carbon dioxide", "Hydrogen", "Helium"], c: 1, cat: "Science" },
-  { q: "Which river runs through Paris?", a: ["Rhine", "Loire", "Seine", "Danube"], c: 2, cat: "Geography" },
-  { q: "What is the hardest natural substance?", a: ["Quartz", "Steel", "Diamond", "Granite"], c: 2, cat: "Science" },
-  { q: "Which country gave the Statue of Liberty to the United States?", a: ["France", "Spain", "Italy", "Portugal"], c: 0, cat: "History" },
-  { q: "How many strings does a standard guitar have?", a: ["4", "5", "6", "7"], c: 2, cat: "Music" },
-  { q: "Which element has the symbol O?", a: ["Osmium", "Oxygen", "Gold", "Oganesson"], c: 1, cat: "Science" },
-  { q: "What is the largest mammal alive today?", a: ["African elephant", "Blue whale", "Giraffe", "Orca"], c: 1, cat: "Nature" },
-  { q: "In which country are the pyramids of Giza?", a: ["Sudan", "Mexico", "Egypt", "Peru"], c: 2, cat: "History" },
-  { q: "How many degrees are in a right angle?", a: ["45", "60", "90", "180"], c: 2, cat: "Numbers" },
-  { q: "Who wrote the play Romeo and Juliet?", a: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Oscar Wilde"], c: 1, cat: "Books" },
-  { q: "Which planet is known as the Red Planet?", a: ["Venus", "Mercury", "Mars", "Pluto"], c: 2, cat: "Science" },
-  { q: "What is the currency of Japan?", a: ["Won", "Yuan", "Yen", "Baht"], c: 2, cat: "Geography" },
-  { q: "How many sides does a hexagon have?", a: ["5", "6", "7", "8"], c: 1, cat: "Numbers" },
-  { q: "What is the smallest prime number?", a: ["0", "1", "2", "3"], c: 2, cat: "Numbers" },
-  { q: "At what temperature in Celsius does water freeze?", a: ["0", "10", "32", "100"], c: 0, cat: "Science" },
-  { q: "Which metal is liquid at room temperature?", a: ["Lead", "Mercury", "Tin", "Zinc"], c: 1, cat: "Science" },
-  { q: "On which continent is the Sahara desert?", a: ["Asia", "Australia", "Africa", "South America"], c: 2, cat: "Geography" },
-  { q: "Which organ pumps blood around your body?", a: ["Lungs", "Liver", "Kidney", "Heart"], c: 3, cat: "Body" },
-  { q: "How many bones are in the adult human body?", a: ["186", "206", "226", "246"], c: 1, cat: "Body" },
-  { q: "Which country has the largest land area?", a: ["Canada", "China", "Russia", "United States"], c: 2, cat: "Geography" },
-  { q: "Who developed the theory of general relativity?", a: ["Isaac Newton", "Albert Einstein", "Niels Bohr", "Galileo Galilei"], c: 1, cat: "Science" },
-  { q: "Which vitamin does sunlight help your body produce?", a: ["Vitamin A", "Vitamin B12", "Vitamin C", "Vitamin D"], c: 3, cat: "Body" },
-  { q: "What is the capital of Canada?", a: ["Toronto", "Ottawa", "Vancouver", "Montreal"], c: 1, cat: "Geography" },
-  { q: "How many colours are traditionally listed in a rainbow?", a: ["5", "6", "7", "9"], c: 2, cat: "Numbers" },
-  { q: "Which is the fastest land animal?", a: ["Cheetah", "Pronghorn", "Lion", "Greyhound"], c: 0, cat: "Nature" },
-  { q: "Which ocean lies to the east of the United States?", a: ["Pacific", "Atlantic", "Indian", "Southern"], c: 1, cat: "Geography" },
-  { q: "Which instrument has 88 keys?", a: ["Organ", "Harpsichord", "Piano", "Accordion"], c: 2, cat: "Music" },
-  { q: "Which country hosted the 2016 Summer Olympics?", a: ["China", "Brazil", "Japan", "Greece"], c: 1, cat: "Sport" },
-  { q: "How many minutes are in a full day?", a: ["720", "1200", "1440", "2400"], c: 2, cat: "Numbers" },
-  { q: "What is the largest internal organ in the human body?", a: ["Liver", "Brain", "Stomach", "Lung"], c: 0, cat: "Body" },
-  { q: "Which gas makes up most of Earth's atmosphere?", a: ["Oxygen", "Nitrogen", "Argon", "Carbon dioxide"], c: 1, cat: "Science" },
-  { q: "Who was the first person to walk on the moon?", a: ["Buzz Aldrin", "Yuri Gagarin", "Neil Armstrong", "Michael Collins"], c: 2, cat: "History" },
-  { q: "How many zeroes are in one million?", a: ["5", "6", "7", "9"], c: 1, cat: "Numbers" },
-  { q: "Which bird is a common symbol of peace?", a: ["Eagle", "Dove", "Swan", "Crane"], c: 1, cat: "Nature" },
-  { q: "What is the main ingredient in guacamole?", a: ["Cucumber", "Pea", "Avocado", "Courgette"], c: 2, cat: "Food" },
-  { q: "Which planet orbits closest to the sun?", a: ["Mercury", "Venus", "Earth", "Mars"], c: 0, cat: "Science" },
-  { q: "The Great Barrier Reef lies off the coast of which country?", a: ["Indonesia", "Australia", "Philippines", "Fiji"], c: 1, cat: "Geography" },
-  { q: "How many letters are in the English alphabet?", a: ["24", "25", "26", "28"], c: 2, cat: "Numbers" },
-  { q: "Which sport is played with a shuttlecock?", a: ["Squash", "Badminton", "Tennis", "Pickleball"], c: 1, cat: "Sport" },
-  { q: "Which metal is the best conductor of electricity?", a: ["Copper", "Gold", "Aluminium", "Silver"], c: 3, cat: "Science" },
-  { q: "Mount Everest sits in which mountain range?", a: ["Andes", "Alps", "Himalayas", "Rockies"], c: 2, cat: "Geography" },
-  { q: "How many faces does a cube have?", a: ["4", "6", "8", "12"], c: 1, cat: "Numbers" },
-  { q: "Which language has the most native speakers?", a: ["English", "Spanish", "Hindi", "Mandarin Chinese"], c: 3, cat: "Language" },
-  { q: "What is the tallest animal in the world?", a: ["Elephant", "Giraffe", "Camel", "Moose"], c: 1, cat: "Nature" },
-  { q: "Which sea is the saltiest large body of water?", a: ["Red Sea", "Dead Sea", "Black Sea", "Baltic Sea"], c: 1, cat: "Geography" },
-  { q: "Who wrote the novel Pride and Prejudice?", a: ["Jane Austen", "Emily Bronte", "Mary Shelley", "George Eliot"], c: 0, cat: "Books" },
-];
+const messages = {
+  en: {
+    ...common.en,
+    intro1: (s: number) => `Ten general knowledge questions, four choices each. You have ${s} seconds per question.`,
+    intro2: (n: number) => `Answer faster and keep a streak going for more points. Get ${n} or more right to clear the round.`,
+    keysHint: "Tap an answer, or press 1 to 4",
+    correct: "Correct",
+    bestStreak: "Best streak",
+    won: (n: number, total: number) => `Round cleared with ${n} of ${total} correct.`,
+    lost: (n: number, total: number, need: number) =>
+      `Only ${n} of ${total} correct. You need ${need} to clear the round.`,
+    bestSoFar: (score: number) => `Best score so far: ${score}`,
+    streak: "Streak",
+    questionOf: (n: number, total: number) => `Question ${n} of ${total}`,
+    seconds: (s: number) => `${s}s`,
+    right: (points: number, streak: number) => `Correct. Plus ${points} points${streak > 1 ? `, streak of ${streak}` : ""}.`,
+    timeUp: (answer: string) => `Time is up. The answer was ${answer}.`,
+    wrong: (answer: string) => `Not quite. The answer was ${answer}.`,
+    results: "See results",
+    next: "Next question",
+    categories: {
+      Geography: "Geography", Science: "Science", Art: "Art", Sport: "Sport", History: "History", Music: "Music",
+      Nature: "Nature", Numbers: "Numbers", Books: "Books", Body: "Body", Food: "Food", Language: "Language",
+    } as Record<Category, string>,
+  },
+  ko: {
+    ...common.ko,
+    intro1: (s: number) => `상식 문제 10개가 4지선다로 나옵니다. 문제마다 ${s}초가 주어집니다.`,
+    intro2: (n: number) => `빨리 맞히고 연속 정답을 이어 갈수록 점수가 커집니다. ${n}개 이상 맞히면 통과입니다.`,
+    keysHint: "답을 누르거나 숫자 1~4 키를 누르세요",
+    correct: "정답 수",
+    bestStreak: "최고 연속",
+    won: (n: number, total: number) => `${total}문제 중 ${n}개를 맞혀 통과했습니다.`,
+    lost: (n: number, total: number, need: number) =>
+      `${total}문제 중 ${n}개만 맞혔습니다. 통과하려면 ${need}개가 필요합니다.`,
+    bestSoFar: (score: number) => `지금까지 최고 점수: ${score}`,
+    streak: "연속 정답",
+    questionOf: (n: number, total: number) => `${total}문제 중 ${n}번째`,
+    seconds: (s: number) => `${s}초`,
+    right: (points: number, streak: number) => `정답입니다. ${points}점 획득${streak > 1 ? `, ${streak}연속 정답` : ""}.`,
+    timeUp: (answer: string) => `시간이 다 됐습니다. 정답은 ${answer}입니다.`,
+    wrong: (answer: string) => `아쉽네요. 정답은 ${answer}입니다.`,
+    results: "결과 보기",
+    next: "다음 문제",
+    categories: {
+      Geography: "지리", Science: "과학", Art: "미술", Sport: "스포츠", History: "역사", Music: "음악",
+      Nature: "자연", Numbers: "수", Books: "문학", Body: "인체", Food: "음식", Language: "언어",
+    } as Record<Category, string>,
+  },
+};
 
 function shuffle<T>(items: T[]): T[] {
   const copy = items.slice();
@@ -84,6 +76,8 @@ function shuffle<T>(items: T[]): T[] {
 }
 
 export default function TriviaQuiz() {
+  const lang = useLang();
+  const m = useMessages(messages);
   const [phase, setPhase] = useState<Phase>("idle");
   const [round, setRound] = useState<Question[]>([]);
   const [index, setIndex] = useState(0);
@@ -97,10 +91,11 @@ export default function TriviaQuiz() {
   const [timeLeft, setTimeLeft] = useState(QUESTION_SECONDS);
 
   const question = round[index];
+  const text = question?.[lang];
   const inPlay = phase === "playing" || phase === "reveal";
 
   function startGame() {
-    setRound(shuffle(POOL).slice(0, ROUND_LENGTH));
+    setRound(shuffle(QUESTIONS).slice(0, ROUND_LENGTH));
     setIndex(0);
     setSelected(null);
     setGained(0);
@@ -189,19 +184,13 @@ export default function TriviaQuiz() {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-8 py-8 animate-fade-in">
         <div className="flex flex-col gap-3">
-          <p className="text-game-text-dim">
-            Ten general knowledge questions, four choices each. You have{" "}
-            {QUESTION_SECONDS} seconds per question.
-          </p>
-          <p className="text-game-text-dim">
-            Answer faster and keep a streak going for more points. Get{" "}
-            {WIN_THRESHOLD} or more right to clear the round.
-          </p>
+          <p className="text-game-text-dim">{m.intro1(QUESTION_SECONDS)}</p>
+          <p className="text-game-text-dim">{m.intro2(WIN_THRESHOLD)}</p>
         </div>
         <GameButton onClick={startGame} size="xl">
-          Start Game
+          {m.start}
         </GameButton>
-        <p className="text-xs text-game-muted">Tap an answer, or press 1 to 4</p>
+        <p className="text-xs text-game-muted">{m.keysHint}</p>
       </div>
     );
   }
@@ -209,27 +198,27 @@ export default function TriviaQuiz() {
   if (phase === "won" || phase === "lost") {
     return (
       <div className="max-w-md mx-auto text-center flex flex-col items-center gap-6 py-8 animate-slide-up">
-        <ScoreDisplay label="Score" value={score} size="lg" highlight />
+        <ScoreDisplay label={m.score} value={score} size="lg" highlight />
         <div className="grid grid-cols-2 gap-3 w-full">
-          <ScoreDisplay label="Correct" value={`${correct} / ${round.length}`} size="sm" />
-          <ScoreDisplay label="Best streak" value={bestStreak} size="sm" />
+          <ScoreDisplay label={m.correct} value={`${correct} / ${round.length}`} size="sm" />
+          <ScoreDisplay label={m.bestStreak} value={bestStreak} size="sm" />
         </div>
         <GameMessage type={phase === "won" ? "success" : "error"}>
           {phase === "won"
-            ? `Round cleared with ${correct} of ${round.length} correct.`
-            : `Only ${correct} of ${round.length} correct. You need ${WIN_THRESHOLD} to clear the round.`}
+            ? m.won(correct, round.length)
+            : m.lost(correct, round.length, WIN_THRESHOLD)}
         </GameMessage>
         {bestScore !== null && (
-          <p className="text-sm text-game-text-dim">Best score so far: {bestScore}</p>
+          <p className="text-sm text-game-text-dim">{m.bestSoFar(bestScore)}</p>
         )}
         <GameButton onClick={startGame} size="xl">
-          Play again
+          {m.playAgain}
         </GameButton>
       </div>
     );
   }
 
-  if (!question) return null;
+  if (!question || !text) return null;
 
   const timeRatio = Math.max(0, Math.min(1, timeLeft / QUESTION_SECONDS));
   const lowTime = timeLeft <= 5;
@@ -237,18 +226,16 @@ export default function TriviaQuiz() {
   return (
     <div className="max-w-md mx-auto flex flex-col gap-6 animate-fade-in">
       <div className="grid grid-cols-3 gap-3">
-        <ScoreDisplay label="Score" value={score} size="sm" highlight />
-        <ScoreDisplay label="Streak" value={streak} size="sm" />
-        <ScoreDisplay label="Best" value={bestScore ?? "—"} size="sm" />
+        <ScoreDisplay label={m.score} value={score} size="sm" highlight />
+        <ScoreDisplay label={m.streak} value={streak} size="sm" />
+        <ScoreDisplay label={m.best} value={bestScore ?? "-"} size="sm" />
       </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-game-muted">
-          <span>
-            Question {index + 1} of {round.length}
-          </span>
+          <span>{m.questionOf(index + 1, round.length)}</span>
           <span className={lowTime ? "text-game-secondary" : "text-game-muted"}>
-            {Math.ceil(timeLeft)}s
+            {m.seconds(Math.ceil(timeLeft))}
           </span>
         </div>
         <div className="h-2 w-full rounded-full bg-game-border overflow-hidden">
@@ -263,13 +250,13 @@ export default function TriviaQuiz() {
 
       <div className="rounded-2xl border-2 border-game-border bg-game-surface p-5 flex flex-col gap-2">
         <span className="text-xs font-bold uppercase tracking-widest text-game-accent">
-          {question.cat}
+          {m.categories[question.cat]}
         </span>
-        <p className="text-lg font-semibold text-game-text">{question.q}</p>
+        <p className="text-lg font-semibold text-game-text">{text.q}</p>
       </div>
 
       <div className="flex flex-col gap-3">
-        {question.a.map((option, i) => {
+        {text.a.map((option, i) => {
           const isAnswer = i === question.c;
           const isPicked = i === selected;
           let tone =
@@ -286,7 +273,7 @@ export default function TriviaQuiz() {
           }
           return (
             <button
-              key={option}
+              key={i}
               type="button"
               onClick={() => submitAnswer(i)}
               disabled={phase === "reveal"}
@@ -305,20 +292,20 @@ export default function TriviaQuiz() {
         <div className="flex flex-col gap-4 animate-slide-up">
           <GameMessage type={selected === question.c ? "success" : "error"}>
             {selected === question.c
-              ? `Correct. Plus ${gained} points${streak > 1 ? `, streak of ${streak}` : ""}.`
+              ? m.right(gained, streak)
               : selected === -1
-                ? `Time is up. The answer was ${question.a[question.c]}.`
-                : `Not quite. The answer was ${question.a[question.c]}.`}
+                ? m.timeUp(text.a[question.c])
+                : m.wrong(text.a[question.c])}
           </GameMessage>
           <GameButton onClick={advance} size="lg">
-            {index + 1 >= round.length ? "See results" : "Next question"}
+            {index + 1 >= round.length ? m.results : m.next}
           </GameButton>
         </div>
       )}
 
       {inPlay && (
         <GameButton variant="ghost" size="sm" onClick={() => setPhase("idle")}>
-          Quit
+          {m.quit}
         </GameButton>
       )}
     </div>
