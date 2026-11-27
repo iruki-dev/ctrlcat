@@ -1,7 +1,8 @@
 // Builds standalone HTML5 bundles of ctrlcat games for web game portals.
 // Usage: node portal/build.mjs [--portal none|...] [slug ...]
-// Output: portal-dist/<portal>/<slug>/ (index.html + assets) and portal-dist/<portal>/<slug>.zip
-import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
+// Output: portal-dist/<portal>/<slug>/ (index.html + assets) and portal-dist/<portal>/<slug>.zip,
+// plus portal-dist/<portal>/<slug>-covers/ when portal/covers/<slug>/ has thumbnails (uploaded separately, not zipped).
+import { readFileSync, writeFileSync, readdirSync, existsSync, cpSync, rmSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -55,5 +56,11 @@ for (const g of targets) {
   const zip = path.join(out, `${g.slug}.zip`);
   if (existsSync(zip)) execFileSync("rm", [zip]);
   execFileSync("zip", ["-qr", zip, "."], { cwd: path.join(out, g.slug) });
+  const covers = path.join(here, "covers", g.slug);
+  if (existsSync(covers)) {
+    const dest = path.join(out, `${g.slug}-covers`);
+    rmSync(dest, { recursive: true, force: true });
+    cpSync(covers, dest, { recursive: true });
+  }
   console.log(`built ${portal}/${g.slug}`);
 }

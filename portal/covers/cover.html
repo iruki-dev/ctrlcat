@@ -1,0 +1,253 @@
+<!doctype html>
+<!--
+  Portal thumbnails for the four portal games. Open as cover.html?g=<slug>&w=<width>&h=<height>.
+  Everything is drawn from each game's own pieces and colors (copied from the game components).
+  The Klondike court cards come from klondike-art.svg, the game's own ArtDefs output.
+  render.mjs screenshots every size into portal/covers/<slug>/.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: "Lilita One"; src: url(fonts/lilita-one-latin-400-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Titan One"; src: url(fonts/titan-one-latin-400-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Bree Serif"; src: url(fonts/bree-serif-latin-400-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Fredoka"; font-weight: 700; src: url(fonts/fredoka-latin-700-normal.woff2) format("woff2"); }
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #000; }
+  svg { display: block; }
+  #defs { position: absolute; width: 0; height: 0; }
+</style>
+</head>
+<body>
+<div id="defs"></div>
+<div id="out"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const G = q.get("g") || "block-drop";
+const W = +q.get("w") || 800;
+const H = +q.get("h") || 600;
+const AR = W / H;
+
+/* Title: solid fill, thick outline, hard offset shadow (the common portal thumbnail lettering). */
+function title(lines, o) {
+  const { x, y, size, font, fill, stroke, shadow, anchor = "start", lead = 0.92, sw = 0.16, drop = 0.07 } = o;
+  let s = "";
+  lines.forEach((t, i) => {
+    const ty = y + i * size * lead;
+    const f = Array.isArray(fill) ? fill[i] : fill;
+    const common = `x="${x}" font-family="${font}" font-size="${size}" text-anchor="${anchor}" stroke-linejoin="round" paint-order="stroke"`;
+    s += `<text ${common} y="${ty + size * drop}" fill="${shadow}" stroke="${shadow}" stroke-width="${size * sw}">${t}</text>`;
+    s += `<text ${common} y="${ty}" fill="${f}" stroke="${stroke}" stroke-width="${size * sw}">${t}</text>`;
+  });
+  return s;
+}
+
+function hexRgb(hex) { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+function shade(hex, amount) {
+  const t = amount > 0 ? 255 : 0, k = Math.abs(amount);
+  const [r, g, b] = hexRgb(hex).map((v) => Math.round(v + (t - v) * k));
+  return `rgb(${r},${g},${b})`;
+}
+function rr(x, y, w, h, r) { return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/>`; }
+
+/* ---------------- Block Drop ---------------- */
+function blockDrop() {
+  const GEMS = ["#ff5d8f", "#ffc53d", "#3ecf8e", "#4aa8ff", "#ff7a45", "#b9a6ff", "#22c3c3"];
+  const WELL = "#1d1e21";
+  // The game's makeGem(): darker lip, the color, a soft top light.
+  const gem = (x, y, px, color) => {
+    const pad = Math.max(1, px * 0.05), s = px - pad * 2, r = s * 0.24, lip = Math.max(1.5, s * 0.1);
+    return `<g><rect x="${x + pad}" y="${y + pad}" width="${s}" height="${s}" rx="${r}" fill="${shade(color, -0.28)}"/>` +
+      `<rect x="${x + pad}" y="${y + pad}" width="${s}" height="${s - lip}" rx="${r}" fill="${color}"/>` +
+      `<rect x="${x + pad + s * 0.14}" y="${y + pad + s * 0.1}" width="${s * 0.72}" height="${s * 0.24}" rx="${s * 0.12}" fill="rgba(255,255,255,0.32)"/></g>`;
+  };
+  // Stack, right-aligned. Digits are piece colors in the game's order (I, J, L, O, S, T, Z).
+  const rows = [
+    "............",
+    ".........555",
+    "..........5.",
+    "....2.66...1",
+    "4422266335.1",
+    "1440000335.1",
+  ];
+  const rowsVisible = AR >= 1.5 ? 5.3 : AR >= 1.2 ? 5.5 : 6.4;
+  const c = H / rowsVisible;
+  const right = W + c * 0.3;
+  const bottom = H + c * 0.25;
+  let s = `<rect width="${W}" height="${H}" fill="${WELL}"/>`;
+  // Well grid lines, as in the game.
+  let grid = "";
+  for (let x = right; x > -c; x -= c) grid += `<path d="M${x} 0V${H}"/>`;
+  for (let y = bottom; y > -c; y -= c) grid += `<path d="M0 ${y}H${W}"/>`;
+  s += `<g stroke="rgba(255,255,255,0.06)" stroke-width="${Math.max(1, c * 0.02)}">${grid}</g>`;
+  rows.forEach((row, ri) => {
+    const y = bottom - (rows.length - ri) * c;
+    [...row].forEach((ch, ci) => {
+      if (ch === ".") return;
+      const x = right - (row.length - ci) * c;
+      s += gem(x, y, c, GEMS[+ch]);
+    });
+  });
+  // Title.
+  const size = Math.min(H * (AR >= 1.2 ? 0.25 : 0.2), W * 0.2);
+  s += title(["Block", "Drop"], {
+    x: W * 0.055, y: H * 0.06 + size * 0.82, size, font: "Titan One",
+    fill: "#ffc53d", stroke: "#2a2300", shadow: "#9a6a00", lead: 0.98, sw: 0.14, drop: 0.09,
+  });
+  return s;
+}
+
+/* ---------------- 2048 ---------------- */
+function g2048() {
+  const PAL = {
+    2: ["#FFFFFF", "#3D4A5C"], 4: ["#E2EBF6", "#3D4A5C"], 8: ["#7FD6C2", "#FFFFFF"], 16: ["#3DBFA0", "#FFFFFF"],
+    32: ["#3AA6D8", "#FFFFFF"], 64: ["#2F7FD0", "#FFFFFF"], 128: ["#F5B041", "#FFFFFF"], 256: ["#F08C3A", "#FFFFFF"],
+    512: ["#EA6B3D", "#FFFFFF"], 1024: ["#DE4C4C", "#FFFFFF"],
+  };
+  const INK = "#3D4A5C", BOARD = "#C3CDD9", CELL = "#DCE3EB";
+  const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  const rowsVisible = AR >= 1.5 ? 3.3 : AR >= 1.2 ? 3.4 : 4.1;
+  const step = H / rowsVisible, gap = step * 0.12, c = step - gap;
+  const right = W + c * 0.28, bottom = H + c * 0.22;
+  const cols = Math.ceil(W / step) + 1, rowsN = Math.ceil(H / step) + 1;
+  let s = `<rect width="${W}" height="${H}" fill="${BOARD}"/>`;
+  // Tiles from the bottom-right corner, in the corner-building order players use.
+  const tiles = [
+    [1024, 512, 256, 128, 8],
+    [16, 32, 64, 4, 2],
+    [2, 0, 0, 0, 0],
+  ];
+  for (let r = 0; r < rowsN; r++) for (let k = 0; k < cols; k++) {
+    const x = right - (k + 1) * step + gap / 2, y = bottom - (r + 1) * step + gap / 2;
+    const v = tiles[r]?.[k] ?? 0;
+    const rad = c * 0.12;
+    if (!v) { s += `<rect x="${x}" y="${y}" width="${c}" height="${c}" rx="${rad}" fill="${CELL}"/>`; continue; }
+    const [bg, fg] = PAL[v];
+    const len = String(v).length;
+    const fs = c * (len <= 2 ? 0.5 : len === 3 ? 0.42 : 0.33);
+    s += `<rect x="${x}" y="${y}" width="${c}" height="${c}" rx="${rad}" fill="${bg}"/>`;
+    s += `<text x="${x + c / 2}" y="${y + c / 2 + fs * 0.36}" text-anchor="middle" font-family='${FONT}' font-weight="700" font-size="${fs}" fill="${fg}" ${len >= 4 ? 'letter-spacing="' + (-0.03 * fs) + '"' : ""}>${v}</text>`;
+  }
+  const size = Math.min(H * (AR >= 1.2 ? 0.36 : 0.3), W * 0.3);
+  const tx = AR >= 1.2 ? W * 0.05 : W * 0.06;
+  s += title(["2048"], {
+    x: tx, y: H * 0.05 + size * 0.8, size, font: "Lilita One",
+    fill: "#FFFFFF", stroke: INK, shadow: INK, sw: 0.15, drop: 0.08,
+  });
+  return s;
+}
+
+/* ---------------- Klondike Solitaire ---------------- */
+function klondike() {
+  const RED = "#d0152b", INKC = "#16181d", EDGE = "#c9cdd3";
+  const SERIF = "Georgia, 'Times New Roman', 'Noto Serif', serif";
+  const RED_SUITS = { hearts: 1, diamonds: 1 };
+  const LABEL = { 1: "A", 11: "J", 12: "Q", 13: "K" };
+  // The game's CardFace (full size, not compact), in its 100x140 box.
+  const face = (suit, rank) => {
+    const color = RED_SUITS[suit] ? RED : INKC;
+    const label = LABEL[rank] ?? String(rank);
+    const use = (x, y, size, rot) => `<use href="#kl-${suit}" x="${x - size / 2}" y="${y - size / 2}" width="${size}" height="${size}"${rot ? ` transform="rotate(180 ${x} ${y})"` : ""}/>`;
+    const corner = `<text x="7" y="27" font-family="${SERIF}" font-weight="700" font-size="27">${label}</text>${use(83, 16, 19)}`;
+    let mid = "";
+    if (rank === 1) mid = use(50, 70, 40);
+    if (rank > 10) mid = `<use href="#kl-court-${suit}-${rank}" x="17" y="30" width="66" height="80"/>`;
+    return `<rect x="0.8" y="0.8" width="98.4" height="138.4" rx="8" fill="#ffffff" stroke="${EDGE}" stroke-width="1.6"/>` +
+      `<g fill="${color}">${corner}<g transform="rotate(180 50 70)">${corner}</g>${mid}</g>`;
+  };
+  const back = () => `<rect x="0.8" y="0.8" width="98.4" height="138.4" rx="8" fill="#ffffff" stroke="${EDGE}" stroke-width="1.6"/>` +
+    `<rect x="7" y="7" width="86" height="126" rx="4" fill="url(#kl-lattice)"/><rect x="7" y="7" width="86" height="126" rx="4" fill="none" stroke="#163f8c" stroke-width="1.5"/>`;
+
+  // The game's felt: radial light-to-deep green with a fine noise.
+  let s = `<defs><radialGradient id="felt" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#1f9a4f"/><stop offset="0.48" stop-color="#16803f"/><stop offset="1" stop-color="#0b5a2a"/></radialGradient>
+    <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.09 0"/></filter></defs>`;
+  s += `<rect width="${W}" height="${H}" fill="url(#felt)"/><rect width="${W}" height="${H}" filter="url(#n)"/>`;
+
+  const tall = AR < 1.2;
+  const ch = H * (tall ? 0.6 : AR >= 1.5 ? 0.8 : 0.74);
+  const k = ch / 140;
+  const px = tall ? W * 0.52 : AR >= 1.5 ? W * 0.68 : W * 0.7;
+  const py = tall ? H * 1.25 : H * 1.3;
+  const cards = [
+    { kind: "back", a: -40 },
+    { suit: "spades", rank: 1, a: -26 },
+    { suit: "diamonds", rank: 11, a: -12 },
+    { suit: "spades", rank: 12, a: 2 },
+    { suit: "hearts", rank: 13, a: 16 },
+  ];
+  const lift = H * (tall ? 0.92 : AR >= 1.5 ? 1.1 : 1.04);
+  cards.forEach((cd) => {
+    const inner = cd.kind === "back" ? back() : face(cd.suit, cd.rank);
+    s += `<g transform="translate(${px} ${py}) rotate(${cd.a}) translate(${-50 * k} ${-lift}) scale(${k})">` +
+      `<rect x="3" y="4" width="100" height="140" rx="8" fill="rgba(0,0,0,0.18)"/>${inner}</g>`;
+  });
+
+  const size = tall ? Math.min(H * 0.17, W * 0.17) : Math.min(H * 0.2, W * 0.16);
+  const tx = tall ? W / 2 : W * 0.05;
+  s += title(["Klondike", "Solitaire"], {
+    x: tx, y: H * 0.05 + size * 0.85, size, font: "Bree Serif", anchor: tall ? "middle" : "start",
+    fill: ["#ffffff", "#ffd23f"], stroke: "#0b4a22", shadow: "#06321a", lead: 0.98, sw: 0.16, drop: 0.08,
+  });
+  return s;
+}
+
+/* ---------------- Snake ---------------- */
+function snake() {
+  const FIELD = "#f6e7c8", DOT = "#e3cfa6";
+  const HEAD = "rgb(38,140,78)", BODY = "rgb(62,176,104)", ALT = "rgb(54,164,96)";
+  const rowsVisible = AR >= 1.5 ? 5.4 : AR >= 1.2 ? 5.8 : 6.8;
+  const c = H / rowsVisible;
+  const nc = Math.floor(W / c), nr = Math.floor(H / c);
+  const ox = (W - nc * c) / 2, oy = (H - nr * c) / 2 + c * 0.35;
+  let s = `<rect width="${W}" height="${H}" fill="${FIELD}"/><g fill="${DOT}">`;
+  for (let y = oy - c; y < H + c; y += c) for (let x = ox - c; x < W + c; x += c) s += `<circle cx="${x}" cy="${y}" r="${c * 0.07}"/>`;
+  s += "</g>";
+  // Path from the tail (off the left edge) to the head, cell by cell.
+  const path = [];
+  const by = nr - 1, turnX = nc - 2;
+  // The head runs along the first row clear of the title.
+  const upTo = Math.min(by - 2, Math.ceil((H * (AR >= 1.2 ? 0.44 : 0.36) - oy) / c));
+  for (let x = -2; x <= turnX; x++) path.push([x, by]);
+  for (let y = by - 1; y >= upTo; y--) path.push([turnX, y]);
+  const headX = Math.max(2, turnX - 3);
+  for (let x = turnX - 1; x >= headX; x--) path.push([x, upTo]);
+  const cell = ([x, y]) => [ox + x * c, oy + y * c];
+  const n = path.length;
+  // Body: one square per cell, 0.86 of the cell, alternating two greens (the game's drawSnake()).
+  for (let i = n - 2; i >= 0; i--) {
+    const [x, y] = cell(path[i]);
+    const idx = n - 1 - i;
+    const w = c * 0.86;
+    s += `<rect x="${x + (c - w) / 2}" y="${y + (c - w) / 2}" width="${w}" height="${w}" rx="${c * 0.16}" fill="${idx % 2 ? BODY : ALT}"/>`;
+  }
+  // Head facing left: front corners rounded more.
+  const [hx, hy] = cell(path[n - 1]);
+  const w = c * 0.9, x0 = hx + (c - w) / 2, y0 = hy + (c - w) / 2, rf = c * 0.4, rb = c * 0.16;
+  s += `<path fill="${HEAD}" d="M${x0 + rf} ${y0}H${x0 + w - rb}Q${x0 + w} ${y0} ${x0 + w} ${y0 + rb}V${y0 + w - rb}Q${x0 + w} ${y0 + w} ${x0 + w - rb} ${y0 + w}H${x0 + rf}Q${x0} ${y0 + w} ${x0} ${y0 + w - rf}V${y0 + rf}Q${x0} ${y0} ${x0 + rf} ${y0}Z"/>`;
+  // Food two cells ahead: the game's amber diamond.
+  const [fx0, fy0] = cell([headX - 2, upTo]);
+  const fx = fx0 + c / 2, fy = fy0 + c / 2, r = c * 0.36 * 1.25, kk = 0.72;
+  const dia = (rad) => `M${fx} ${fy - rad}L${fx + rad} ${fy}L${fx} ${fy + rad}L${fx - rad} ${fy}Z`;
+  s += `<path d="${dia(r)}" fill="#b8740a"/><path d="${dia(r * kk)}" fill="#f2a516"/>`;
+  s += `<path d="M${fx} ${fy - r * kk}L${fx + r * kk * 0.5} ${fy - r * kk * 0.5}L${fx} ${fy}L${fx - r * kk * 0.5} ${fy - r * kk * 0.5}Z" fill="#ffd36b"/>`;
+  const size = Math.min(H * (AR >= 1.2 ? 0.34 : 0.27), W * 0.28);
+  s += title(["Snake"], {
+    x: W * 0.05, y: H * 0.04 + size * 0.8, size, font: "Fredoka",
+    fill: "#ffffff", stroke: "#1f9e95", shadow: "#167a73", sw: 0.17, drop: 0.08,
+  });
+  return s.replace('font-family="Fredoka"', 'font-family="Fredoka" font-weight="700"').replaceAll('font-family="Fredoka" font-size', 'font-family="Fredoka" font-weight="700" font-size');
+}
+
+async function main() {
+  if (G === "klondike-solitaire") {
+    document.getElementById("defs").innerHTML = await (await fetch("klondike-art.svg")).text();
+  }
+  const body = { "block-drop": blockDrop, "2048": g2048, "klondike-solitaire": klondike, snake }[G]();
+  document.getElementById("out").innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${body}</svg>`;
+  await document.fonts.ready;
+  document.body.dataset.ready = "1";
+}
+main();
+</script>
+</body>
+</html>

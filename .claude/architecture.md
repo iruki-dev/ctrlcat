@@ -136,6 +136,7 @@ ctrlcat 게임을 해외 웹게임 포털용 단독 HTML5 묶음으로 뽑는 �
 ```
 node portal/build.mjs --portal <none|demo|debug|playgama|yandex|gamedistribution> [slug ...]
 → portal-dist/<portal>/<slug>/ (index.html + assets) 와 <slug>.zip
+→ portal/covers/<slug>/ 가 있으면 portal-dist/<portal>/<slug>-covers/ (썸네일, zip에는 넣지 않음)
 ```
 
 - `portal/main.tsx`: 게임 하나를 `portal/PortalFrame.tsx`(화면 전체를 채우는 무대 + 오른쪽 위 음소거·전체 화면 버튼, 사이트의 `GameShell` 대신. 게임이 `useHostControls()`를 부르면 이 버튼은 숨고 게임이 자기 HUD에 소리·전체 화면 버튼을 직접 둡니다) 안에 렌더링합니다. `virtual-game`, `virtual-provider`, `virtual-theme` 별칭은 `portal/vite.config.mjs`가 게임 컴포넌트, `portal/providers/<portal>.ts`, `portal/themes/<slug>.css`(없으면 `default.css`)로 연결합니다.
@@ -147,3 +148,4 @@ node portal/build.mjs --portal <none|demo|debug|playgama|yandex|gamedistribution
 - `src/games/lib/hostControls.ts`: `useHostControls()`는 포털에서 소리·전체 화면 상태와 토글을 돌려주고, 사이트에서는 `null`입니다(사이트는 `GameShell`에 같은 버튼이 있음). 라벨은 `hostLabels`를 게임 `messages`에 펼쳐 씁니다. 2048, Block Drop, Klondike Solitaire, Snake가 씁니다.
 - `portal/tokens.css`는 빌드 때 `src/styles/global.css`에서 웹폰트 import만 빼고 생성됩니다(커밋하지 않음).
 - GameDistribution 게임 ID는 `portal/gd-ids.json`에 `{ "<slug>": "<id>" }`로 적습니다.
+- 포털 썸네일 (`portal/covers/`): 2048, Block Drop, Klondike Solitaire, Snake만 있습니다. `cover.html?g=<slug>&w=&h=`가 게임 이름 글자와 게임 자체의 조각(타일, 블록, 카드, 뱀)을 게임 색 그대로 그리고, `render.mjs`가 크기별 `<slug>/<w>x<h>.jpg`로 찍습니다(Playwright 필요, 프로젝트 의존성 아님). 크기: 512x384, 512x512, 200x120 (GameDistribution), 1920x1080 (Playgama 16:9), 800x470·512x512 (Yandex), 800x600. 클론다이크 그림 카드는 게임의 `ArtDefs` 출력을 저장한 `klondike-art.svg`를 씁니다. 게임 색이나 카드 그림을 바꾸면 `cover.html`의 색과 이 파일도 맞춥니다. 글꼴은 `covers/fonts/`(OFL)에 있고 썸네일에만 씁니다.
