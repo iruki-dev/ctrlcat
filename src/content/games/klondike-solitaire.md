@@ -38,7 +38,7 @@ Do not send aces and twos home blindly. Low cards make useful landing spots in t
 
 ## Controls
 
-Drag a card, or a run of cards, onto the column or suit pile where it belongs. The spots that would take it light up while you hold it. You can also tap a card to pick it up and tap where it goes. A quick double-tap sends a card straight to its suit pile, or to the first column that takes it when it cannot go home yet. Keys 1 through 7 pick a column, W picks the pile, D draws, F sends your selection home, A collects everything it can, U takes back a move, N deals again, and Escape clears the selection.
+Drag a card, or a run of cards, onto the column or suit pile where it belongs. The spots that would take it are outlined while you hold it. You can also tap a card to pick it up and tap where it goes. A quick double-tap sends a card straight to its suit pile, or to the first column that takes it when it cannot go home yet. Keys 1 through 7 pick a column, W picks the pile, D draws, F sends your selection home, A collects everything it can, U takes back a move, N deals again, and Escape clears the selection.
 
 ## Frequently asked questions
 
@@ -49,7 +49,7 @@ No. Roughly one deal in six cannot be solved, because key cards sit buried under
 Yes. The Undo button, or the U key, steps back one move at a time and restores your score along with the board. The last fifty moves are kept.
 
 **What does the Collect button do?**
-It sends every card that can legally go home to its suit pile, over and over, until nothing else fits. Once the deck is used up and every card is face up, the button turns gold and reads Finish, and one press clears the table.
+It sends every card that can legally go home to its suit pile, over and over, until nothing else fits. Once the deck is used up and every card is face up, the button turns yellow and reads Finish, and one press clears the table.
 
 **Does my score carry over?**
 Your best winning score is kept on this device and shows after each win. Nothing is sent anywhere.

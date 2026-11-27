@@ -13,7 +13,7 @@ playTime: 8
 localizations:
   ko:
     title: "블록 드롭"
-    description: "떨어지는 블록을 움직이고 돌려 열 칸짜리 우물에서 가로줄을 완성합니다. 블록이 천장에 닿기 전에 100줄을 지우세요."
+    description: "떨어지는 블록을 옮기고 돌려서 폭 열 칸짜리 판의 가로줄을 채웁니다. 블록이 천장에 닿기 전에 100줄을 지우세요."
 ---
 
 ## How it works
@@ -32,7 +32,7 @@ A flat stack is a safe stack. Every hole you leave under a block has to be dug o
 costs you rows. Turn each piece so it sits flush against what is already there rather than bridging
 a gap.
 
-The panel on the right shows the next three shapes, the nearest one largest. Use it. If a long bar is coming, you can leave
+The Next box shows the shapes that are coming, the nearest one largest. Use it. If a long bar is coming, you can leave
 a single deep column open for it. If a square is coming, you want a flat pair of columns ready.
 
 ## Scoring and levels
@@ -53,7 +53,7 @@ best score is kept on this device, so you can try to beat it later.
 
 Left and right arrows move the piece, the up arrow turns it, the down arrow speeds the fall and
 space drops it instantly. Press P to pause. On a touch screen, swipe sideways to move, up to turn
-and down to drop, or use the round buttons on screen. When a piece
+and down to drop, or use the buttons on screen. When a piece
 touches down you still have a moment to slide or turn it before it locks in place.
 
 ## Frequently asked questions

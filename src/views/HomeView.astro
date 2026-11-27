@@ -53,7 +53,7 @@ const otherLocales = locales.filter((l) => l !== lang);
           l === lang ? (
             <span class="px-2 py-1 rounded bg-site-border text-site-text font-medium">{localeLabels[l].long}</span>
           ) : (
-            <a href={localePath("/", l)} class="px-2 py-1 rounded text-site-text-dim hover:text-site-text hover:bg-site-border transition-colors">
+            <a href={localePath("/", l)} data-locale={l} class="px-2 py-1 rounded text-site-text-dim hover:text-site-text hover:bg-site-border transition-colors">
               {localeLabels[l].long}
             </a>
           ),
@@ -206,7 +206,7 @@ const otherLocales = locales.filter((l) => l !== lang);
           <ul class="space-y-2">
             {otherLocales.map((l) => (
               <li>
-                <a href={localePath("/", l)} class="text-xs text-site-text-dim hover:text-site-text transition-colors">{localeLabels[l].long}</a>
+                <a href={localePath("/", l)} data-locale={l} class="text-xs text-site-text-dim hover:text-site-text transition-colors">{localeLabels[l].long}</a>
               </li>
             ))}
           </ul>

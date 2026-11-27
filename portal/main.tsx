@@ -15,7 +15,9 @@ import provider from "virtual-provider";
 // Resolved by vite.config.mjs to the one game this bundle is built for.
 import Game from "virtual-game";
 
-const lang = (navigator.language || "en").toLowerCase().startsWith("ko") ? "ko" : "en";
+// Same rule as the site: Korean browsers get Korean, everyone else English.
+const browserLang = ((navigator.languages && navigator.languages[0]) || navigator.language || "en").toLowerCase();
+const lang = browserLang.startsWith("ko") ? "ko" : "en";
 document.documentElement.lang = lang;
 
 function Ready({ onReady }: { onReady: () => void }) {

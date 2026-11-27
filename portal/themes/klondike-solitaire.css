@@ -1,17 +1,17 @@
-/* Klondike Solitaire: "Emerald Parlor" green baize table with brass accents. */
+/* Klondike Solitaire: green card table. Matches the colors the game paints itself. */
 :root {
-  --game-bg: 6 43 32;
-  --game-surface: 9 52 39;
-  --game-surface-2: 27 122 89;
-  --game-border: 156 117 54;
-  --game-border-dim: 15 90 66;
-  --game-accent: 220 181 110;
-  --game-accent-light: 27 122 89;
-  --game-accent-dim: 241 215 156;
-  --game-on-accent: 26 33 48;
-  --game-secondary: 192 38 58;
-  --game-muted: 190 180 158;
-  --game-text: 252 248 239;
-  --game-text-dim: 222 212 190;
-  --portal-stage: radial-gradient(ellipse 85% 75% at 50% 38%, #1b7a59 0%, #0f5a42 48%, #062b20 100%);
+  --game-bg:           22  128 63;
+  --game-surface:      11  90  42;
+  --game-surface-2:    31  154 79;
+  --game-border:       255 255 255;
+  --game-border-dim:   31  154 79;
+  --game-accent:       255 210 63;
+  --game-accent-light: 31  154 79;
+  --game-accent-dim:   255 230 140;
+  --game-on-accent:    22  24  29;
+  --game-secondary:    208 21  43;
+  --game-muted:        200 230 210;
+  --game-text:         255 255 255;
+  --game-text-dim:     225 240 230;
+  --portal-stage: radial-gradient(ellipse 85% 75% at 50% 38%, #1f9a4f 0%, #16803f 48%, #0b5a2a 100%);
 }

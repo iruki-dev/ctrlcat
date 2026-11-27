@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { SoundProvider, useSound } from "../src/components/games/SoundContext";
 import { useMessages } from "../src/i18n/react";
+import { HostControlsContext } from "../src/games/lib/hostControls";
 
 const messages = {
   en: { mute: "Mute", unmute: "Unmute", enterFullscreen: "Enter fullscreen", exitFullscreen: "Exit fullscreen" },
@@ -15,22 +16,26 @@ function Icon({ d }: { d: ReactNode }) {
   );
 }
 
-function Controls({ rootRef }: { rootRef: React.RefObject<HTMLDivElement> }) {
-  const m = useMessages(messages);
-  const { muted, toggleMute } = useSound();
+function useFullscreen(rootRef: React.RefObject<HTMLDivElement>) {
   const [fullscreen, setFullscreen] = useState(false);
   const canFullscreen = typeof document !== "undefined" && !!document.fullscreenEnabled;
-
   useEffect(() => {
     const handler = () => setFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handler);
     return () => document.removeEventListener("fullscreenchange", handler);
   }, []);
-
-  const toggleFs = () => {
+  const toggleFullscreen = useCallback(() => {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     else rootRef.current?.requestFullscreen().catch(() => {});
-  };
+  }, [rootRef]);
+  return { fullscreen, canFullscreen, toggleFullscreen };
+}
+
+/** Default corner buttons, for games that do not show sound and fullscreen in their own HUD. */
+function Controls({ fs }: { fs: ReturnType<typeof useFullscreen> }) {
+  const m = useMessages(messages);
+  const { muted, toggleMute } = useSound();
+  const { fullscreen, canFullscreen, toggleFullscreen: toggleFs } = fs;
 
   const btn =
     "w-10 h-10 flex items-center justify-center rounded-full bg-game-surface/70 text-game-text-dim hover:text-game-text hover:bg-game-surface-2 backdrop-blur transition-colors";
@@ -57,6 +62,31 @@ function Controls({ rootRef }: { rootRef: React.RefObject<HTMLDivElement> }) {
   );
 }
 
+/** Hands sound and fullscreen to games that show them in their own HUD, and hides the corner buttons while one does. */
+function Stage({ rootRef, children }: { rootRef: React.RefObject<HTMLDivElement>; children: ReactNode }) {
+  const { muted, toggleMute } = useSound();
+  const fs = useFullscreen(rootRef);
+  const [claims, setClaims] = useState(0);
+  const claim = useCallback(() => {
+    setClaims((n) => n + 1);
+    return () => setClaims((n) => n - 1);
+  }, []);
+  const value = useMemo(
+    () => ({ controls: { muted, toggleMute, ...fs }, claim }),
+    [muted, toggleMute, fs.fullscreen, fs.canFullscreen, fs.toggleFullscreen, claim],
+  );
+  return (
+    <HostControlsContext.Provider value={value}>
+      {claims === 0 && (
+        <div className="absolute right-3 top-3 z-30">
+          <Controls fs={fs} />
+        </div>
+      )}
+      <div className="portal-scroll h-full w-full overflow-y-auto overflow-x-hidden">{children}</div>
+    </HostControlsContext.Provider>
+  );
+}
+
 /**
  * Full-bleed frame for portal builds. Portals show the game in their own iframe and page chrome,
  * so the game fills the whole viewport on a themed stage instead of sitting in a site card.
@@ -66,10 +96,7 @@ export default function PortalFrame({ children }: { children: ReactNode }) {
   return (
     <SoundProvider>
       <div ref={rootRef} className="portal-stage relative h-full w-full overflow-hidden text-game-text">
-        <div className="absolute right-3 top-3 z-30">
-          <Controls rootRef={rootRef} />
-        </div>
-        <div className="portal-scroll h-full w-full overflow-y-auto overflow-x-hidden">{children}</div>
+        <Stage rootRef={rootRef}>{children}</Stage>
       </div>
     </SoundProvider>
   );
