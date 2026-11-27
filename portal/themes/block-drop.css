@@ -1,17 +1,17 @@
-/* Block Drop: dark gray cabinet around a black playfield. Matches the colors the game paints itself. */
+/* Block Drop: light gray page around a dark playfield. Matches the colors the game paints itself. */
 :root {
-  --game-bg:           23  25  29;
-  --game-surface:      46  49  56;
-  --game-surface-2:    58  61  69;
-  --game-border:       90  94  104;
-  --game-border-dim:   58  61  69;
+  --game-bg:           230 230 227;
+  --game-surface:      255 255 255;
+  --game-surface-2:    247 247 245;
+  --game-border:       185 185 180;
+  --game-border-dim:   201 201 197;
   --game-accent:       255 197 61;
-  --game-accent-light: 58  61  69;
-  --game-accent-dim:   255 230 90;
+  --game-accent-light: 247 247 245;
+  --game-accent-dim:   229 169 31;
   --game-on-accent:    42  35  0;
   --game-secondary:    49  199 239;
-  --game-muted:        124 129 139;
-  --game-text:         255 255 255;
-  --game-text-dim:     169 173 182;
-  --portal-stage: linear-gradient(180deg, #23262c 0%, #17191d 100%);
+  --game-muted:        122 125 131;
+  --game-text:         31  32  35;
+  --game-text-dim:     85  87  92;
+  --portal-stage: rgb(230 230 227);
 }

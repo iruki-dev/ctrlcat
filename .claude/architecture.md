@@ -138,11 +138,12 @@ node portal/build.mjs --portal <none|demo|debug|playgama|yandex|gamedistribution
 → portal-dist/<portal>/<slug>/ (index.html + assets) 와 <slug>.zip
 ```
 
-- `portal/main.tsx`: 게임 하나를 `portal/PortalFrame.tsx`(화면 전체를 채우는 무대 + 오른쪽 위 음소거·전체 화면 버튼, 사이트의 `GameShell` 대신) 안에 렌더링합니다. `virtual-game`, `virtual-provider`, `virtual-theme` 별칭은 `portal/vite.config.mjs`가 게임 컴포넌트, `portal/providers/<portal>.ts`, `portal/themes/<slug>.css`(없으면 `default.css`)로 연결합니다.
-- `portal/themes/<slug>.css`: 포털 빌드에서만 `--game-*` 변수와 무대 배경 `--portal-stage`를 덮어씁니다. 게임은 오른쪽 위 약 56px를 비워 둡니다.
+- `portal/main.tsx`: 게임 하나를 `portal/PortalFrame.tsx`(화면 전체를 채우는 무대 + 오른쪽 위 음소거·전체 화면 버튼, 사이트의 `GameShell` 대신. 게임이 `useHostControls()`를 부르면 이 버튼은 숨고 게임이 자기 HUD에 소리·전체 화면 버튼을 직접 둡니다) 안에 렌더링합니다. `virtual-game`, `virtual-provider`, `virtual-theme` 별칭은 `portal/vite.config.mjs`가 게임 컴포넌트, `portal/providers/<portal>.ts`, `portal/themes/<slug>.css`(없으면 `default.css`)로 연결합니다.
+- `portal/themes/<slug>.css`: 포털 빌드에서만 `--game-*` 변수와 무대 배경 `--portal-stage`를 덮어씁니다. `useHostControls()`를 쓰지 않는 게임은 오른쪽 위 약 56px를 비워 둡니다.
 - 언어: `portal/main.tsx`가 브라우저 첫 번째 언어를 보고 한국어 브라우저면 `ko`, 아니면 `en`으로 렌더링합니다. 사이트의 언어 이동 규칙과 같습니다 (`.claude/i18n.md`).
 - `portal/providers/*.ts`: 포털 SDK 어댑터. `init`, `loadingFinished`, `host.onEvent`, `host.requestBreak`를 구현합니다.
 - `portal/audio.ts`: 광고 중·탭 숨김 시 모든 AudioContext를 멈춥니다.
 - 게임 쪽 연결은 `src/games/lib/gameEvents.ts`(`usePhaseEvents`, `afterBreak`)입니다. 사이트에서는 호스트가 없어서 아무 일도 하지 않습니다.
+- `src/games/lib/hostControls.ts`: `useHostControls()`는 포털에서 소리·전체 화면 상태와 토글을 돌려주고, 사이트에서는 `null`입니다(사이트는 `GameShell`에 같은 버튼이 있음). 라벨은 `hostLabels`를 게임 `messages`에 펼쳐 씁니다. 2048, Block Drop, Klondike Solitaire, Snake가 씁니다.
 - `portal/tokens.css`는 빌드 때 `src/styles/global.css`에서 웹폰트 import만 빼고 생성됩니다(커밋하지 않음).
 - GameDistribution 게임 ID는 `portal/gd-ids.json`에 `{ "<slug>": "<id>" }`로 적습니다.

@@ -5,6 +5,7 @@ import { useBestScore } from "../lib/useBestScore";
 import { useSwipe } from "../lib/useInput";
 import { afterBreak, usePhaseEvents } from "../lib/gameEvents";
 import { useSound } from "../../components/games/SoundContext";
+import { hostLabels, useHostControls, type HostControls } from "../lib/hostControls";
 
 const SIZE = 4;
 const TARGET = 2048;
@@ -33,10 +34,12 @@ const PAGE = "#F2F5F8";
 const INK = "#3D4A5C";
 const BOARD = "#C3CDD9";
 const CELL = "#DCE3EB";
-const BOX = "#3D4A5C";
-const BOX_LABEL = "#C3CDD9";
-const BUTTON = "#2F7FD0";
+// Score boxes and buttons take their colors from the tiles: teal like the 16, orange like the 512.
+const BOX = PALETTE[16][0];
+const BOX_TEXT = "#FFFFFF";
+const BUTTON = PALETTE[512][0];
 const BUTTON_TEXT = "#FFFFFF";
+const SMALL_BUTTON = CELL;
 const OVERLAY_LOST = "rgba(242, 245, 248, 0.8)";
 const OVERLAY_WON = "rgba(242, 194, 48, 0.55)";
 const TILE_FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif';
@@ -154,6 +157,7 @@ function slide(tiles: Tile[], dir: Dir, moveNo: number) {
 const messages = {
   en: {
     ...common.en,
+    ...hostLabels.en,
     play: "Play",
     howTo: "Join the numbers and get to the 2048 tile!",
     keysHint: "Arrow keys or WASD",
@@ -166,6 +170,7 @@ const messages = {
   },
   ko: {
     ...common.ko,
+    ...hostLabels.ko,
     play: "시작",
     howTo: "같은 숫자를 합쳐 2048 타일을 만드세요.",
     keysHint: "방향키 또는 WASD",
@@ -307,7 +312,7 @@ function FloatUp({ amount, reduce }: { amount: number; reduce: boolean }) {
     <div
       ref={ref}
       className="absolute left-1/2 top-1/2 pointer-events-none whitespace-nowrap tabular-nums z-10"
-      style={{ transform: "translate(-50%, 0)", fontFamily: TILE_FONT, fontWeight: 700, fontSize: 22, color: "#2F7FD0" }}
+      style={{ transform: "translate(-50%, 0)", fontFamily: TILE_FONT, fontWeight: 700, fontSize: 22, color: INK }}
     >
       +{amount}
     </div>
@@ -410,13 +415,33 @@ function RestartButton({ label, onClick }: { label: string; onClick: () => void 
 function ScoreBox({ label, children, extra }: { label: string; children: ReactNode; extra?: ReactNode }) {
   return (
     <div className="relative flex-1 min-w-0 flex flex-col items-center justify-center rounded-lg px-3 py-1.5" style={{ background: BOX }}>
-      <span className="text-[12px] font-bold uppercase tracking-wide leading-tight" style={{ color: BOX_LABEL, fontFamily: TILE_FONT }}>
+      <span className="text-sm font-semibold leading-tight" style={{ color: BOX_TEXT, fontFamily: TILE_FONT }}>
         {label}
       </span>
-      <span className="tabular-nums leading-tight" style={{ fontFamily: TILE_FONT, fontWeight: 700, fontSize: 24, color: "#FFFFFF" }}>
+      <span className="tabular-nums leading-tight" style={{ fontFamily: TILE_FONT, fontWeight: 700, fontSize: 24, color: BOX_TEXT }}>
         {children}
       </span>
       {extra}
+    </div>
+  );
+}
+
+/** Sound and fullscreen, only in portal builds (the site page has its own). */
+function HostButtons({ host, labels }: { host: HostControls | null; labels: typeof messages.en }) {
+  if (!host) return null;
+  const cls =
+    "rounded-lg px-3 h-9 text-sm font-semibold whitespace-nowrap transition-[filter] hover:brightness-95 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+  const style = { background: SMALL_BUTTON, color: INK, outlineColor: INK, fontFamily: TILE_FONT };
+  return (
+    <div className="flex flex-wrap gap-2">
+      <button type="button" className={cls} style={style} onClick={host.toggleMute} aria-pressed={!host.muted}>
+        {host.muted ? labels.soundOff : labels.soundOn}
+      </button>
+      {host.canFullscreen && (
+        <button type="button" className={cls} style={style} onClick={host.toggleFullscreen}>
+          {host.fullscreen ? labels.exitFullscreen : labels.fullscreen}
+        </button>
+      )}
     </div>
   );
 }
@@ -456,6 +481,7 @@ export default function Game2048() {
   const lang = useLang();
   const { play } = useSound();
   const reduce = useReducedMotion();
+  const host = useHostControls();
   const [rootRef, area] = useSize();
 
   const [phase, setPhase] = useState<Phase>("idle");
@@ -662,7 +688,7 @@ export default function Game2048() {
             {m.play}
           </Button>
           {best !== null && (
-            <p className="text-sm font-bold uppercase tracking-wide" style={{ fontFamily: TILE_FONT }}>
+            <p className="text-base font-bold" style={{ fontFamily: TILE_FONT }}>
               {m.best} <span className="tabular-nums">{fmt(best)}</span>
             </p>
           )}
@@ -671,19 +697,19 @@ export default function Game2048() {
             <br />
             {m.swipeHint}
           </p>
+          <HostButtons host={host} labels={m} />
         </div>
       </div>
     );
   }
 
   // Layout: score and buttons beside the board on wide stages, above it on tall ones.
-  // The top 56px stay clear on the right for the portal's mute and fullscreen buttons.
   const side = W >= 560 && W > H * 1.15;
-  const TOP = 56;
+  const TOP = 16;
   const panelW = side ? Math.max(190, Math.min(240, W * 0.28)) : 0;
   const boardSize = Math.max(
     200,
-    Math.floor(side ? Math.min(H - TOP - 16, W - panelW - 24 - 32, 640) : Math.min(W - 24, H - TOP - 56 - 12 - 28 - 12, 560)),
+    Math.floor(side ? Math.min(H - TOP - 16, W - panelW - 24 - 32, 640) : Math.min(W - 24, H - TOP - 56 - 12 - (host ? 44 : 28) - 12, 560)),
   );
   const pad = boardSize * 0.03;
   const gap = boardSize * 0.03;
@@ -791,6 +817,7 @@ export default function Game2048() {
           <div style={{ height: 44 }}>
             <Button onClick={startGame}>{m.newGame}</Button>
           </div>
+          <HostButtons host={host} labels={m} />
           <div className="flex-1" />
           <p className="text-sm" style={{ fontFamily: TILE_FONT, color: INK }}>
             {m.howTo}
@@ -813,9 +840,12 @@ export default function Game2048() {
           <RestartButton label={m.newGame} onClick={startGame} />
         </div>
         {board}
-        <p className="text-xs text-center" style={{ minHeight: 16, color: INK, fontFamily: TILE_FONT }}>
-          {m.swipeHint}
-        </p>
+        <div className="flex items-center justify-between gap-2" style={{ minHeight: host ? 36 : 16 }}>
+          <p className="text-xs" style={{ color: INK, fontFamily: TILE_FONT }}>
+            {m.swipeHint}
+          </p>
+          <HostButtons host={host} labels={m} />
+        </div>
       </div>
     </div>
   );
