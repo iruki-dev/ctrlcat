@@ -58,16 +58,16 @@ const MAX_SCALE = 1.5;
 
 /* ---------- Colors. Canvas and inline styles cannot read Tailwind tokens. ---------- */
 
-/* The usual falling-block piece colors, in PIECES order: I, J, L, O, S, T, Z. */
-const GEMS = ["#31c7ef", "#3d63d8", "#ef7921", "#f7d308", "#42b642", "#ad4d9c", "#ef2029"];
+/* Block Drop's own piece colors, in PIECES order: I, J, L, O, S, T, Z. Bright and far apart so shapes stay easy to tell. */
+const GEMS = ["#ff5d8f", "#ffc53d", "#3ecf8e", "#4aa8ff", "#ff7a45", "#b9a6ff", "#22c3c3"];
 const GEM_DEAD = "#5b5f68";
 const INK = "#ffffff";
 const INK_DIM = "#a9adb6";
 const INK_FAINT = "#7c818b";
 const NAVY = "#111317";
-const GOLD = "#f7d308";
-const GOLD_DEEP = "#d9b500";
-const GOLD_SHADOW = "#8a7300";
+const GOLD = "#ffc53d";
+const GOLD_DEEP = "#e5a91f";
+const GOLD_SHADOW = "#9a6a00";
 const ROSE = "#ef2029";
 const WELL_TOP = "#0b0c0f";
 const WELL_BOTTOM = "#0b0c0f";
@@ -215,58 +215,40 @@ function setSpacing(ctx: CanvasRenderingContext2D, px: number) {
   if ("letterSpacing" in c) c.letterSpacing = `${px}px`;
 }
 
-/* A square block with a bevel, drawn once per color and size and then stamped. */
+/* A rounded block with a soft top light and a darker bottom lip, drawn once per color and size and then stamped. */
 function makeGem(color: string, px: number): HTMLCanvasElement {
   const cv = document.createElement("canvas");
   cv.width = px;
   cv.height = px;
   const g = cv.getContext("2d");
   if (!g) return cv;
-  const pad = Math.max(1, Math.round(px * 0.03));
+  const pad = Math.max(1, Math.round(px * 0.05));
   const s = px - pad * 2;
-  const bev = Math.max(2, Math.round(s * 0.14));
+  const r = s * 0.24;
+  const lip = Math.max(1.5, s * 0.1);
 
+  roundRect(g, pad, pad, s, s, r);
+  g.fillStyle = shade(color, -0.28);
+  g.fill();
+  roundRect(g, pad, pad, s, s - lip, r);
   g.fillStyle = color;
-  g.fillRect(pad, pad, s, s);
-  /* Lit top and left edge. */
-  g.beginPath();
-  g.moveTo(pad, pad);
-  g.lineTo(pad + s, pad);
-  g.lineTo(pad + s - bev, pad + bev);
-  g.lineTo(pad + bev, pad + bev);
-  g.lineTo(pad + bev, pad + s - bev);
-  g.lineTo(pad, pad + s);
-  g.closePath();
-  g.fillStyle = shade(color, 0.4);
   g.fill();
-  /* Shaded bottom and right edge. */
-  g.beginPath();
-  g.moveTo(pad + s, pad);
-  g.lineTo(pad + s, pad + s);
-  g.lineTo(pad, pad + s);
-  g.lineTo(pad + bev, pad + s - bev);
-  g.lineTo(pad + s - bev, pad + s - bev);
-  g.lineTo(pad + s - bev, pad + bev);
-  g.closePath();
-  g.fillStyle = shade(color, -0.35);
+  /* Top light. */
+  roundRect(g, pad + s * 0.14, pad + s * 0.1, s * 0.72, s * 0.24, s * 0.12);
+  g.fillStyle = "rgba(255, 255, 255, 0.32)";
   g.fill();
-  /* Face, a touch lighter at the top. */
-  const face = g.createLinearGradient(0, pad + bev, 0, pad + s - bev);
-  face.addColorStop(0, shade(color, 0.12));
-  face.addColorStop(1, color);
-  g.fillStyle = face;
-  g.fillRect(pad + bev, pad + bev, s - bev * 2, s - bev * 2);
   return cv;
 }
 
 /* Inline style for one block in the DOM (title screen). */
 function gemStyle(color: string, size: number): CSSProperties {
-  const bev = Math.max(2, Math.round(size * 0.14));
+  const lip = Math.max(1.5, Math.round(size * 0.1));
   return {
     width: size,
     height: size,
-    background: color,
-    boxShadow: `inset ${bev}px ${bev}px 0 ${shade(color, 0.4)}, inset -${bev}px -${bev}px 0 ${shade(color, -0.35)}`,
+    borderRadius: size * 0.24,
+    background: `linear-gradient(180deg, rgba(255,255,255,0.3) 0 ${Math.round(size * 0.32)}px, transparent ${Math.round(size * 0.32)}px), ${color}`,
+    boxShadow: `inset 0 -${lip}px 0 ${shade(color, -0.28)}`,
   };
 }
 
@@ -1432,7 +1414,8 @@ export default function BlockDrop() {
         if (s.flash) {
           ctx.fillStyle = `rgba(255, 255, 255, ${0.55 * (1 - s.flash.t / 0.18)})`;
           for (const [x, y] of s.flash.cells) {
-            ctx.fillRect(bx + x * CELL + 1, by + y * CELL + 1, CELL - 2, CELL - 2);
+            roundRect(ctx, bx + x * CELL + 1, by + y * CELL + 1, CELL - 2, CELL - 2, 5);
+            ctx.fill();
           }
         }
 
@@ -1462,11 +1445,12 @@ export default function BlockDrop() {
           for (let r = 0; r < p.mx.length; r++) {
             for (let c = 0; c < p.mx[r].length; c++) {
               if (!p.mx[r][c] || gy + r < 0) continue;
+              roundRect(ctx, bx + (p.x + c) * CELL + 2, by + (gy + r) * CELL + 2, CELL - 4, CELL - 4, 5);
               ctx.fillStyle = alpha(col, 0.15);
-              ctx.fillRect(bx + (p.x + c) * CELL + 1.5, by + (gy + r) * CELL + 1.5, CELL - 3, CELL - 3);
+              ctx.fill();
               ctx.strokeStyle = alpha(col, 0.6);
               ctx.lineWidth = 1.5;
-              ctx.strokeRect(bx + (p.x + c) * CELL + 1.5, by + (gy + r) * CELL + 1.5, CELL - 3, CELL - 3);
+              ctx.stroke();
             }
           }
 

@@ -41,33 +41,34 @@ const DIFF: Record<Difficulty, { baseMs: number; minMs: number }> = {
   insane: { baseMs: 55, minMs: 22 },
 };
 
-/* Light green checkerboard, blue snake, red apple: the look most players know from browser snake games.
+/* Bright casual look: sand board with a dot grid on a teal stage, green snake, red berry.
    Canvas and inline drawing colors (the allowed hex exception). */
 const C = {
-  stage: "#578a34",
-  bar: "#4a752c",
-  fieldA: "#aad751",
-  fieldB: "#a2d149",
-  edge: "#8fbf3f",
-  head: [78, 124, 246] as RGB,
-  tail: [56, 98, 214] as RGB,
-  deadBody: [120, 128, 140] as RGB,
-  outline: "#2a4fb8",
+  stage: "#1f9e95",
+  panel: "rgba(0, 0, 0, 0.18)",
+  dim: "rgba(22, 122, 115, 0.82)",
+  field: "#f6e7c8",
+  dot: "#e3cfa6",
+  edge: "#e3cfa6",
+  head: [52, 199, 109] as RGB,
+  tail: [30, 150, 92] as RGB,
+  deadBody: [140, 140, 130] as RGB,
+  outline: "#1b7a4a",
   eye: "#ffffff",
   pupil: "#1a1a1a",
   mouth: "#2a1010",
-  apple: "#e7471d",
-  appleLight: "#f26a43",
-  appleDark: "#b8320f",
-  leaf: "#4f9a2c",
-  stem: "#5b3a1e",
-  shadow: "rgba(0,0,0,0.12)",
-  juice: ["#e7471d", "#f26a43", "#ffd23f", "#ffffff"],
+  apple: "#ff4d5e",
+  appleLight: "#ff8590",
+  appleDark: "#c4283a",
+  leaf: "#3aa357",
+  stem: "#6b4423",
+  shadow: "rgba(90, 60, 20, 0.14)",
+  juice: ["#ff4d5e", "#ff8590", "#ffc53d", "#ffffff"],
   popupFill: "#ffffff",
-  popupStroke: "#3b6a22",
+  popupStroke: "#c4283a",
   flash: "255,255,255",
-  gold: "#ffd23f",
-  button: "#1a73e8",
+  gold: "#ffc53d",
+  button: "#ff7a3d",
   buttonText: "#ffffff",
 };
 
@@ -252,11 +253,11 @@ function buildField(cols: number, rows: number): HTMLCanvasElement {
   cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
   const ctx = cv.getContext("2d")!;
   ctx.scale(dpr, dpr);
-  ctx.fillStyle = C.fieldA;
+  ctx.fillStyle = C.field;
   ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = C.fieldB;
-  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
-    if ((x + y) % 2) ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+  ctx.fillStyle = C.dot;
+  for (let y = 1; y < rows; y++) for (let x = 1; x < cols; x++) {
+    ctx.beginPath(); ctx.arc(x * CELL, y * CELL, 2, 0, Math.PI * 2); ctx.fill();
   }
   return cv;
 }
@@ -268,12 +269,8 @@ function drawBerry(ctx: CanvasRenderingContext2D, x: number, y: number, scale: n
   if (r <= 0.5) return;
   ctx.fillStyle = C.shadow;
   ctx.beginPath(); ctx.ellipse(x, y + r * 0.9, r * 0.8, r * 0.25, 0, 0, Math.PI * 2); ctx.fill();
-  // body: two lobes so it reads as an apple
   ctx.fillStyle = C.apple;
-  ctx.beginPath();
-  ctx.arc(x - r * 0.32, y + r * 0.05, r * 0.78, 0, Math.PI * 2);
-  ctx.arc(x + r * 0.32, y + r * 0.05, r * 0.78, 0, Math.PI * 2);
-  ctx.fill();
+  ctx.beginPath(); ctx.arc(x, y + r * 0.05, r * 0.95, 0, Math.PI * 2); ctx.fill();
   ctx.fillStyle = C.appleLight;
   ctx.beginPath(); ctx.ellipse(x - r * 0.45, y - r * 0.2, r * 0.22, r * 0.3, -0.4, 0, Math.PI * 2); ctx.fill();
   // stem + leaf
@@ -403,17 +400,6 @@ function drawText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
 }
 
 /* ---------------------------------------------------------------- small UI pieces */
-
-function BerryIcon({ className = "w-6 h-6" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <circle cx="9" cy="14" r="6.5" fill={C.apple} />
-      <circle cx="15" cy="14" r="6.5" fill={C.apple} />
-      <path d="M12 8 L12.8 3.5" stroke={C.stem} strokeWidth="1.8" strokeLinecap="round" />
-      <ellipse cx="15.5" cy="5.5" rx="3.6" ry="1.6" fill={C.leaf} transform="rotate(-25 15.5 5.5)" />
-    </svg>
-  );
-}
 
 function Svg({ children, className = "w-5 h-5" }: { children: React.ReactNode; className?: string }) {
   return (
@@ -818,7 +804,7 @@ export default function Snake() {
   const shownBest = Math.max(best ?? 0, uiStatus === "playing" || uiStatus === "paused" ? uiScore : 0);
   const inRound = uiStatus === "playing" || uiStatus === "paused";
   const ended = (uiStatus === "dead" || uiStatus === "won") && uiOver;
-  const bigButton = "flex items-center justify-center gap-2.5 h-14 px-10 rounded-md text-xl font-bold shadow-md hover:brightness-110 active:translate-y-0.5 transition-[filter,transform]";
+  const bigButton = "flex items-center justify-center gap-2.5 h-14 px-10 rounded-xl text-xl font-bold shadow-md hover:brightness-110 active:translate-y-0.5 transition-[filter,transform]";
   const buttonStyle = { background: C.button, color: C.buttonText };
 
   return (
@@ -829,31 +815,32 @@ export default function Snake() {
       onTouchMove={onTouchMove}
       onTouchEnd={() => { touch.current = null; }}
     >
-      {/* Score bar: kept clear on the right where portal builds put their mute and fullscreen buttons. */}
-      <div className="shrink-0 h-14 flex items-center gap-5 pl-3 pr-28 text-white" style={{ background: C.bar }}>
+      {/* Score readout on the stage, kept clear on the right where portal builds put their mute and fullscreen buttons. */}
+      <div className="shrink-0 h-14 flex items-center gap-2 pl-3 pr-28 text-white">
         {inRound && (
           <button
             type="button"
             onClick={() => (uiStatus === "paused" ? resume() : pause())}
             aria-label={uiStatus === "paused" ? m.resume : m.pause}
             title={uiStatus === "paused" ? m.resume : m.pause}
-            className="w-9 h-9 shrink-0 flex items-center justify-center rounded-md text-white/90 hover:bg-white/15 transition-colors"
+            className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl text-white hover:brightness-125 transition-[filter]"
+            style={{ background: C.panel }}
           >
             {uiStatus === "paused" ? <PlayIcon className="w-4 h-4" /> : <PauseIcon className="w-4 h-4" />}
           </button>
         )}
-        <div className="flex items-center gap-1.5" aria-label={m.score}>
-          <BerryIcon className="w-7 h-7" />
+        <div className="h-10 flex items-baseline gap-2 rounded-xl px-3 pt-2" style={{ background: C.panel }} aria-label={m.score}>
+          <span className="text-[11px] font-bold uppercase tracking-wide text-white/80">{m.score}</span>
           <span
             key={scorePop}
-            className={`text-2xl font-bold tabular-nums leading-none ${scorePop ? "motion-safe:animate-slide-up" : ""}`}
+            className={`text-xl font-black tabular-nums leading-none ${scorePop ? "motion-safe:animate-slide-up" : ""}`}
           >
             {uiScore}
           </span>
         </div>
-        <div className="flex items-center gap-1.5" aria-label={m.best}>
-          <span style={{ color: C.gold }}><TrophyIcon className="w-6 h-6" /></span>
-          <span className="text-2xl font-bold tabular-nums leading-none">{shownBest}</span>
+        <div className="h-10 flex items-baseline gap-2 rounded-xl px-3 pt-2" style={{ background: C.panel }} aria-label={m.best}>
+          <span className="text-[11px] font-bold uppercase tracking-wide text-white/80">{m.best}</span>
+          <span className="text-xl font-black tabular-nums leading-none">{shownBest}</span>
         </div>
       </div>
 
@@ -866,7 +853,7 @@ export default function Snake() {
 
           {/* Menu over the attract-mode board */}
           {uiStatus === "idle" && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-4 py-4 bg-black/45 text-white animate-fade-in overflow-hidden">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-4 py-4 text-white animate-fade-in overflow-hidden" style={{ background: C.dim }}>
               <h1 className="text-6xl font-black uppercase tracking-wide drop-shadow-md">{m.title}</h1>
 
               <button type="button" onClick={start} className={bigButton} style={buttonStyle}>
@@ -874,7 +861,7 @@ export default function Snake() {
                 {m.play}
               </button>
 
-              <div role="radiogroup" aria-label={m.difficulty} className="flex rounded-md overflow-hidden ring-1 ring-white/40">
+              <div role="radiogroup" aria-label={m.difficulty} className="flex rounded-xl overflow-hidden ring-1 ring-white/50">
                 {(Object.keys(DIFF) as Difficulty[]).map(key => (
                   <button
                     key={key}
@@ -906,7 +893,7 @@ export default function Snake() {
 
           {/* Pause */}
           {uiStatus === "paused" && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-black/45 text-white animate-fade-in">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 text-white animate-fade-in" style={{ background: C.dim }}>
               <p className="text-4xl font-black drop-shadow-md">{m.paused}</p>
               <button type="button" onClick={resume} className={bigButton} style={buttonStyle}>
                 <PlayIcon className="w-6 h-6" />
@@ -917,21 +904,21 @@ export default function Snake() {
 
           {/* Game over */}
           {ended && (
-            <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/45 text-white animate-fade-in">
+            <div className="absolute inset-0 flex items-center justify-center p-4 text-white animate-fade-in" style={{ background: C.dim }}>
               <div className="w-full max-w-[18rem] flex flex-col items-center gap-4 animate-slide-up">
                 <p className="text-4xl font-black uppercase drop-shadow-md text-center">
                   {uiStatus === "won" ? m.cleared : m.gameOver}
                 </p>
-                <div className="w-full rounded-lg px-6 py-4 flex items-center justify-around" style={{ background: C.bar }}>
-                  <span className="flex flex-col items-center gap-1" aria-label={m.score}>
-                    <BerryIcon className="w-8 h-8" />
-                    <span className="text-3xl font-bold tabular-nums leading-none">
+                <div className="w-full rounded-xl px-6 py-4 flex items-center justify-around" style={{ background: C.stage }}>
+                  <span className="flex flex-col items-center gap-1.5">
+                    <span className="text-xs font-bold uppercase tracking-wide text-white/80">{m.score}</span>
+                    <span className="text-4xl font-black tabular-nums leading-none">
                       <CountUp value={uiScore} reduced={reduced.current} />
                     </span>
                   </span>
-                  <span className="flex flex-col items-center gap-1" aria-label={m.best}>
-                    <span style={{ color: C.gold }}><TrophyIcon className="w-8 h-8" /></span>
-                    <span className="text-3xl font-bold tabular-nums leading-none">{best ?? 0}</span>
+                  <span className="flex flex-col items-center gap-1.5">
+                    <span className="text-xs font-bold uppercase tracking-wide text-white/80">{m.best}</span>
+                    <span className="text-4xl font-black tabular-nums leading-none">{best ?? 0}</span>
                   </span>
                 </div>
                 {uiNewBest && <p className="text-base font-bold" style={{ color: C.gold }}>{m.newBest}</p>}
@@ -942,7 +929,7 @@ export default function Snake() {
                 <button
                   type="button"
                   onClick={toMenu}
-                  className="h-10 px-6 rounded-md text-sm font-bold text-white/90 hover:bg-white/15 transition-colors"
+                  className="h-10 px-6 rounded-xl text-sm font-bold text-white/90 hover:bg-white/15 transition-colors"
                 >
                   {m.menu}
                 </button>

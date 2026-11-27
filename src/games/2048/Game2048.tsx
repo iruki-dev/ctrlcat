@@ -11,35 +11,35 @@ const TARGET = 2048;
 const BEST_KEY = "ctrlcat-2048-best";
 /** Tile slide duration. New tiles pop and merged tiles bounce once the slide lands. */
 const SLIDE_MS = 110;
-// Standard 2048 colors: warm beige page, brown board, cream-to-orange-to-gold tiles. Nearly every 2048
-// on web portals and app stores uses this ramp, so players read the values at a glance.
+// Light, flat 2048 with its own ramp: white and pale blue for small values, then teal, blue,
+// warm orange to red, and a gold 2048, so neighbouring values never look alike.
 // Like canvas drawing constants, these are game-owned colors, the same on the site and in portal builds.
 const PALETTE: Record<number, [string, string]> = {
-  2: ["#EEE4DA", "#776E65"],
-  4: ["#EDE0C8", "#776E65"],
-  8: ["#F2B179", "#F9F6F2"],
-  16: ["#F59563", "#F9F6F2"],
-  32: ["#F67C5F", "#F9F6F2"],
-  64: ["#F65E3B", "#F9F6F2"],
-  128: ["#EDCF72", "#F9F6F2"],
-  256: ["#EDCC61", "#F9F6F2"],
-  512: ["#EDC850", "#F9F6F2"],
-  1024: ["#EDC53F", "#F9F6F2"],
-  2048: ["#EDC22E", "#F9F6F2"],
+  2: ["#FFFFFF", "#3D4A5C"],
+  4: ["#E2EBF6", "#3D4A5C"],
+  8: ["#7FD6C2", "#FFFFFF"],
+  16: ["#3DBFA0", "#FFFFFF"],
+  32: ["#3AA6D8", "#FFFFFF"],
+  64: ["#2F7FD0", "#FFFFFF"],
+  128: ["#F5B041", "#FFFFFF"],
+  256: ["#F08C3A", "#FFFFFF"],
+  512: ["#EA6B3D", "#FFFFFF"],
+  1024: ["#DE4C4C", "#FFFFFF"],
+  2048: ["#F2C230", "#FFFFFF"],
 };
-const SUPER: [string, string] = ["#3C3A32", "#F9F6F2"];
+const SUPER: [string, string] = ["#2E3440", "#FFFFFF"];
 
-const PAGE = "#FAF8EF";
-const INK = "#776E65";
-const BOARD = "#BBADA0";
-const CELL = "#CDC1B4";
-const BOX = "#BBADA0";
-const BOX_LABEL = "#EEE4DA";
-const BUTTON = "#8F7A66";
-const BUTTON_TEXT = "#F9F6F2";
-const OVERLAY_LOST = "rgba(238, 228, 218, 0.73)";
-const OVERLAY_WON = "rgba(237, 194, 46, 0.5)";
-const TILE_FONT = '"Clear Sans", "Helvetica Neue", Arial, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif';
+const PAGE = "#F2F5F8";
+const INK = "#3D4A5C";
+const BOARD = "#C3CDD9";
+const CELL = "#DCE3EB";
+const BOX = "#3D4A5C";
+const BOX_LABEL = "#C3CDD9";
+const BUTTON = "#2F7FD0";
+const BUTTON_TEXT = "#FFFFFF";
+const OVERLAY_LOST = "rgba(242, 245, 248, 0.8)";
+const OVERLAY_WON = "rgba(242, 194, 48, 0.55)";
+const TILE_FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif';
 
 function swatch(value: number): [string, string] {
   return PALETTE[value] ?? SUPER;
@@ -211,16 +211,15 @@ function Block({ value, size, label }: { value: number; size: number; label?: st
   const text = label ?? String(value);
   const len = text.length;
   const fontScale = len <= 2 ? 0.5 : len === 3 ? 0.42 : len === 4 ? 0.33 : 0.26;
-  const glow = value >= 128 && value <= TARGET ? Math.min(1, (Math.log2(value) - 6) / 5) : 0;
   return (
     <div
       className="flex items-center justify-center select-none"
       style={{
         width: size,
         height: size,
-        borderRadius: Math.max(3, size * 0.05),
+        borderRadius: Math.max(5, size * 0.12),
         background: bg,
-        boxShadow: glow > 0 ? `0 0 ${size * 0.3}px ${size * 0.08}px rgba(243, 215, 116, ${0.24 * glow}), inset 0 0 0 1px rgba(255,255,255,${0.14 * glow})` : undefined,
+        boxShadow: value === 2 ? "0 1px 0 rgba(61,74,92,0.12)" : undefined,
       }}
     >
       <span
@@ -308,7 +307,7 @@ function FloatUp({ amount, reduce }: { amount: number; reduce: boolean }) {
     <div
       ref={ref}
       className="absolute left-1/2 top-1/2 pointer-events-none whitespace-nowrap tabular-nums z-10"
-      style={{ transform: "translate(-50%, 0)", fontFamily: TILE_FONT, fontWeight: 700, fontSize: 22, color: "rgba(119, 110, 101, 0.9)" }}
+      style={{ transform: "translate(-50%, 0)", fontFamily: TILE_FONT, fontWeight: 700, fontSize: 22, color: "#2F7FD0" }}
     >
       +{amount}
     </div>
@@ -373,7 +372,7 @@ function Button({
       ref={ref}
       type="button"
       onClick={onClick}
-      className="rounded-[3px] font-bold transition-[filter,transform] duration-100 hover:brightness-110 active:scale-[0.97] focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 whitespace-nowrap"
+      className="rounded-lg font-bold transition-[filter,transform] duration-100 hover:brightness-110 active:scale-[0.97] focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 whitespace-nowrap"
       style={{
         fontFamily: TILE_FONT,
         fontSize: big ? 22 : 16,
@@ -390,9 +389,27 @@ function Button({
   );
 }
 
+function RestartButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="shrink-0 flex items-center justify-center rounded-lg transition-[filter,transform] duration-100 hover:brightness-110 active:scale-[0.97] focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      style={{ width: 56, background: BUTTON, color: BUTTON_TEXT, outlineColor: INK }}
+    >
+      <svg viewBox="0 0 24 24" width={24} height={24} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M3 12a9 9 0 1 0 3-6.7" />
+        <polyline points="3 3 3 9 9 9" />
+      </svg>
+    </button>
+  );
+}
+
 function ScoreBox({ label, children, extra }: { label: string; children: ReactNode; extra?: ReactNode }) {
   return (
-    <div className="relative flex-1 min-w-0 flex flex-col items-center justify-center rounded-[3px] px-3 py-1.5" style={{ background: BOX }}>
+    <div className="relative flex-1 min-w-0 flex flex-col items-center justify-center rounded-lg px-3 py-1.5" style={{ background: BOX }}>
       <span className="text-[12px] font-bold uppercase tracking-wide leading-tight" style={{ color: BOX_LABEL, fontFamily: TILE_FONT }}>
         {label}
       </span>
@@ -666,7 +683,7 @@ export default function Game2048() {
   const panelW = side ? Math.max(190, Math.min(240, W * 0.28)) : 0;
   const boardSize = Math.max(
     200,
-    Math.floor(side ? Math.min(H - TOP - 16, W - panelW - 24 - 32, 640) : Math.min(W - 24, H - TOP - 52 - 40 - 36 - 28 - 12, 560)),
+    Math.floor(side ? Math.min(H - TOP - 16, W - panelW - 24 - 32, 640) : Math.min(W - 24, H - TOP - 56 - 12 - 28 - 12, 560)),
   );
   const pad = boardSize * 0.03;
   const gap = boardSize * 0.03;
@@ -701,7 +718,7 @@ export default function Game2048() {
         <div
           key={`cell-${i}`}
           className="absolute"
-          style={{ left: at(i % SIZE), top: at(Math.floor(i / SIZE)), width: cell, height: cell, borderRadius: Math.max(3, cell * 0.05), background: CELL }}
+          style={{ left: at(i % SIZE), top: at(Math.floor(i / SIZE)), width: cell, height: cell, borderRadius: Math.max(5, cell * 0.12), background: CELL }}
         />
       ))}
       {[...ghosts, ...tiles].map((t) => (
@@ -767,11 +784,11 @@ export default function Game2048() {
       >
         <div className="flex flex-col gap-3 shrink-0" style={{ width: panelW, minHeight: boardSize }}>
           {title(Math.min(64, panelW / 3.4))}
-          <div className="flex w-full gap-2" style={{ height: 56 }}>
+          <div className="flex flex-col w-full gap-2" style={{ height: 132 }}>
             {scoreBox}
             {bestBox}
           </div>
-          <div style={{ height: 40 }}>
+          <div style={{ height: 44 }}>
             <Button onClick={startGame}>{m.newGame}</Button>
           </div>
           <div className="flex-1" />
@@ -786,24 +803,14 @@ export default function Game2048() {
     );
   }
 
-  // Tall stages: the usual 2048 header, title on the left and score boxes on the right, then a line with the goal and New game.
+  // Tall stages: score, best and a restart button in one row over the board.
   return (
     <div ref={rootRef} className="h-full w-full flex flex-col items-center justify-center overflow-hidden px-3 pb-3" style={{ background: PAGE, paddingTop: TOP }}>
       <div className="flex flex-col gap-3" style={{ width: boardSize }}>
-        <div className="flex items-center justify-between gap-3">
-          {title(Math.min(56, boardSize * 0.15))}
-          <div className="flex gap-1.5" style={{ height: 52, width: Math.min(200, boardSize * 0.52) }}>
-            {scoreBox}
-            {bestBox}
-          </div>
-        </div>
-        <div className="flex items-center justify-between gap-3" style={{ minHeight: 40 }}>
-          <p className="text-sm leading-snug" style={{ color: INK, fontFamily: TILE_FONT, wordBreak: "keep-all" }}>
-            {m.howTo}
-          </p>
-          <div className="shrink-0" style={{ height: 40 }}>
-            <Button onClick={startGame}>{m.newGame}</Button>
-          </div>
+        <div className="flex items-stretch gap-2" style={{ height: 56 }}>
+          {scoreBox}
+          {bestBox}
+          <RestartButton label={m.newGame} onClick={startGame} />
         </div>
         {board}
         <p className="text-xs text-center" style={{ minHeight: 16, color: INK, fontFamily: TILE_FONT }}>

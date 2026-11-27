@@ -1,17 +1,17 @@
-/* Snake: green field and score bar. Matches the colors the game paints itself. */
+/* Snake: teal stage around a sand board. Matches the colors the game paints itself. */
 :root {
-  --game-bg:           87  138 52;
-  --game-surface:      74  117 44;
-  --game-surface-2:    100 155 62;
+  --game-bg:           31  158 149;
+  --game-surface:      24  128 121;
+  --game-surface-2:    40  176 166;
   --game-border:       255 255 255;
-  --game-border-dim:   100 155 62;
-  --game-accent:       26  115 232;
-  --game-accent-light: 100 155 62;
-  --game-accent-dim:   120 170 255;
+  --game-border-dim:   40  176 166;
+  --game-accent:       255 122 61;
+  --game-accent-light: 40  176 166;
+  --game-accent-dim:   255 170 130;
   --game-on-accent:    255 255 255;
-  --game-secondary:    231 71  29;
-  --game-muted:        210 230 190;
+  --game-secondary:    255 77  94;
+  --game-muted:        200 235 230;
   --game-text:         255 255 255;
-  --game-text-dim:     235 245 225;
-  --portal-stage: rgb(87 138 52);
+  --game-text-dim:     225 245 242;
+  --portal-stage: rgb(31 158 149);
 }

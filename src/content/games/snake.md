@@ -1,6 +1,6 @@
 ---
 title: "Snake"
-description: "The classic snake game. Eat apples to grow longer and keep clear of the walls and your own tail."
+description: "The classic snake game. Eat berries to grow longer and keep clear of the walls and your own tail."
 category: arcade
 icon: "snake"
 tags: [arcade, classic, snake, canvas, reflex]
@@ -13,7 +13,7 @@ playTime: 5
 localizations:
   ko:
     title: "스네이크"
-    description: "고전 뱀 게임입니다. 사과를 먹으면 길어지고, 벽이나 자기 꼬리에 부딪히면 끝납니다."
+    description: "고전 뱀 게임입니다. 열매를 먹으면 길어지고, 벽이나 자기 꼬리에 부딪히면 끝납니다."
 ---
 
 ## How it works
