@@ -15,6 +15,10 @@ interface Piece {
   mx: Matrix;
   x: number;
   y: number;
+  /* Drawn position and spin, eased toward the real ones every frame. */
+  vx: number;
+  vy: number;
+  spin: number;
 }
 
 /* ---------- Board rules ---------- */
@@ -32,44 +36,50 @@ const DAS = 0.16;
 const ARR = 0.045;
 const LOCK_DELAY = 0.45;
 const LOCK_RESETS = 15;
-const CLEAR_TIME = 0.36;
+const CLEAR_TIME = 0.34;
 const NEXT_COUNT = 3;
 /* Kept from the game's earlier name so saved best scores carry over. */
 const BEST_KEY = "ctrlcat-tetris-best";
 
 /* ---------- Layout (logical canvas units) ---------- */
 
-const RIM = 6;
+const RIM = 8;
 const PANEL_W = 118;
-const PANEL_GAP = 12;
+const PANEL_GAP = 14;
 const LAND_W = PANEL_W * 2 + PANEL_GAP * 2 + BW + RIM * 2;
 const LAND_H = BH + RIM * 2;
-const HUD_H = 64;
+const HUD_H = 74;
 const PORT_W = BW + RIM * 2;
-const PORT_H = HUD_H + 8 + BH + RIM * 2;
-const TOP_RESERVE = 52;
-const PAD_ROW_H = 64;
+const PORT_H = HUD_H + 10 + BH + RIM * 2;
+const TOP_RESERVE = 56;
+const PAD_ROW_H = 72;
 const SIDE_PAD_W = 120;
 const MAX_SCALE = 1.5;
 
-/* ---------- Colors. Canvas and inline styles cannot read Tailwind tokens. ----------
-   A plain dark cabinet with a black well and flat, bevelled blocks in the colors players
-   already know from block-stacking games. */
+/* ---------- Colors. Canvas and inline styles cannot read Tailwind tokens. ---------- */
 
-const BLOCKS = ["#16c4dc", "#2457d6", "#ee8a12", "#f0cc10", "#2fb84a", "#9b34c8", "#dd2c2c"];
-const BLOCK_DEAD = "#6a6a6a";
-const CABINET = "#181818";
-const WELL = "#000000";
-const GRID = "#161616";
-const FRAME = "#7a7a7a";
-const TEXT = "#ececec";
-const TEXT_DIM = "#9c9c9c";
-const KEY_BG = "#2c2c2c";
-const KEY_LINE = "#555555";
-const KEY_TEXT = "#e6e6e6";
+/* The usual falling-block piece colors, in PIECES order: I, J, L, O, S, T, Z. */
+const GEMS = ["#31c7ef", "#3d63d8", "#ef7921", "#f7d308", "#42b642", "#ad4d9c", "#ef2029"];
+const GEM_DEAD = "#5b5f68";
+const INK = "#ffffff";
+const INK_DIM = "#a9adb6";
+const INK_FAINT = "#7c818b";
+const NAVY = "#111317";
+const GOLD = "#f7d308";
+const GOLD_DEEP = "#d9b500";
+const GOLD_SHADOW = "#8a7300";
+const ROSE = "#ef2029";
+const WELL_TOP = "#0b0c0f";
+const WELL_BOTTOM = "#0b0c0f";
+const RIM_TOP = "#4a4e57";
+const RIM_BOTTOM = "#33363d";
+const PANEL_FILL = "#0b0c0f";
+const PANEL_LINE = "#3a3d45";
+const CABINET = "linear-gradient(180deg, #23262c 0%, #17191d 100%)";
+const GLASS = "#1d2025";
+const GLASS_LINE = "#3a3d45";
 
-const FONT = "Arial, 'Helvetica Neue', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif";
-const MONO = "ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Courier New', monospace";
+const FONT = "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
 /* Seven four-square shapes, each in a square box so turning is a plain matrix turn. */
 const PIECES: Matrix[] = [
@@ -156,7 +166,6 @@ function dropInterval(level: number): number {
   return Math.max(0.1, 0.9 - (level - 1) * 0.08);
 }
 
-
 function hexRgb(hex: string): [number, number, number] {
   const n = parseInt(hex.slice(1), 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
@@ -176,47 +185,122 @@ function alpha(hex: string, a: number): string {
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
-function pad6(n: number): string {
-  return String(Math.max(0, Math.round(n))).padStart(6, "0");
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  const rad = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
 }
 
-/* A flat square with a light top-left edge and a dark bottom-right edge, drawn once per color and size. */
-function makeBlock(color: string, px: number): HTMLCanvasElement {
+function easeOutBack(t: number): number {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
+}
+
+function clamp01(v: number): number {
+  return v < 0 ? 0 : v > 1 ? 1 : v;
+}
+
+function fmt(n: number): string {
+  return Math.round(n).toLocaleString("en-US");
+}
+
+function setSpacing(ctx: CanvasRenderingContext2D, px: number) {
+  const c = ctx as CanvasRenderingContext2D & { letterSpacing?: string };
+  if ("letterSpacing" in c) c.letterSpacing = `${px}px`;
+}
+
+/* A square block with a bevel, drawn once per color and size and then stamped. */
+function makeGem(color: string, px: number): HTMLCanvasElement {
   const cv = document.createElement("canvas");
   cv.width = px;
   cv.height = px;
   const g = cv.getContext("2d");
   if (!g) return cv;
-  const e = Math.max(1, Math.round(px * 0.13));
-  g.fillStyle = shade(color, -0.55);
-  g.fillRect(0, 0, px, px);
-  const inner = px - 1;
-  g.fillStyle = shade(color, 0.42);
-  g.beginPath();
-  g.moveTo(0, 0);
-  g.lineTo(inner, 0);
-  g.lineTo(inner - e, e);
-  g.lineTo(e, e);
-  g.lineTo(e, inner - e);
-  g.lineTo(0, inner);
-  g.closePath();
-  g.fill();
-  g.fillStyle = shade(color, -0.3);
-  g.beginPath();
-  g.moveTo(inner, 0);
-  g.lineTo(inner, inner);
-  g.lineTo(0, inner);
-  g.lineTo(e, inner - e);
-  g.lineTo(inner - e, inner - e);
-  g.lineTo(inner - e, e);
-  g.closePath();
-  g.fill();
+  const pad = Math.max(1, Math.round(px * 0.03));
+  const s = px - pad * 2;
+  const bev = Math.max(2, Math.round(s * 0.14));
+
   g.fillStyle = color;
-  g.fillRect(e, e, inner - e * 2, inner - e * 2);
+  g.fillRect(pad, pad, s, s);
+  /* Lit top and left edge. */
+  g.beginPath();
+  g.moveTo(pad, pad);
+  g.lineTo(pad + s, pad);
+  g.lineTo(pad + s - bev, pad + bev);
+  g.lineTo(pad + bev, pad + bev);
+  g.lineTo(pad + bev, pad + s - bev);
+  g.lineTo(pad, pad + s);
+  g.closePath();
+  g.fillStyle = shade(color, 0.4);
+  g.fill();
+  /* Shaded bottom and right edge. */
+  g.beginPath();
+  g.moveTo(pad + s, pad);
+  g.lineTo(pad + s, pad + s);
+  g.lineTo(pad, pad + s);
+  g.lineTo(pad + bev, pad + s - bev);
+  g.lineTo(pad + s - bev, pad + s - bev);
+  g.lineTo(pad + s - bev, pad + bev);
+  g.closePath();
+  g.fillStyle = shade(color, -0.35);
+  g.fill();
+  /* Face, a touch lighter at the top. */
+  const face = g.createLinearGradient(0, pad + bev, 0, pad + s - bev);
+  face.addColorStop(0, shade(color, 0.12));
+  face.addColorStop(1, color);
+  g.fillStyle = face;
+  g.fillRect(pad + bev, pad + bev, s - bev * 2, s - bev * 2);
   return cv;
 }
 
+/* Inline style for one block in the DOM (title screen). */
+function gemStyle(color: string, size: number): CSSProperties {
+  const bev = Math.max(2, Math.round(size * 0.14));
+  return {
+    width: size,
+    height: size,
+    background: color,
+    boxShadow: `inset ${bev}px ${bev}px 0 ${shade(color, 0.4)}, inset -${bev}px -${bev}px 0 ${shade(color, -0.35)}`,
+  };
+}
+
 /* ---------- Runtime state ---------- */
+
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  max: number;
+  color: string;
+  size: number;
+  rot: number;
+  vr: number;
+}
+
+interface Callout {
+  text: string;
+  color: string;
+  size: number;
+  t: number;
+  life: number;
+  slot: number;
+}
+
+interface Trail {
+  x: number;
+  y0: number;
+  y1: number;
+  color: string;
+  t: number;
+}
 
 interface GameState {
   board: number[][];
@@ -233,10 +317,20 @@ interface GameState {
   clearing: number[] | null;
   clearTimer: number;
   score: number;
+  shownScore: number;
   lines: number;
   level: number;
   combo: number;
+  rowOffset: number[];
+  particles: Particle[];
+  callouts: Callout[];
+  trails: Trail[];
+  flash: { cells: [number, number][]; t: number } | null;
+  shake: number;
+  kick: number;
+  levelPulse: number;
   deathT: number;
+  time: number;
 }
 
 function createState(): GameState {
@@ -261,10 +355,20 @@ function createState(): GameState {
     clearing: null,
     clearTimer: 0,
     score: 0,
+    shownScore: 0,
     lines: 0,
     level: 1,
     combo: 0,
+    rowOffset: new Array(ROWS).fill(0),
+    particles: [],
+    callouts: [],
+    trails: [],
+    flash: null,
+    shake: 0,
+    kick: 0,
+    levelPulse: 0,
     deathT: 0,
+    time: 0,
   };
 }
 
@@ -272,28 +376,30 @@ const messages = {
   en: {
     ...common.en,
     title: "Block Drop",
-    goal: (n: number) => `The game ends when you clear ${n} lines.`,
-    start: "Start",
-    keyColumn: "Key",
-    actionColumn: "Action",
-    keyMove: "Move left and right",
+    play: "Play",
+    keyMove: "Move",
     keyTurn: "Turn",
-    keySoft: "Move down faster",
-    keyDrop: "Drop to the bottom",
+    keySoft: "Soft drop",
+    keyDrop: "Hard drop",
     keyPause: "Pause",
-    keySpace: "Space",
-    touchHint: "Swipe left or right to move, up to turn, down to drop. The buttons under the well do the same.",
-    scoreCaps: "Score",
-    bestCaps: "Best",
-    levelCaps: "Level",
-    linesCaps: "Lines",
-    next: "Next",
-    gameOver: "Game over",
-    gameOverSub: "The stack reached the top.",
-    wonTitle: "100 lines cleared",
-    newBest: "New best score.",
+    keySpace: "SPACE",
+    touchHint: "Swipe to move, swipe up to turn, swipe down to drop",
+    scoreCaps: "SCORE",
+    bestCaps: "BEST",
+    levelCaps: "LEVEL",
+    linesCaps: "LINES",
+    next: "NEXT",
+    double: "DOUBLE",
+    triple: "TRIPLE",
+    quad: "QUAD",
+    combo: (n: number) => `COMBO ${n}`,
+    levelUp: (n: number) => `LEVEL ${n}`,
+    gameOver: "GAME OVER",
+    wonTitle: "100 LINES!",
+    newBest: "NEW BEST",
+    rowsCleared: "Lines",
     menu: "Menu",
-    paused: "Paused",
+    paused: "PAUSED",
     moveLeft: "Move left",
     rotate: "Turn",
     moveRight: "Move right",
@@ -303,26 +409,28 @@ const messages = {
   ko: {
     ...common.ko,
     title: "블록 드롭",
-    goal: (n: number) => `${n}줄을 지우면 게임이 끝납니다.`,
-    start: "시작",
-    keyColumn: "키",
-    actionColumn: "동작",
-    keyMove: "좌우 이동",
+    play: "시작",
+    keyMove: "이동",
     keyTurn: "회전",
     keySoft: "빨리 내리기",
-    keyDrop: "맨 아래로 내리기",
+    keyDrop: "바로 내리기",
     keyPause: "일시 정지",
     keySpace: "Space",
-    touchHint: "좌우로 밀면 이동, 위로 밀면 회전, 아래로 밀면 맨 아래로 내립니다. 화면 아래 버튼으로도 할 수 있습니다.",
+    touchHint: "좌우로 밀어 이동, 위로 밀어 회전, 아래로 밀어 내리기",
     scoreCaps: "점수",
     bestCaps: "최고",
     levelCaps: "레벨",
     linesCaps: "줄",
     next: "다음",
+    double: "더블",
+    triple: "트리플",
+    quad: "쿼드",
+    combo: (n: number) => `콤보 ${n}`,
+    levelUp: (n: number) => `레벨 ${n}`,
     gameOver: "게임 오버",
-    gameOverSub: "블록이 맨 위까지 쌓였습니다.",
-    wonTitle: "100줄을 다 지웠습니다",
-    newBest: "최고 점수를 새로 세웠습니다.",
+    wonTitle: "100줄 달성!",
+    newBest: "최고 기록",
+    rowsCleared: "지운 줄",
     menu: "메뉴",
     paused: "일시 정지",
     moveLeft: "왼쪽으로 이동",
@@ -335,7 +443,7 @@ const messages = {
 
 /* ---------- Small DOM pieces ---------- */
 
-function Svg({ children, size = 24 }: { children: ReactNode; size?: number }) {
+function Svg({ children, size = 26 }: { children: ReactNode; size?: number }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -343,9 +451,9 @@ function Svg({ children, size = 24 }: { children: ReactNode; size?: number }) {
       height={size}
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="square"
-      strokeLinejoin="miter"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       aria-hidden="true"
     >
       {children}
@@ -366,7 +474,7 @@ const ICON = {
   drop: (
     <>
       <path d="M6 5l6 6 6-6" />
-      <path d="M5 19h14" />
+      <path d="M6 12l6 6 6-6" />
     </>
   ),
   pause: (
@@ -382,7 +490,7 @@ function PadButton({
   onPress,
   repeat = false,
   primary = false,
-  size = 56,
+  size = 58,
   children,
 }: {
   label: string;
@@ -407,23 +515,32 @@ function PadButton({
   };
   useEffect(() => stop, []);
 
-  const style: CSSProperties = {
-    width: size,
-    height: size,
-    borderRadius: 4,
-    color: primary ? CABINET : KEY_TEXT,
-    background: primary ? (down ? "#b8b8b8" : KEY_TEXT) : down ? "#444444" : KEY_BG,
-    border: `1px solid ${primary ? KEY_TEXT : KEY_LINE}`,
-    touchAction: "none",
-  };
+  const style: CSSProperties = primary
+    ? {
+        width: size,
+        height: size,
+        color: "#2a2300",
+        background: down ? GOLD_DEEP : GOLD,
+        boxShadow: down ? `0 1px 0 ${GOLD_SHADOW}` : `0 4px 0 ${GOLD_SHADOW}`,
+        transform: down ? "translateY(3px)" : undefined,
+      }
+    : {
+        width: size,
+        height: size,
+        color: INK,
+        background: down ? "#3a3d45" : "#2e3138",
+        border: `1px solid ${GLASS_LINE}`,
+        boxShadow: down ? "0 1px 0 #0b0c0f" : "0 4px 0 #0b0c0f",
+        transform: down ? "translateY(3px)" : undefined,
+      };
 
   return (
     <button
       type="button"
       aria-label={label}
       title={label}
-      className="flex items-center justify-center select-none"
-      style={style}
+      className="rounded-full flex items-center justify-center select-none transition-transform duration-75"
+      style={{ ...style, touchAction: "none" }}
       onPointerDown={(e) => {
         e.preventDefault();
         setDown(true);
@@ -444,18 +561,17 @@ function PadButton({
   );
 }
 
-function Btn({ onClick, children, primary, autoFocus }: { onClick: () => void; children: ReactNode; primary?: boolean; autoFocus?: boolean }) {
+function BigButton({ onClick, children, autoFocus }: { onClick: () => void; children: ReactNode; autoFocus?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
       autoFocus={autoFocus}
-      className="h-10 min-w-[7rem] px-5 text-base font-bold select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black active:translate-y-px"
+      className="relative inline-flex items-center justify-center gap-2.5 rounded-md px-10 h-14 text-xl font-extrabold select-none transition-all duration-100 hover:brightness-105 active:translate-y-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50"
       style={{
-        borderRadius: 3,
-        color: primary ? CABINET : TEXT,
-        background: primary ? KEY_TEXT : "transparent",
-        border: `1px solid ${primary ? KEY_TEXT : FRAME}`,
+        color: "#2a2300",
+        background: GOLD,
+        boxShadow: `0 5px 0 ${GOLD_SHADOW}`,
         fontFamily: FONT,
       }}
     >
@@ -464,32 +580,33 @@ function Btn({ onClick, children, primary, autoFocus }: { onClick: () => void; c
   );
 }
 
-/* A black box with a gray frame, the one panel style used for menus and results. */
-function Box({ children, width = 320 }: { children: ReactNode; width?: number }) {
+function KeyCap({ children }: { children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-4 px-6 py-6 w-full" style={{ maxWidth: width, background: WELL, border: `2px solid ${FRAME}`, color: TEXT }}>
+    <span
+      className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-md text-xs font-bold"
+      style={{
+        color: INK,
+        background: "#2e3138",
+        border: `1px solid ${GLASS_LINE}`,
+        boxShadow: "0 2px 0 #0b0c0f",
+      }}
+    >
       {children}
-    </div>
+    </span>
   );
 }
 
-function Rows({ rows }: { rows: [string, string][] }) {
-  return (
-    <table className="w-full text-sm">
-      <tbody>
-        {rows.map(([k, v]) => (
-          <tr key={k} className="border-b" style={{ borderColor: "#2a2a2a" }}>
-            <th scope="row" className="py-1.5 text-left font-normal" style={{ color: TEXT_DIM }}>
-              {k}
-            </th>
-            <td className="py-1.5 text-right font-bold tabular-nums" style={{ fontFamily: MONO }}>
-              {v}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const q = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(q.matches);
+    const on = () => setReduced(q.matches);
+    q.addEventListener?.("change", on);
+    return () => q.removeEventListener?.("change", on);
+  }, []);
+  return reduced;
 }
 
 /* ---------- Component ---------- */
@@ -502,6 +619,9 @@ export default function BlockDrop() {
   const stateRef = useRef<GameState>(createState());
   const phaseRef = useRef<Phase>("idle");
   const spriteCache = useRef(new Map<string, HTMLCanvasElement>());
+  const reduced = usePrefersReducedMotion();
+  const reducedRef = useRef(reduced);
+  reducedRef.current = reduced;
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [score, setScore] = useState(0);
@@ -510,6 +630,7 @@ export default function BlockDrop() {
   const { best, record } = useBestScore(BEST_KEY);
   const bestAtStart = useRef<number | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [shownFinal, setShownFinal] = useState(0);
 
   const [box, setBox] = useState({ w: 800, h: 600, portal: false, touch: false });
 
@@ -579,6 +700,34 @@ export default function BlockDrop() {
     record(stateRef.current.score);
   }, [record]);
 
+  const callout = useCallback((text: string, color: string, size: number, slot: number) => {
+    const s = stateRef.current;
+    s.callouts = s.callouts.filter((c) => c.slot !== slot);
+    s.callouts.push({ text, color, size, t: 0, life: 1.1, slot });
+  }, []);
+
+  const burst = useCallback((x: number, y: number, color: string, count: number, power: number) => {
+    if (reducedRef.current) return;
+    const s = stateRef.current;
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = power * (0.35 + Math.random() * 0.8);
+      s.particles.push({
+        x,
+        y,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - power * 0.5,
+        life: 0,
+        max: 0.5 + Math.random() * 0.6,
+        color,
+        size: 2 + Math.random() * 4,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 12,
+      });
+    }
+    if (s.particles.length > 600) s.particles.splice(0, s.particles.length - 600);
+  }, []);
+
   const takeNext = useCallback(() => {
     const s = stateRef.current;
     if (s.bag.length === 0) s.bag = shuffledBag();
@@ -592,10 +741,12 @@ export default function BlockDrop() {
     const index = takeNext();
     const shape = PIECES[index];
     const x = Math.floor((COLS - shape.length) / 2);
-    const piece: Piece = { index, mx: shape, x, y: 0 };
+    const piece: Piece = { index, mx: shape, x, y: 0, vx: x, vy: -1.2, spin: 0 };
+    if (reducedRef.current) piece.vy = 0;
     if (collides(s.board, piece.mx, piece.x, piece.y)) {
       s.piece = null;
       s.deathT = 0;
+      s.shake = 10;
       saveBest();
       sfx("die");
       goTo("over");
@@ -612,8 +763,17 @@ export default function BlockDrop() {
     const s = stateRef.current;
     const rows = s.clearing ?? [];
     const kept = s.board.filter((_, r) => !rows.includes(r));
+    /* Each surviving row remembers how far it fell, so it can slide down instead of jumping. */
+    const offsets = new Array(ROWS).fill(0);
+    let newRow = ROWS - 1;
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (rows.includes(r)) continue;
+      offsets[newRow] = reducedRef.current ? 0 : -(newRow - r) * CELL;
+      newRow--;
+    }
     while (kept.length < ROWS) kept.unshift(new Array(COLS).fill(0));
     s.board = kept;
+    s.rowOffset = offsets;
 
     const prevLevel = s.level;
     s.lines += rows.length;
@@ -625,46 +785,75 @@ export default function BlockDrop() {
     setScore(s.score);
     setLines(s.lines);
     setLevel(s.level);
-    if (s.level > prevLevel) sfx("correct");
+    if (s.level > prevLevel) {
+      s.levelPulse = 1;
+      callout(m.levelUp(s.level), GEMS[(s.level - 1) % GEMS.length], 34, 0);
+      sfx("win");
+    }
     if (s.lines >= WIN_LINES) {
       saveBest();
       s.deathT = 0;
+      if (!reducedRef.current) {
+        for (let i = 0; i < 8; i++) burst(RIM + Math.random() * BW, RIM + Math.random() * BH * 0.6, GEMS[i % GEMS.length], 18, 260);
+      }
       sfx("win");
       goTo("won");
       return;
     }
     spawn();
-  }, [goTo, saveBest, sfx, spawn]);
+  }, [burst, callout, goTo, m, saveBest, sfx, spawn]);
 
-  const lockPiece = useCallback(() => {
-    const s = stateRef.current;
-    const p = s.piece;
-    if (!p) return;
-    for (let r = 0; r < p.mx.length; r++) {
-      for (let c = 0; c < p.mx[r].length; c++) {
-        if (!p.mx[r][c]) continue;
-        const y = p.y + r;
-        const x = p.x + c;
-        if (y >= 0) s.board[y][x] = p.index + 1;
+  const lockPiece = useCallback(
+    (hard: boolean) => {
+      const s = stateRef.current;
+      const p = s.piece;
+      if (!p) return;
+      const cells: [number, number][] = [];
+      for (let r = 0; r < p.mx.length; r++) {
+        for (let c = 0; c < p.mx[r].length; c++) {
+          if (!p.mx[r][c]) continue;
+          const y = p.y + r;
+          const x = p.x + c;
+          if (y >= 0) {
+            s.board[y][x] = p.index + 1;
+            cells.push([x, y]);
+          }
+        }
       }
-    }
-    s.piece = null;
+      s.piece = null;
+      s.flash = { cells, t: 0 };
+      if (hard && !reducedRef.current) s.kick = 5;
 
-    const full: number[] = [];
-    for (let r = 0; r < ROWS; r++) {
-      if (s.board[r].every((v) => v !== 0)) full.push(r);
-    }
-    if (full.length > 0) {
-      s.combo += 1;
-      s.clearing = full;
-      s.clearTimer = 0;
-      sfx(full.length >= 4 ? "win" : "correct");
-      return;
-    }
-    s.combo = 0;
-    sfx("place");
-    spawn();
-  }, [sfx, spawn]);
+      const full: number[] = [];
+      for (let r = 0; r < ROWS; r++) {
+        if (s.board[r].every((v) => v !== 0)) full.push(r);
+      }
+      if (full.length > 0) {
+        s.combo += 1;
+        s.clearing = full;
+        s.clearTimer = 0;
+        for (const r of full) {
+          for (let c = 0; c < COLS; c++) {
+            const v = s.board[r][c];
+            burst(c * CELL + CELL / 2, r * CELL + CELL / 2, GEMS[v - 1], full.length >= 4 ? 5 : 3, 200 + full.length * 40);
+          }
+        }
+        if (!reducedRef.current) s.shake = Math.max(s.shake, full.length >= 4 ? 12 : full.length === 3 ? 7 : full.length === 2 ? 3 : 0);
+        const gained = CLEAR_POINTS[full.length] * s.level + (s.combo > 1 ? COMBO_POINTS * (s.combo - 1) * s.level : 0);
+        if (full.length === 2) callout(m.double, GEMS[0], 30, 1);
+        else if (full.length === 3) callout(m.triple, GEMS[5], 32, 1);
+        else if (full.length >= 4) callout(m.quad, GOLD, 34, 1);
+        callout(`+${fmt(gained)}`, GOLD, 22, 2);
+        if (s.combo > 1) callout(m.combo(s.combo), GEMS[6], 24, 3);
+        sfx(full.length >= 4 ? "win" : "correct");
+        return;
+      }
+      s.combo = 0;
+      sfx("place");
+      spawn();
+    },
+    [burst, callout, m, sfx, spawn],
+  );
 
   /* A successful move or turn on the floor buys a little more time, up to a limit. */
   const onShifted = useCallback(() => {
@@ -697,6 +886,7 @@ export default function BlockDrop() {
         p.mx = turned;
         p.x += dx;
         p.y += dy;
+        if (!reducedRef.current && p.index !== 3) p.spin = dir > 0 ? -Math.PI / 2 : Math.PI / 2;
         onShifted();
       };
       for (const dx of [0, -1, 1, -2, 2]) {
@@ -723,7 +913,7 @@ export default function BlockDrop() {
       const p = s.piece;
       if (phaseRef.current !== "playing" || !p || s.clearing) return false;
       if (collides(s.board, p.mx, p.x, p.y + 1)) {
-        lockPiece();
+        lockPiece(false);
         return false;
       }
       p.y += 1;
@@ -744,14 +934,25 @@ export default function BlockDrop() {
     const s = stateRef.current;
     const p = s.piece;
     if (phaseRef.current !== "playing" || !p || s.clearing) return;
+    const startY = p.y;
     let dist = 0;
     while (!collides(s.board, p.mx, p.x, p.y + 1)) {
       p.y += 1;
       dist += 1;
     }
+    if (dist > 0 && !reducedRef.current) {
+      for (let r = 0; r < p.mx.length; r++) {
+        for (let c = 0; c < p.mx[r].length; c++) {
+          if (!p.mx[r][c]) continue;
+          /* Only the top square of each column leaves a streak. */
+          if (r > 0 && p.mx[r - 1][c]) continue;
+          s.trails.push({ x: p.x + c, y0: startY + r, y1: p.y + r, color: GEMS[p.index], t: 0 });
+        }
+      }
+    }
     s.score += dist * 2;
     setScore(s.score);
-    lockPiece();
+    lockPiece(true);
   }, [lockPiece]);
 
   const drainKeys = useCallback(() => {
@@ -810,15 +1011,33 @@ export default function BlockDrop() {
     return () => document.removeEventListener("visibilitychange", onHide);
   }, [goTo]);
 
-  /* Let the stack turn gray before the result box appears. */
+  /* Let the board settle before the result card slides in, then count the score up. */
   useEffect(() => {
     if (phase !== "over" && phase !== "won") {
       setShowResult(false);
       return;
     }
-    const id = window.setTimeout(() => setShowResult(true), phase === "over" ? 800 : 300);
+    const delay = reduced ? 150 : phase === "over" ? 950 : 700;
+    const id = window.setTimeout(() => setShowResult(true), delay);
     return () => window.clearTimeout(id);
-  }, [phase]);
+  }, [phase, reduced]);
+
+  useEffect(() => {
+    if (!showResult) return;
+    if (reduced) {
+      setShownFinal(score);
+      return;
+    }
+    let raf = 0;
+    const t0 = performance.now();
+    const tick = (now: number) => {
+      const k = clamp01((now - t0) / 900);
+      setShownFinal(Math.round(score * (1 - Math.pow(1 - k, 3))));
+      if (k < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [showResult, score, reduced]);
 
   useSwipe((dir) => {
     if (phaseRef.current !== "playing") return;
@@ -836,7 +1055,7 @@ export default function BlockDrop() {
     let sp = spriteCache.current.get(key);
     if (!sp) {
       if (spriteCache.current.size > 120) spriteCache.current.clear();
-      sp = makeBlock(colorIdx < 0 ? BLOCK_DEAD : BLOCKS[colorIdx], px);
+      sp = makeGem(colorIdx < 0 ? GEM_DEAD : GEMS[colorIdx], px);
       spriteCache.current.set(key, sp);
     }
     return sp;
@@ -852,6 +1071,36 @@ export default function BlockDrop() {
         if (consume("p") || consume("P") || consume("Escape")) togglePause();
         if (ph === "paused") return;
 
+        s.time += dt;
+        /* Effects keep running on the result screens. */
+        for (const pt of s.particles) {
+          pt.life += dt;
+          pt.vy += 620 * dt;
+          pt.vx *= 1 - 1.5 * dt;
+          pt.x += pt.vx * dt;
+          pt.y += pt.vy * dt;
+          pt.rot += pt.vr * dt;
+        }
+        s.particles = s.particles.filter((pt) => pt.life < pt.max);
+        for (const c of s.callouts) c.t += dt;
+        s.callouts = s.callouts.filter((c) => c.t < c.life);
+        for (const tr of s.trails) tr.t += dt;
+        s.trails = s.trails.filter((tr) => tr.t < 0.22);
+        if (s.flash) {
+          s.flash.t += dt;
+          if (s.flash.t > 0.18) s.flash = null;
+        }
+        s.shake *= Math.pow(0.0015, dt);
+        if (s.shake < 0.2) s.shake = 0;
+        s.kick *= Math.pow(0.0005, dt);
+        if (s.kick < 0.1) s.kick = 0;
+        s.levelPulse = Math.max(0, s.levelPulse - dt * 0.9);
+        for (let r = 0; r < ROWS; r++) {
+          if (s.rowOffset[r] < 0) s.rowOffset[r] = Math.min(0, s.rowOffset[r] + dt * 900);
+        }
+        s.shownScore += (s.score - s.shownScore) * Math.min(1, dt * 9);
+        if (Math.abs(s.score - s.shownScore) < 1) s.shownScore = s.score;
+
         if (ph === "over" || ph === "won") {
           s.deathT += dt;
           return;
@@ -865,6 +1114,13 @@ export default function BlockDrop() {
         }
         const p = s.piece;
         if (!p) return;
+
+        /* Ease the drawn piece toward its real cell. */
+        const ease = reducedRef.current ? 1 : Math.min(1, dt * 28);
+        p.vx += (p.x - p.vx) * ease;
+        p.vy += (p.y - p.vy) * Math.min(1, ease * 1.2);
+        p.spin *= reducedRef.current ? 0 : Math.pow(0.000001, dt);
+        if (Math.abs(p.spin) < 0.01) p.spin = 0;
 
         /* Every fresh key press moves once, even a tap shorter than one frame.
            Holding the key then repeats after a short delay. */
@@ -909,7 +1165,7 @@ export default function BlockDrop() {
           /* Resting on something: a short grace period before it locks. */
           s.dropTimer = 0;
           s.lockTimer += dt;
-          if (s.lockTimer >= (soft ? LOCK_DELAY * 0.4 : LOCK_DELAY)) lockPiece();
+          if (s.lockTimer >= (soft ? LOCK_DELAY * 0.4 : LOCK_DELAY)) lockPiece(false);
           return;
         }
         s.lockTimer = 0;
@@ -932,37 +1188,56 @@ export default function BlockDrop() {
         const pxs = dpr * L.scale;
         const ph = phaseRef.current;
         ctx.setTransform(pxs, 0, 0, pxs, 0, 0);
-        ctx.fillStyle = CABINET;
-        ctx.fillRect(0, 0, L.lw, L.lh);
+        ctx.clearRect(0, 0, L.lw, L.lh);
         ctx.textBaseline = "alphabetic";
 
         const bx = L.portrait ? RIM : PANEL_W + PANEL_GAP + RIM;
-        const by = L.portrait ? HUD_H + 8 + RIM : RIM;
+        const by = L.portrait ? HUD_H + 10 + RIM : RIM;
 
-        /* ----- Readouts: black boxes with a gray frame, labels above plain numbers ----- */
+        let topFilled = ROWS;
+        for (let r = 0; r < ROWS; r++) {
+          if (s.board[r].some((v) => v)) {
+            topFilled = r;
+            break;
+          }
+        }
+        const danger = ph === "playing" && topFilled < 5;
+
+        /* ----- HUD ----- */
         const panel = (x: number, y: number, w: number, h: number) => {
-          ctx.fillStyle = WELL;
-          ctx.fillRect(x, y, w, h);
-          ctx.strokeStyle = FRAME;
-          ctx.lineWidth = 2;
-          ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+          roundRect(ctx, x, y, w, h, 4);
+          ctx.fillStyle = PANEL_FILL;
+          ctx.fill();
+          ctx.strokeStyle = PANEL_LINE;
+          ctx.lineWidth = 1;
+          ctx.stroke();
         };
         const label = (text: string, x: number, y: number, align: CanvasTextAlign = "left") => {
           ctx.textAlign = align;
-          ctx.fillStyle = TEXT_DIM;
-          ctx.font = `700 11px ${FONT}`;
+          ctx.fillStyle = INK_DIM;
+          ctx.font = `800 10px ${FONT}`;
+          setSpacing(ctx, 1.6);
           ctx.fillText(text, x, y);
+          setSpacing(ctx, 0);
         };
-        const value = (text: string, x: number, y: number, size: number, maxW: number, align: CanvasTextAlign = "left") => {
+        const value = (text: string, x: number, y: number, size: number, color: string, maxW: number, align: CanvasTextAlign = "left") => {
           ctx.textAlign = align;
           let fs = size;
-          ctx.font = `700 ${fs}px ${MONO}`;
-          while (fs > 9 && ctx.measureText(text).width > maxW) {
+          ctx.font = `900 ${fs}px ${FONT}`;
+          while (fs > 10 && ctx.measureText(text).width > maxW) {
             fs -= 1;
-            ctx.font = `700 ${fs}px ${MONO}`;
+            ctx.font = `900 ${fs}px ${FONT}`;
           }
-          ctx.fillStyle = TEXT;
+          ctx.fillStyle = color;
           ctx.fillText(text, x, y);
+        };
+        const bar = (x: number, y: number, w: number, k: number, color: string) => {
+          ctx.fillStyle = "#2a2d33";
+          ctx.fillRect(x, y, w, 4);
+          if (k > 0) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, Math.max(4, w * k), 4);
+          }
         };
         const mini = (idx: number, cx: number, cy: number, cell: number) => {
           const nm = PIECES[idx];
@@ -989,40 +1264,39 @@ export default function BlockDrop() {
           }
         };
         const bestNow = Math.max(bestAtStart.current ?? 0, s.score);
+        const levelK = s.level >= MAX_LEVEL ? 1 : (s.lines % LINES_PER_LEVEL) / LINES_PER_LEVEL;
 
         if (L.portrait) {
-          panel(0, 0, 112, HUD_H);
-          label(m.scoreCaps, 10, 17);
-          value(pad6(s.score), 10, 38, 18, 92);
-          ctx.font = `400 11px ${MONO}`;
-          ctx.fillStyle = TEXT_DIM;
+          panel(0, 0, 104, HUD_H);
+          label(m.scoreCaps, 12, 18);
+          value(fmt(s.shownScore), 12, 44, 24, INK, 84);
           ctx.textAlign = "left";
-          ctx.fillText(`${m.bestCaps} ${pad6(bestNow)}`, 10, 55, 94);
+          ctx.font = `700 10px ${FONT}`;
+          ctx.fillStyle = INK_FAINT;
+          ctx.fillText(`${m.bestCaps} ${fmt(bestNow)}`, 12, 62);
 
-          panel(118, 0, 62, HUD_H);
-          label(m.levelCaps, 126, 17);
-          value(String(s.level).padStart(2, "0"), 126, 38, 18, 46);
-          ctx.font = `400 11px ${MONO}`;
-          ctx.fillStyle = TEXT_DIM;
-          ctx.fillText(`${m.linesCaps} ${String(s.lines).padStart(3, "0")}`, 126, 55, 48);
+          panel(110, 0, 66, HUD_H);
+          label(m.levelCaps, 143, 18, "center");
+          value(String(s.level), 143, 46, 24, INK, 54, "center");
+          bar(118, 58, 50, levelK, GEMS[0]);
 
-          panel(186, 0, PORT_W - 186, HUD_H);
-          label(m.next, 194, 17);
-          mini(s.queue[0], 186 + (PORT_W - 186) / 2, 41, 11);
+          panel(182, 0, PORT_W - 182, HUD_H);
+          label(m.next, 182 + (PORT_W - 182) / 2, 18, "center");
+          mini(s.queue[0], 182 + (PORT_W - 182) / 2, 46, 13);
         } else {
           const rx = LAND_W - PANEL_W;
-          panel(0, 0, PANEL_W, 196);
-          const rows: [string, string][] = [
-            [m.scoreCaps, pad6(s.score)],
-            [m.bestCaps, pad6(bestNow)],
-            [m.levelCaps, String(s.level).padStart(2, "0")],
-            [m.linesCaps, `${String(s.lines).padStart(3, "0")}/${WIN_LINES}`],
-          ];
-          rows.forEach(([k, v], i) => {
-            const y = 22 + i * 46;
-            label(k, 12, y);
-            value(v, 12, y + 22, 20, PANEL_W - 24);
-          });
+          panel(0, 0, PANEL_W, 82);
+          label(m.scoreCaps, 14, 24);
+          value(fmt(s.shownScore), 14, 60, 28, INK, PANEL_W - 28);
+
+          panel(0, 92, PANEL_W, 60);
+          label(m.bestCaps, 14, 114);
+          value(fmt(bestNow), 14, 140, 18, INK, PANEL_W - 28);
+
+          panel(0, 162, PANEL_W, 88);
+          label(m.levelCaps, 14, 184);
+          value(String(s.level), 14, 222, 32, INK, PANEL_W - 28);
+          bar(14, 234, PANEL_W - 28, levelK, GEMS[0]);
 
           if (!L.touch) {
             const rowsHint: [string, string][] = [
@@ -1032,143 +1306,368 @@ export default function BlockDrop() {
               [m.keySpace, m.keyDrop],
               ["P", m.keyPause],
             ];
-            let hy = LAND_H - rowsHint.length * 20 - 4;
+            let hy = LAND_H - rowsHint.length * 26 - 6;
             for (const [k, txt] of rowsHint) {
+              ctx.font = `800 10px ${FONT}`;
+              const kw = Math.max(24, ctx.measureText(k).width + 14);
+              roundRect(ctx, 2, hy, kw, 20, 3);
+              ctx.fillStyle = "#2e3138";
+              ctx.fill();
+              ctx.strokeStyle = PANEL_LINE;
+              ctx.stroke();
+              ctx.fillStyle = INK;
+              ctx.textAlign = "center";
+              ctx.fillText(k, 2 + kw / 2, hy + 14);
               ctx.textAlign = "left";
-              ctx.font = `700 11px ${MONO}`;
-              ctx.fillStyle = TEXT;
-              ctx.fillText(k, 2, hy + 12, 40);
-              ctx.font = `400 11px ${FONT}`;
-              ctx.fillStyle = TEXT_DIM;
-              ctx.fillText(txt, 46, hy + 12, PANEL_W - 46);
-              hy += 20;
+              ctx.fillStyle = INK_FAINT;
+              ctx.font = `600 10px ${FONT}`;
+              ctx.fillText(txt, kw + 10, hy + 14, PANEL_W - kw - 10);
+              hy += 26;
             }
           }
 
-          panel(rx, 0, PANEL_W, 196);
-          label(m.next, rx + 12, 22);
-          mini(s.queue[0], rx + PANEL_W / 2, 66, 18);
-          mini(s.queue[1], rx + PANEL_W / 2, 120, 12);
-          mini(s.queue[2], rx + PANEL_W / 2, 162, 12);
-        }
+          panel(rx, 0, PANEL_W, 212);
+          label(m.next, rx + 14, 24);
+          mini(s.queue[0], rx + PANEL_W / 2, 74, 20);
+          ctx.globalAlpha = 0.75;
+          mini(s.queue[1], rx + PANEL_W / 2, 136, 14);
+          ctx.globalAlpha = 0.5;
+          mini(s.queue[2], rx + PANEL_W / 2, 182, 14);
+          ctx.globalAlpha = 1;
 
-        /* ----- Well ----- */
-        ctx.fillStyle = "#3a3a3a";
-        ctx.fillRect(bx - RIM, by - RIM, BW + RIM * 2, BH + RIM * 2);
-        ctx.strokeStyle = FRAME;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(bx - RIM + 1, by - RIM + 1, BW + RIM * 2 - 2, BH + RIM * 2 - 2);
-        ctx.fillStyle = WELL;
-        ctx.fillRect(bx, by, BW, BH);
-        ctx.fillStyle = GRID;
-        for (let c = 1; c < COLS; c++) ctx.fillRect(bx + c * CELL, by, 1, BH);
-        for (let r = 1; r < ROWS; r++) ctx.fillRect(bx, by + r * CELL, BW, 1);
+          panel(rx, 222, PANEL_W, 82);
+          label(m.linesCaps, rx + 14, 246);
+          value(String(s.lines), rx + 14, 280, 28, INK, 56);
+          ctx.font = `800 12px ${FONT}`;
+          ctx.textAlign = "right";
+          ctx.fillStyle = INK_FAINT;
+          ctx.fillText(`/ ${WIN_LINES}`, rx + PANEL_W - 14, 280);
+          bar(rx + 14, 292, PANEL_W - 28, Math.min(1, s.lines / WIN_LINES), GOLD);
 
-        /* Settled squares. On game over they turn gray from the bottom up. */
-        const deadFrom = ph === "over" ? ROWS - s.deathT * 40 : ROWS + 1;
-        for (let r = 0; r < ROWS; r++) {
-          for (let c = 0; c < COLS; c++) {
-            const v = s.board[r][c];
-            if (!v) continue;
-            ctx.drawImage(sprite(r >= deadFrom ? -1 : v - 1, CELL, pxs), bx + c * CELL, by + r * CELL, CELL, CELL);
+          if (s.combo > 1 && ph === "playing") {
+            panel(rx, 314, PANEL_W, 50);
+            value(m.combo(s.combo), rx + PANEL_W / 2, 346, 18, GOLD, PANEL_W - 20, "center");
           }
         }
 
-        /* Full rows blink before they go. */
-        if (s.clearing && Math.floor((s.clearTimer / CLEAR_TIME) * 6) % 2 === 0) {
-          ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-          for (const r of s.clearing) ctx.fillRect(bx, by + r * CELL, BW, CELL);
+        /* ----- Board ----- */
+        ctx.save();
+        if (s.shake > 0 && !reducedRef.current) {
+          ctx.translate((Math.random() - 0.5) * s.shake, (Math.random() - 0.5) * s.shake);
+        }
+        ctx.translate(0, s.kick);
+
+        /* Plain gray frame; it turns red while the stack is near the top. */
+        roundRect(ctx, bx - RIM, by - RIM, BW + RIM * 2, BH + RIM * 2, 6);
+        const rim = ctx.createLinearGradient(0, by - RIM, 0, by + BH + RIM);
+        rim.addColorStop(0, RIM_TOP);
+        rim.addColorStop(1, RIM_BOTTOM);
+        ctx.fillStyle = rim;
+        ctx.fill();
+        if (danger) {
+          roundRect(ctx, bx - RIM + 1, by - RIM + 1, BW + RIM * 2 - 2, BH + RIM * 2 - 2, 6);
+          ctx.strokeStyle = alpha(ROSE, 0.55 + 0.3 * Math.sin(s.time * 8));
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(bx, by, BW, BH);
+        ctx.clip();
+        ctx.fillStyle = WELL_TOP;
+        ctx.fillRect(bx, by, BW, BH);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+        for (let c = 1; c < COLS; c++) ctx.fillRect(bx + c * CELL, by, 1, BH);
+        for (let r = 1; r < ROWS; r++) ctx.fillRect(bx, by + r * CELL, BW, 1);
+        if (danger) {
+          const dg = ctx.createLinearGradient(0, by, 0, by + CELL * 6);
+          dg.addColorStop(0, alpha(ROSE, 0.18 + 0.1 * Math.sin(s.time * 8)));
+          dg.addColorStop(1, alpha(ROSE, 0));
+          ctx.fillStyle = dg;
+          ctx.fillRect(bx, by, BW, CELL * 6);
+        }
+
+        /* Settled squares. On game over they turn to slate from the bottom up. */
+        const deadFrom = ph === "over" ? ROWS - s.deathT * 34 : ROWS + 1;
+        const clearing = s.clearing;
+        const clearK = clearing ? clamp01(s.clearTimer / CLEAR_TIME) : 0;
+        for (let r = 0; r < ROWS; r++) {
+          const isClearing = clearing?.includes(r);
+          const oy = s.rowOffset[r];
+          for (let c = 0; c < COLS; c++) {
+            const v = s.board[r][c];
+            if (!v) continue;
+            const x = bx + c * CELL;
+            const y = by + r * CELL + oy;
+            if (isClearing) {
+              const d = Math.abs(c - 4.5) / 5;
+              const k = clamp01((clearK - 0.2 - d * 0.35) / 0.4);
+              const sz = CELL * (1 - k);
+              if (sz > 0.5) ctx.drawImage(sprite(v - 1, CELL, pxs), x + (CELL - sz) / 2, y + (CELL - sz) / 2, sz, sz);
+              ctx.fillStyle = `rgba(255, 255, 255, ${Math.min(0.7, clearK * 3) * (1 - k)})`;
+              ctx.fillRect(x + (CELL - sz) / 2, y + (CELL - sz) / 2, sz, sz);
+            } else {
+              ctx.drawImage(sprite(r >= deadFrom ? -1 : v - 1, CELL, pxs), x, y, CELL, CELL);
+            }
+          }
+        }
+
+        if (clearing) {
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          for (const r of clearing) {
+            const h = CELL * (1 + clearK * 1.4);
+            const g = ctx.createLinearGradient(0, by + r * CELL + CELL / 2 - h / 2, 0, by + r * CELL + CELL / 2 + h / 2);
+            g.addColorStop(0, "rgba(255,255,255,0)");
+            g.addColorStop(0.5, `rgba(255,255,255,${0.7 * (1 - clearK)})`);
+            g.addColorStop(1, "rgba(255,255,255,0)");
+            ctx.fillStyle = g;
+            ctx.fillRect(bx, by + r * CELL + CELL / 2 - h / 2, BW, h);
+          }
+          ctx.restore();
+        }
+
+        /* Lock flash. */
+        if (s.flash) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${0.55 * (1 - s.flash.t / 0.18)})`;
+          for (const [x, y] of s.flash.cells) {
+            ctx.fillRect(bx + x * CELL + 1, by + y * CELL + 1, CELL - 2, CELL - 2);
+          }
+        }
+
+        /* Hard-drop streaks. */
+        if (s.trails.length) {
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          for (const tr of s.trails) {
+            const k = 1 - tr.t / 0.22;
+            const top = by + tr.y0 * CELL;
+            const bottom = by + tr.y1 * CELL;
+            const g = ctx.createLinearGradient(0, top, 0, bottom);
+            g.addColorStop(0, alpha(tr.color, 0));
+            g.addColorStop(1, alpha(tr.color, 0.55 * k));
+            ctx.fillStyle = g;
+            ctx.fillRect(bx + tr.x * CELL + 3, top, CELL - 6, bottom - top);
+          }
+          ctx.restore();
         }
 
         const p = s.piece;
         if (p && (ph === "playing" || ph === "paused")) {
-          /* Outline where the piece lands if dropped now. */
+          /* Ghost: where the piece lands if dropped now. */
           let gy = p.y;
           while (!collides(s.board, p.mx, p.x, gy + 1)) gy += 1;
-          const col = BLOCKS[p.index];
-          ctx.strokeStyle = alpha(col, 0.6);
-          ctx.lineWidth = 1;
+          const col = GEMS[p.index];
           for (let r = 0; r < p.mx.length; r++) {
             for (let c = 0; c < p.mx[r].length; c++) {
               if (!p.mx[r][c] || gy + r < 0) continue;
+              ctx.fillStyle = alpha(col, 0.15);
+              ctx.fillRect(bx + (p.x + c) * CELL + 1.5, by + (gy + r) * CELL + 1.5, CELL - 3, CELL - 3);
+              ctx.strokeStyle = alpha(col, 0.6);
+              ctx.lineWidth = 1.5;
               ctx.strokeRect(bx + (p.x + c) * CELL + 1.5, by + (gy + r) * CELL + 1.5, CELL - 3, CELL - 3);
             }
           }
+
+          /* Active piece with a soft glow, drawn at its eased position and spin. */
+          const n = p.mx.length;
+          const cx = bx + (p.vx + n / 2) * CELL;
+          const cy = by + (p.vy + n / 2) * CELL;
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(p.spin);
           const sp = sprite(p.index, CELL, pxs);
-          for (let r = 0; r < p.mx.length; r++) {
-            for (let c = 0; c < p.mx[r].length; c++) {
-              if (!p.mx[r][c] || p.y + r < 0) continue;
-              ctx.drawImage(sp, bx + (p.x + c) * CELL, by + (p.y + r) * CELL, CELL, CELL);
+          const lockK = s.lockTimer > 0 ? 0.5 + 0.5 * Math.sin(s.time * 30) : 0;
+          for (let r = 0; r < n; r++) {
+            for (let c = 0; c < n; c++) {
+              if (!p.mx[r][c]) continue;
+              const x = (c - n / 2) * CELL;
+              const y = (r - n / 2) * CELL;
+              ctx.drawImage(sp, x, y, CELL, CELL);
+              if (lockK > 0) {
+                ctx.fillStyle = `rgba(255,255,255,${0.12 * lockK})`;
+                ctx.fillRect(x + 2, y + 2, CELL - 4, CELL - 4);
+              }
             }
           }
+          ctx.restore();
         }
 
-        if (ph === "paused" || ((ph === "over" || ph === "won") && s.deathT > 0.4)) {
-          ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        if (ph === "over" || ph === "won" || ph === "paused") {
+          const k = ph === "paused" ? 1 : clamp01(s.deathT / 0.9);
+          ctx.fillStyle = `rgba(0, 0, 0, ${0.55 * k})`;
           ctx.fillRect(bx, by, BW, BH);
+        }
+        ctx.restore();
+
+        /* Particles, glowing. */
+        if (s.particles.length) {
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          for (const pt of s.particles) {
+            const k = 1 - pt.life / pt.max;
+            ctx.globalAlpha = k;
+            ctx.fillStyle = pt.color;
+            ctx.save();
+            ctx.translate(bx + pt.x, by + pt.y);
+            ctx.rotate(pt.rot);
+            ctx.fillRect(-pt.size / 2, -pt.size / 2, pt.size, pt.size);
+            ctx.restore();
+          }
+          ctx.restore();
+        }
+
+        /* Callouts pop in over the middle of the well. */
+        for (const c of s.callouts) {
+          const appear = reducedRef.current ? 1 : easeOutBack(clamp01(c.t / 0.22));
+          const fade = clamp01((c.life - c.t) / 0.3);
+          const rise = reducedRef.current ? 0 : -c.t * 18;
+          const slotY = [BH * 0.3, BH * 0.42, BH * 0.52, BH * 0.6][c.slot] ?? BH * 0.4;
+          ctx.save();
+          ctx.globalAlpha = fade;
+          ctx.translate(bx + BW / 2, by + slotY + rise);
+          ctx.scale(0.4 + 0.6 * appear, 0.4 + 0.6 * appear);
+          ctx.textAlign = "center";
+          ctx.font = `900 ${c.size}px ${FONT}`;
+          setSpacing(ctx, 1);
+          let fs = c.size;
+          while (fs > 12 && ctx.measureText(c.text).width > BW - 16) {
+            fs -= 1;
+            ctx.font = `900 ${fs}px ${FONT}`;
+          }
+          ctx.lineJoin = "round";
+          ctx.lineWidth = 6;
+          ctx.strokeStyle = NAVY;
+          ctx.strokeText(c.text, 0, 0);
+          ctx.fillStyle = c.color;
+          ctx.fillText(c.text, 0, 0);
+          setSpacing(ctx, 0);
+          ctx.restore();
         }
       },
     },
     phase !== "idle",
   );
 
+  /* ---------- Menu entrance animation ---------- */
+
+  const titleRef = useRef<HTMLDivElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (phase !== "idle" || reduced) return;
+    const anims: Animation[] = [];
+    const pieces = titleRef.current?.querySelectorAll<HTMLElement>("[data-drop]") ?? [];
+    pieces.forEach((el, i) => {
+      anims.push(
+        el.animate(
+          [
+            { transform: "translateY(-120px)", opacity: 0 },
+            { transform: "translateY(0)", opacity: 1, offset: 0.8 },
+            { transform: "translateY(0)", opacity: 1 },
+          ],
+          { duration: 420, delay: 60 + i * 80, easing: "cubic-bezier(.5,0,.9,.6)", fill: "backwards" },
+        ),
+      );
+    });
+    return () => anims.forEach((a) => a.cancel());
+  }, [phase, reduced]);
+
+  useEffect(() => {
+    if (!showResult || reduced || !resultRef.current) return;
+    const a = resultRef.current.animate(
+      [
+        { transform: "translateY(24px)", opacity: 0 },
+        { transform: "translateY(0)", opacity: 1 },
+      ],
+      { duration: 260, easing: "ease-out" },
+    );
+    return () => a.cancel();
+  }, [showResult, reduced]);
+
   /* ---------- Render ---------- */
 
   const rootStyle: CSSProperties = {
     height: box.h,
     background: CABINET,
-    color: TEXT,
+    color: INK,
     fontFamily: FONT,
     touchAction: phase === "playing" ? "none" : undefined,
   };
-  const rootClass = "relative w-full overflow-hidden select-none";
-  const fmt = (n: number) => n.toLocaleString("en-US");
+  const rootClass = `relative w-full overflow-hidden select-none ${box.portal ? "" : "rounded-xl"}`;
 
   if (phase === "idle") {
-    const keyRows: [string, string][] = [
-      ["← →", m.keyMove],
-      ["↑", m.keyTurn],
-      ["↓", m.keySoft],
-      [m.keySpace, m.keyDrop],
-      ["P", m.keyPause],
-    ];
+    const blk = Math.max(10, Math.min(18, (box.w - 48) / 26));
+    const titleSize = Math.max(40, Math.min(76, box.w / 7));
+    /* The seven pieces in a row, as they fall in the game. */
+    const row = [0, 5, 3, 4, 6, 1, 2];
     return (
       <div ref={rootRef} className={rootClass} style={rootStyle}>
-        <div className="h-full flex items-center justify-center px-4 pt-12 pb-4">
-          <Box width={340}>
-            <h1 className="text-3xl font-bold leading-tight">{m.title}</h1>
-            <Rows rows={[[m.bestCaps, best !== null ? pad6(best) : pad6(0)]]} />
-            <Btn onClick={startGame} primary autoFocus>
-              {m.start}
-            </Btn>
-            <p className="text-sm" style={{ color: TEXT_DIM }}>
-              {m.goal(WIN_LINES)}
+        <div className="relative h-full flex flex-col items-center justify-center gap-7 px-4 text-center">
+          <div ref={titleRef} className="flex flex-col items-center gap-5">
+            <div className="flex items-end justify-center" style={{ gap: blk * 0.8 }} aria-hidden="true">
+              {row.map((idx) => {
+                const mx = PIECES[idx].filter((r) => r.some((v) => v));
+                const cols = mx[0].map((_, c) => c).filter((c) => mx.some((r) => r[c]));
+                return (
+                  <div key={idx} data-drop className="grid" style={{ gridTemplateColumns: `repeat(${cols.length}, ${blk}px)` }}>
+                    {mx.flatMap((r, ri) =>
+                      cols.map((c) =>
+                        r[c] ? <div key={`${ri}-${c}`} style={gemStyle(GEMS[idx], blk)} /> : <div key={`${ri}-${c}`} style={{ width: blk, height: blk }} />,
+                      ),
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <h1 className="font-black leading-none uppercase" style={{ fontSize: titleSize, letterSpacing: "0.02em", color: INK }}>
+              {m.title}
+            </h1>
+          </div>
+
+          <BigButton onClick={startGame} autoFocus>
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path d="M7 4.5v15l13-7.5z" fill="currentColor" />
+            </svg>
+            {m.play}
+          </BigButton>
+
+          {best !== null && (
+            <p className="text-sm font-bold tracking-wide" style={{ color: INK_DIM }}>
+              {m.bestCaps} <span style={{ color: INK }}>{fmt(best)}</span>
             </p>
-            {box.touch ? (
-              <p className="text-sm leading-relaxed" style={{ color: TEXT_DIM }}>
-                {m.touchHint}
-              </p>
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ color: TEXT_DIM }}>
-                    <th className="pb-1 text-left font-normal w-20">{m.keyColumn}</th>
-                    <th className="pb-1 text-left font-normal">{m.actionColumn}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {keyRows.map(([k, v]) => (
-                    <tr key={v}>
-                      <td className="py-0.5 font-bold" style={{ fontFamily: MONO }}>
-                        {k}
-                      </td>
-                      <td className="py-0.5">{v}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </Box>
+          )}
+
+          {box.touch ? (
+            <p className="text-sm font-medium max-w-xs" style={{ color: INK_FAINT }}>
+              {m.touchHint}
+            </p>
+          ) : (
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-semibold" style={{ color: INK_DIM }}>
+              <span className="inline-flex items-center gap-1.5">
+                <KeyCap>{"←"}</KeyCap>
+                <KeyCap>{"→"}</KeyCap>
+                {m.keyMove}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <KeyCap>{"↑"}</KeyCap>
+                {m.keyTurn}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <KeyCap>{"↓"}</KeyCap>
+                {m.keySoft}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <KeyCap>{m.keySpace}</KeyCap>
+                {m.keyDrop}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <KeyCap>P</KeyCap>
+                {m.keyPause}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -1176,11 +1675,11 @@ export default function BlockDrop() {
 
   const ended = phase === "over" || phase === "won";
   const isNewBest = ended && score > 0 && score > (bestAtStart.current ?? 0);
-  const padSize = portrait ? Math.min(56, Math.floor((box.w - 24 - 4 * 8) / 5)) : 56;
+  const padSize = portrait ? Math.min(60, Math.floor((box.w - 24 - 4 * 10) / 5)) : 56;
 
   const leftPad = (
-    <div className="flex flex-col items-center gap-2" style={{ width: SIDE_PAD_W }}>
-      <div className="flex gap-2">
+    <div className="flex flex-col items-center gap-3" style={{ width: SIDE_PAD_W }}>
+      <div className="flex gap-3">
         <PadButton label={m.moveLeft} onPress={() => move(-1)} repeat size={padSize}>
           <Svg>{ICON.left}</Svg>
         </PadButton>
@@ -1194,17 +1693,17 @@ export default function BlockDrop() {
     </div>
   );
   const rightPad = (
-    <div className="flex flex-col items-center gap-2" style={{ width: SIDE_PAD_W }}>
+    <div className="flex flex-col items-center gap-3" style={{ width: SIDE_PAD_W }}>
       <PadButton label={m.rotate} onPress={() => rotate(1)} size={padSize + 8}>
-        <Svg size={28}>{ICON.rotate}</Svg>
+        <Svg size={30}>{ICON.rotate}</Svg>
       </PadButton>
       <PadButton label={m.hardDrop} onPress={hardDrop} primary size={padSize + 8}>
-        <Svg size={28}>{ICON.drop}</Svg>
+        <Svg size={30}>{ICON.drop}</Svg>
       </PadButton>
     </div>
   );
   const bottomPad = (
-    <div className="flex items-center justify-center gap-2 w-full" style={{ height: PAD_ROW_H }}>
+    <div className="flex items-center justify-center gap-2.5 w-full" style={{ height: PAD_ROW_H }}>
       <PadButton label={m.moveLeft} onPress={() => move(-1)} repeat size={padSize}>
         <Svg>{ICON.left}</Svg>
       </PadButton>
@@ -1249,54 +1748,105 @@ export default function BlockDrop() {
           onClick={togglePause}
           aria-label={m.pause}
           title={m.pause}
-          className="absolute left-2.5 top-2.5 w-9 h-9 flex items-center justify-center"
-          style={{ background: KEY_BG, border: `1px solid ${KEY_LINE}`, borderRadius: 3, color: KEY_TEXT }}
+          className="absolute left-3 top-3 w-10 h-10 rounded-md flex items-center justify-center transition-colors hover:brightness-125"
+          style={{ background: GLASS, border: `1px solid ${GLASS_LINE}`, color: INK }}
         >
-          <Svg size={18}>{ICON.pause}</Svg>
+          <Svg size={20}>{ICON.pause}</Svg>
         </button>
       )}
 
       {phase === "paused" && (
-        <div className="absolute inset-0 flex items-center justify-center p-4">
-          <Box width={280}>
-            <h2 className="text-2xl font-bold">{m.paused}</h2>
-            <div className="flex flex-wrap gap-2">
-              <Btn onClick={togglePause} primary autoFocus>
-                {m.resume}
-              </Btn>
-              <Btn onClick={quit}>{m.quit}</Btn>
-            </div>
-          </Box>
+        <div className="absolute inset-0 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.55)" }}>
+          <div
+            className="flex flex-col items-center gap-6 rounded-lg px-10 py-8 max-w-sm w-full"
+            style={{ background: GLASS, border: `1px solid ${GLASS_LINE}` }}
+          >
+            <h2 className="text-4xl font-black tracking-wide" style={{ color: INK }}>
+              {m.paused}
+            </h2>
+            <BigButton onClick={togglePause} autoFocus>
+              <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                <path d="M7 4.5v15l13-7.5z" fill="currentColor" />
+              </svg>
+              {m.resume}
+            </BigButton>
+            <button
+              type="button"
+              onClick={quit}
+              className="text-sm font-bold tracking-wide px-5 h-10 rounded-md transition-colors hover:bg-white/10"
+              style={{ color: INK_DIM }}
+            >
+              {m.quit}
+            </button>
+          </div>
         </div>
       )}
 
       {ended && showResult && (
-        <div className="absolute inset-0 flex items-center justify-center p-4">
-          <Box width={300}>
-            <div>
-              <h2 className="text-2xl font-bold">{phase === "won" ? m.wonTitle : m.gameOver}</h2>
-              {phase === "over" && (
-                <p className="mt-1 text-sm" style={{ color: TEXT_DIM }}>
-                  {m.gameOverSub}
-                </p>
+        <div className="absolute inset-0 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.45)" }}>
+          <div
+            ref={resultRef}
+            className="flex flex-col items-center gap-5 rounded-lg px-6 sm:px-10 py-8 max-w-sm w-full text-center"
+            style={{ background: GLASS, border: `1px solid ${GLASS_LINE}` }}
+          >
+            <h2 className="text-4xl font-black tracking-wide leading-none" style={{ color: phase === "won" ? GOLD : INK }}>
+              {phase === "won" ? m.wonTitle : m.gameOver}
+            </h2>
+
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-xs font-extrabold tracking-widest" style={{ color: INK_DIM }}>
+                {m.scoreCaps}
+              </span>
+              <span className="text-5xl font-black tabular-nums" style={{ color: INK }}>
+                {fmt(shownFinal)}
+              </span>
+              {isNewBest && (
+                <span
+                  className="mt-1 inline-flex items-center rounded px-2.5 h-6 text-xs font-black tracking-wider"
+                  style={{ color: NAVY, background: GOLD }}
+                >
+                  {m.newBest}
+                </span>
               )}
             </div>
-            <Rows
-              rows={[
-                [m.scoreCaps, fmt(score)],
-                [m.linesCaps, String(lines)],
-                [m.levelCaps, String(level)],
-                [m.bestCaps, fmt(Math.max(best ?? 0, score))],
-              ]}
-            />
-            {isNewBest && <p className="text-sm font-bold">{m.newBest}</p>}
-            <div className="flex flex-wrap gap-2">
-              <Btn onClick={playAgain} primary autoFocus>
-                {m.playAgain}
-              </Btn>
-              <Btn onClick={quit}>{m.menu}</Btn>
+
+            <div className="grid grid-cols-3 gap-2 w-full">
+              {[
+                [m.rowsCleared, String(lines)],
+                [m.level, String(level)],
+                [m.best, fmt(Math.max(best ?? 0, score))],
+              ].map(([k, v]) => (
+                <div
+                  key={k}
+                  className="flex flex-col items-center justify-center rounded py-2"
+                  style={{ background: PANEL_FILL, border: `1px solid ${PANEL_LINE}` }}
+                >
+                  <span className="text-[11px] font-bold" style={{ color: INK_DIM }}>
+                    {k}
+                  </span>
+                  <span className="text-lg font-black" style={{ color: INK }}>
+                    {v}
+                  </span>
+                </div>
+              ))}
             </div>
-          </Box>
+
+            <BigButton onClick={playAgain} autoFocus>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3" />
+                <path d="M19.5 4v5h-5" />
+              </svg>
+              {m.playAgain}
+            </BigButton>
+            <button
+              type="button"
+              onClick={quit}
+              className="text-sm font-bold tracking-wide px-5 h-9 rounded-md transition-colors hover:bg-white/10"
+              style={{ color: INK_DIM }}
+            >
+              {m.menu}
+            </button>
+          </div>
         </div>
       )}
     </div>

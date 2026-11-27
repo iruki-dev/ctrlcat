@@ -53,7 +53,7 @@ best score is kept on this device, so you can try to beat it later.
 
 Left and right arrows move the piece, the up arrow turns it, the down arrow speeds the fall and
 space drops it instantly. Press P to pause. On a touch screen, swipe sideways to move, up to turn
-and down to drop, or use the buttons under the well. When a piece
+and down to drop, or use the buttons on screen. When a piece
 touches down you still have a moment to slide or turn it before it locks in place.
 
 ## Frequently asked questions

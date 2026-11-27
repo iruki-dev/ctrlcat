@@ -1,17 +1,17 @@
-/* 2048: light page, stone-gray board. Matches the colors the game paints itself. */
+/* 2048: the usual beige page and brown board. Matches the colors the game paints itself. */
 :root {
-  --game-bg:           244 243 239;
-  --game-surface:      255 255 255;
-  --game-surface-2:    230 228 222;
-  --game-border:       143 138 128;
-  --game-border-dim:   214 211 203;
-  --game-accent:       43  42  39;
-  --game-accent-light: 230 228 222;
-  --game-accent-dim:   20  20  18;
-  --game-on-accent:    255 255 255;
-  --game-secondary:    207 62  47;
-  --game-muted:        107 104 98;
-  --game-text:         43  42  39;
-  --game-text-dim:     107 104 98;
-  --portal-stage: rgb(244 243 239);
+  --game-bg:           250 248 239;
+  --game-surface:      238 228 218;
+  --game-surface-2:    205 193 180;
+  --game-border:       187 173 160;
+  --game-border-dim:   220 210 198;
+  --game-accent:       143 122 102;
+  --game-accent-light: 238 228 218;
+  --game-accent-dim:   119 110 101;
+  --game-on-accent:    249 246 242;
+  --game-secondary:    246 124 95;
+  --game-muted:        150 140 128;
+  --game-text:         119 110 101;
+  --game-text-dim:     119 110 101;
+  --portal-stage: rgb(250 248 239);
 }

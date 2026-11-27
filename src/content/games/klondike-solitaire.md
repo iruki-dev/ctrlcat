@@ -46,10 +46,10 @@ Drag a card, or a run of cards, onto the column or suit pile where it belongs. T
 No. Roughly one deal in six cannot be solved, because key cards sit buried under each other. The game checks for a dead end after every move and tells you when one is reached, so you never guess whether to keep trying.
 
 **Can I take back a move?**
-Yes. Undo in the menu bar, or the U key, steps back one move at a time and restores your score along with the board. The last fifty moves are kept.
+Yes. The Undo button, or the U key, steps back one move at a time and restores your score along with the board. The last fifty moves are kept.
 
 **What does the Collect button do?**
-It sends every card that can legally go home to its suit pile, over and over, until nothing else fits. Once the deck is used up and every card is face up, the button reads Finish, and one press clears the table.
+It sends every card that can legally go home to its suit pile, over and over, until nothing else fits. Once the deck is used up and every card is face up, the button turns yellow and reads Finish, and one press clears the table.
 
 **Does my score carry over?**
 Your best winning score is kept on this device and shows after each win. Nothing is sent anywhere.

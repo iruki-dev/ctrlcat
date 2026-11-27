@@ -1,17 +1,17 @@
-/* Klondike Solitaire: flat green card-table felt, as in desktop solitaire games. */
+/* Klondike Solitaire: green card table. Matches the colors the game paints itself. */
 :root {
-  --game-bg:           21  107 58;
-  --game-surface:      15  80  43;
-  --game-surface-2:    12  64  35;
-  --game-border:       200 220 205;
-  --game-border-dim:   40  128 76;
-  --game-accent:       255 255 255;
-  --game-accent-light: 40  128 76;
-  --game-accent-dim:   255 255 255;
-  --game-on-accent:    21  107 58;
-  --game-secondary:    204 30  40;
-  --game-muted:        190 214 198;
+  --game-bg:           22  128 63;
+  --game-surface:      11  90  42;
+  --game-surface-2:    31  154 79;
+  --game-border:       255 255 255;
+  --game-border-dim:   31  154 79;
+  --game-accent:       255 210 63;
+  --game-accent-light: 31  154 79;
+  --game-accent-dim:   255 230 140;
+  --game-on-accent:    22  24  29;
+  --game-secondary:    208 21  43;
+  --game-muted:        200 230 210;
   --game-text:         255 255 255;
-  --game-text-dim:     220 236 226;
-  --portal-stage: rgb(21 107 58);
+  --game-text-dim:     225 240 230;
+  --portal-stage: radial-gradient(ellipse 85% 75% at 50% 38%, #1f9a4f 0%, #16803f 48%, #0b5a2a 100%);
 }

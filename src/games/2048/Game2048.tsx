@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useLang, useMessages } from "../../i18n/react";
 import { common } from "../lib/messages";
 import { useBestScore } from "../lib/useBestScore";
@@ -9,39 +9,40 @@ import { useSound } from "../../components/games/SoundContext";
 const SIZE = 4;
 const TARGET = 2048;
 const BEST_KEY = "ctrlcat-2048-best";
-/** Tile slide duration. New tiles fade in and merged tiles bump once the slide lands. */
-const SLIDE_MS = 100;
-
-// The game paints its own colors so it looks the same on the site and in portal builds.
-// Like canvas drawing constants, these are game-owned values, not site theme colors.
-// Flat tiles on a stone-gray board. Small values stay pale, then the ramp goes yellow, orange, red,
-// and turns to green and blue past 128 so neighbouring values never look alike.
-const PAGE = "#f4f3ef";
-const INK = "#2b2a27";
-const INK_DIM = "#6b6862";
-const BOARD = "#8f8a80";
-const CELL_EMPTY = "#a6a196";
-const BUTTON = "#2b2a27";
-const BUTTON_TEXT = "#ffffff";
-const LINE = "#d6d3cb";
-const TILE_COLORS: Record<number, [string, string]> = {
-  2: ["#fbfaf7", "#3d3a35"],
-  4: ["#f1ead8", "#3d3a35"],
-  8: ["#f6c95b", "#3d2a00"],
-  16: ["#f29e3d", "#ffffff"],
-  32: ["#e8693a", "#ffffff"],
-  64: ["#cf3e2f", "#ffffff"],
-  128: ["#7bbf6a", "#ffffff"],
-  256: ["#3f9a63", "#ffffff"],
-  512: ["#2f8a9c", "#ffffff"],
-  1024: ["#2f629c", "#ffffff"],
-  2048: ["#1f3866", "#ffffff"],
+/** Tile slide duration. New tiles pop and merged tiles bounce once the slide lands. */
+const SLIDE_MS = 110;
+// Standard 2048 colors: warm beige page, brown board, cream-to-orange-to-gold tiles. Nearly every 2048
+// on web portals and app stores uses this ramp, so players read the values at a glance.
+// Like canvas drawing constants, these are game-owned colors, the same on the site and in portal builds.
+const PALETTE: Record<number, [string, string]> = {
+  2: ["#EEE4DA", "#776E65"],
+  4: ["#EDE0C8", "#776E65"],
+  8: ["#F2B179", "#F9F6F2"],
+  16: ["#F59563", "#F9F6F2"],
+  32: ["#F67C5F", "#F9F6F2"],
+  64: ["#F65E3B", "#F9F6F2"],
+  128: ["#EDCF72", "#F9F6F2"],
+  256: ["#EDCC61", "#F9F6F2"],
+  512: ["#EDC850", "#F9F6F2"],
+  1024: ["#EDC53F", "#F9F6F2"],
+  2048: ["#EDC22E", "#F9F6F2"],
 };
-const TILE_HIGH: [string, string] = ["#1b1b1b", "#ffffff"];
-const FONT = 'Arial, "Helvetica Neue", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif';
+const SUPER: [string, string] = ["#3C3A32", "#F9F6F2"];
 
-function tileColor(value: number) {
-  return TILE_COLORS[value] ?? TILE_HIGH;
+const PAGE = "#FAF8EF";
+const INK = "#776E65";
+const BOARD = "#BBADA0";
+const CELL = "#CDC1B4";
+const BOX = "#BBADA0";
+const BOX_LABEL = "#EEE4DA";
+const BUTTON = "#8F7A66";
+const BUTTON_TEXT = "#F9F6F2";
+const OVERLAY_LOST = "rgba(238, 228, 218, 0.73)";
+const OVERLAY_WON = "rgba(237, 194, 46, 0.5)";
+const TILE_FONT = '"Clear Sans", "Helvetica Neue", Arial, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif';
+
+function swatch(value: number): [string, string] {
+  return PALETTE[value] ?? SUPER;
 }
 
 type Dir = "up" | "down" | "left" | "right";
@@ -153,24 +154,26 @@ function slide(tiles: Tile[], dir: Dir, moveNo: number) {
 const messages = {
   en: {
     ...common.en,
-    title: "2048",
-    hint: "Arrow keys or WASD. On a touch screen, swipe.",
-    wonTitle: "You made 2048",
+    play: "Play",
+    howTo: "Join the numbers and get to the 2048 tile!",
+    keysHint: "Arrow keys or WASD",
+    swipeHint: "Swipe to move the tiles",
+    wonTitle: "You win!",
     keepPlaying: "Keep going",
-    lostTitle: "No moves left",
-    finalScore: (n: string) => `Score ${n}`,
-    newBest: "That is a new best.",
+    lostTitle: "Game over!",
+    newBest: "New best!",
     board: "Game board",
   },
   ko: {
     ...common.ko,
-    title: "2048",
-    hint: "방향키나 WASD로 움직입니다. 터치 화면에서는 손가락으로 밀어 주세요.",
-    wonTitle: "2048을 만들었습니다",
-    keepPlaying: "이어서 하기",
-    lostTitle: "더 움직일 수 없습니다",
-    finalScore: (n: string) => `점수 ${n}`,
-    newBest: "최고 기록입니다.",
+    play: "시작",
+    howTo: "같은 숫자를 합쳐 2048 타일을 만드세요.",
+    keysHint: "방향키 또는 WASD",
+    swipeHint: "화면을 밀어서 타일을 움직이세요",
+    wonTitle: "2048 달성!",
+    keepPlaying: "계속하기",
+    lostTitle: "게임 오버",
+    newBest: "최고 기록!",
     board: "게임 판",
   },
 };
@@ -202,28 +205,30 @@ function useSize() {
   return [setEl, size] as const;
 }
 
-function TileFace({ value, size }: { value: number; size: number }) {
-  const [bg, fg] = tileColor(value);
-  const text = String(value);
+/** One flat tile, shared by the board and the title. */
+function Block({ value, size, label }: { value: number; size: number; label?: string }) {
+  const [bg, fg] = swatch(value);
+  const text = label ?? String(value);
   const len = text.length;
-  const fontScale = len <= 2 ? 0.46 : len === 3 ? 0.38 : len === 4 ? 0.3 : 0.24;
+  const fontScale = len <= 2 ? 0.5 : len === 3 ? 0.42 : len === 4 ? 0.33 : 0.26;
+  const glow = value >= 128 && value <= TARGET ? Math.min(1, (Math.log2(value) - 6) / 5) : 0;
   return (
     <div
       className="flex items-center justify-center select-none"
       style={{
         width: size,
         height: size,
-        borderRadius: 3,
+        borderRadius: Math.max(3, size * 0.05),
         background: bg,
-        color: fg,
-        fontFamily: FONT,
-        fontWeight: 700,
-        fontSize: size * fontScale,
-        lineHeight: 1,
-        letterSpacing: len >= 4 ? "-0.03em" : undefined,
+        boxShadow: glow > 0 ? `0 0 ${size * 0.3}px ${size * 0.08}px rgba(243, 215, 116, ${0.24 * glow}), inset 0 0 0 1px rgba(255,255,255,${0.14 * glow})` : undefined,
       }}
     >
-      <span className="tabular-nums">{text}</span>
+      <span
+        className="tabular-nums leading-none"
+        style={{ fontFamily: TILE_FONT, fontWeight: 700, fontSize: size * fontScale, color: fg, letterSpacing: len >= 4 ? "-0.03em" : undefined }}
+      >
+        {text}
+      </span>
     </div>
   );
 }
@@ -247,10 +252,10 @@ function BoardTile({
 
   useEffect(() => {
     if (reduce || !inner.current?.animate) return;
-    inner.current.animate([{ opacity: 0, transform: "scale(0.6)" }, { opacity: 1, transform: "scale(1)" }], {
-      duration: 120,
+    inner.current.animate([{ transform: "scale(0)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }], {
+      duration: 200,
       delay: tile.popDelay,
-      easing: "ease-out",
+      easing: "ease",
       fill: "backwards",
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -258,10 +263,10 @@ function BoardTile({
 
   useEffect(() => {
     if (reduce || tile.mergedAt < 0 || !inner.current?.animate) return;
-    inner.current.animate([{ transform: "scale(1)" }, { transform: "scale(1.08)", offset: 0.5 }, { transform: "scale(1)" }], {
-      duration: 140,
+    inner.current.animate([{ transform: "scale(1)" }, { transform: "scale(1.2)", offset: 0.5 }, { transform: "scale(1)" }], {
+      duration: 200,
       delay: SLIDE_MS,
-      easing: "ease-out",
+      easing: "ease",
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tile.mergedAt]);
@@ -278,29 +283,154 @@ function BoardTile({
       }}
     >
       <div ref={inner} style={{ width: cell, height: cell }}>
-        <TileFace value={shownValue} size={cell} />
+        <Block value={shownValue} size={cell} />
       </div>
     </div>
   );
 }
 
-function TextButton({ children, onClick, primary, autoFocus }: { children: string; onClick: () => void; primary?: boolean; autoFocus?: boolean }) {
+/** "+N" that rises out of the score box after a merge. */
+function FloatUp({ amount, reduce }: { amount: number; reduce: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!ref.current?.animate) return;
+    ref.current.animate(
+      reduce
+        ? [{ opacity: 1 }, { opacity: 0 }]
+        : [
+            { transform: "translate(-50%, 0)", opacity: 1 },
+            { transform: "translate(-50%, -48px)", opacity: 0 },
+          ],
+      { duration: 600, easing: "ease-in", fill: "forwards" },
+    );
+  }, [reduce]);
+  return (
+    <div
+      ref={ref}
+      className="absolute left-1/2 top-1/2 pointer-events-none whitespace-nowrap tabular-nums z-10"
+      style={{ transform: "translate(-50%, 0)", fontFamily: TILE_FONT, fontWeight: 700, fontSize: 22, color: "rgba(119, 110, 101, 0.9)" }}
+    >
+      +{amount}
+    </div>
+  );
+}
+
+function Burst({ reduce }: { reduce: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (reduce || !ref.current) return;
+    const colors = [2048, 1024, 512, 64, 32, 16, 8].map((v) => PALETTE[v][0]);
+    const kids = Array.from(ref.current.children) as HTMLElement[];
+    kids.forEach((el, i) => {
+      const angle = (i / kids.length) * Math.PI * 2 + Math.random() * 0.3;
+      const dist = 120 + Math.random() * 120;
+      el.style.background = colors[i % colors.length];
+      el.animate?.(
+        [
+          { transform: "translate(-50%, -50%) rotate(0deg) scale(1)", opacity: 1 },
+          {
+            transform: `translate(calc(-50% + ${Math.cos(angle) * dist}px), calc(-50% + ${Math.sin(angle) * dist}px)) rotate(${
+              Math.random() * 540
+            }deg) scale(0.4)`,
+            opacity: 0,
+          },
+        ],
+        { duration: 900 + Math.random() * 500, easing: "cubic-bezier(.1,.7,.3,1)", fill: "forwards" },
+      );
+    });
+  }, [reduce]);
+  if (reduce) return null;
+  return (
+    <div ref={ref} aria-hidden="true" className="absolute inset-0 pointer-events-none z-30">
+      {Array.from({ length: 30 }).map((_, i) => (
+        <span
+          key={i}
+          className="absolute left-1/2 top-1/2"
+          style={{ width: 10, height: 10, borderRadius: 2, transform: "translate(-50%, -50%)", opacity: 0 }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Button({
+  children,
+  onClick,
+  big,
+  autoFocus,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  big?: boolean;
+  autoFocus?: boolean;
+}) {
+  const ref = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (autoFocus) ref.current?.focus({ preventScroll: true });
+  }, [autoFocus]);
   return (
     <button
+      ref={ref}
       type="button"
       onClick={onClick}
-      autoFocus={autoFocus}
-      className="h-9 px-4 text-sm font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 active:translate-y-px"
+      className="rounded-[3px] font-bold transition-[filter,transform] duration-100 hover:brightness-110 active:scale-[0.97] focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 whitespace-nowrap"
       style={{
-        fontFamily: FONT,
-        borderRadius: 3,
-        background: primary ? BUTTON : "transparent",
-        color: primary ? BUTTON_TEXT : INK,
-        border: `1px solid ${BUTTON}`,
+        fontFamily: TILE_FONT,
+        fontSize: big ? 22 : 16,
+        padding: big ? "12px 44px" : "0 16px",
+        height: big ? undefined : "100%",
+        minHeight: 40,
+        background: BUTTON,
+        color: BUTTON_TEXT,
+        outlineColor: INK,
       }}
     >
       {children}
     </button>
+  );
+}
+
+function ScoreBox({ label, children, extra }: { label: string; children: ReactNode; extra?: ReactNode }) {
+  return (
+    <div className="relative flex-1 min-w-0 flex flex-col items-center justify-center rounded-[3px] px-3 py-1.5" style={{ background: BOX }}>
+      <span className="text-[12px] font-bold uppercase tracking-wide leading-tight" style={{ color: BOX_LABEL, fontFamily: TILE_FONT }}>
+        {label}
+      </span>
+      <span className="tabular-nums leading-tight" style={{ fontFamily: TILE_FONT, fontWeight: 700, fontSize: 24, color: "#FFFFFF" }}>
+        {children}
+      </span>
+      {extra}
+    </div>
+  );
+}
+
+function Logo({ size, reduce, bob }: { size: number; reduce: boolean; bob?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!bob || reduce || !ref.current) return;
+    const anims = (Array.from(ref.current.children) as HTMLElement[]).map((el, i) =>
+      el.animate?.([{ translate: "0 0" }, { translate: `0 -${Math.round(size * 0.08)}px` }], {
+        duration: 1300,
+        delay: i * 160,
+        direction: "alternate",
+        iterations: Infinity,
+        easing: "ease-in-out",
+      }),
+    );
+    return () => anims.forEach((a) => a?.cancel());
+  }, [bob, reduce, size]);
+  const digits: [string, number][] = [
+    ["2", 2],
+    ["0", 8],
+    ["4", 64],
+    ["8", 2048],
+  ];
+  return (
+    <div ref={ref} className="flex items-end" style={{ gap: size * 0.1 }} aria-label="2048" role="img">
+      {digits.map(([d, v]) => (
+        <Block key={d} value={v} size={size} label={d} />
+      ))}
+    </div>
   );
 }
 
@@ -317,16 +447,17 @@ export default function Game2048() {
   const [score, setScore] = useState(0);
   const [moveNo, setMoveNo] = useState(0);
   const [settled, setSettled] = useState(0);
-  const [gain, setGain] = useState<{ id: number; amount: number } | null>(null);
+  const [floats, setFloats] = useState<{ id: number; amount: number }[]>([]);
   const [overlayReady, setOverlayReady] = useState(false);
   const [newBest, setNewBest] = useState(false);
   const { best, record } = useBestScore(BEST_KEY);
   usePhaseEvents(phase, { score });
 
   // Authoritative game state, updated synchronously so fast key repeats never act on a stale board.
-  const game = useRef({ tiles: [] as Tile[], score: 0, phase: "idle" as Phase, keepPlaying: false, moveNo: 0, bestAtStart: 0 });
+  const game = useRef({ tiles: [] as Tile[], score: 0, phase: "idle" as Phase, keepPlaying: false, moveNo: 0, reached: 0, bestAtStart: 0 });
   const nextId = useRef(1);
   const timers = useRef<number[]>([]);
+  const boardRef = useRef<HTMLDivElement>(null);
   const later = (fn: () => void, ms: number) => {
     timers.current.push(window.setTimeout(fn, ms));
   };
@@ -344,7 +475,7 @@ export default function Game2048() {
         row: cell.row,
         col: cell.col,
         bornAt: moveId,
-        popDelay: delay,
+        popDelay: delay + i * 60,
         mergedAt: -1,
       });
     }
@@ -359,30 +490,26 @@ export default function Game2048() {
   const startGame = useCallback(() => {
     timers.current.forEach((t) => clearTimeout(t));
     timers.current = [];
-    const fresh = spawn([], 2, 0, 0);
-    game.current = { tiles: fresh, score: 0, phase: "playing", keepPlaying: false, moveNo: 0, bestAtStart: best ?? 0 };
+    const fresh = spawn([], 2, 0, 80);
+    game.current = {
+      tiles: fresh,
+      score: 0,
+      phase: "playing",
+      keepPlaying: false,
+      moveNo: 0,
+      reached: 0,
+      bestAtStart: best ?? 0,
+    };
     setTiles(fresh);
     setGhosts([]);
     setScore(0);
     setMoveNo(0);
     setSettled(0);
-    setGain(null);
+    setFloats([]);
     setOverlayReady(false);
     setNewBest(false);
     setPhase("playing");
   }, [spawn, best]);
-
-  // Like most 2048 games, the board is ready the moment the page opens: no title screen.
-  const started = useRef(false);
-  useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    startGame();
-  }, [startGame]);
-  // The saved best loads after the first board is dealt.
-  useEffect(() => {
-    if (best !== null && game.current.moveNo === 0) game.current.bestAtStart = best;
-  }, [best]);
 
   const move = useCallback(
     (dir: Dir) => {
@@ -390,7 +517,14 @@ export default function Game2048() {
       if (g.phase !== "playing") return;
       const id = g.moveNo + 1;
       const { tiles: moved, ghosts: gone, gained, merges, changed } = slide(g.tiles, dir, id);
-      if (!changed) return;
+      if (!changed) {
+        if (!reduce && boardRef.current?.animate) {
+          const dx = dir === "left" ? -4 : dir === "right" ? 4 : 0;
+          const dy = dir === "up" ? -4 : dir === "down" ? 4 : 0;
+          boardRef.current.animate([{ translate: "0 0" }, { translate: `${dx}px ${dy}px` }, { translate: "0 0" }], { duration: 140, easing: "ease-out" });
+        }
+        return;
+      }
       const slideMs = reduce ? 0 : SLIDE_MS;
       const withNew = spawn(moved, 1, id, slideMs);
       g.tiles = withNew;
@@ -408,22 +542,32 @@ export default function Game2048() {
       if (gained > 0) {
         record(g.score);
         if (g.score > g.bestAtStart && g.bestAtStart > 0) setNewBest(true);
-        setGain({ id, amount: gained });
+        setFloats((f) => [...f.slice(-4), { id, amount: gained }]);
+        later(() => setFloats((f) => f.filter((x) => x.id !== id)), 850);
       }
 
       const highest = withNew.reduce((mx, t) => Math.max(mx, t.value), 0);
       if (!g.keepPlaying && highest >= TARGET) {
         play("win");
         setGamePhase("won");
-        later(() => setOverlayReady(true), slideMs + 250);
+        later(() => setOverlayReady(true), slideMs + 350);
         return;
       }
       if (merges > 0) play("place");
+      g.reached = Math.max(g.reached, highest);
 
       if (!hasMoves(withNew)) {
         setGamePhase("lost");
-        later(() => play("lose"), slideMs + 150);
-        later(() => setOverlayReady(true), slideMs + 500);
+        later(() => {
+          play("lose");
+          if (!reduce && boardRef.current?.animate) {
+            boardRef.current.animate(
+              [{ translate: "0 0" }, { translate: "-8px 0" }, { translate: "8px 0" }, { translate: "-5px 0" }, { translate: "3px 0" }, { translate: "0 0" }],
+              { duration: 420, easing: "ease-out" },
+            );
+          }
+        }, slideMs + 150);
+        later(() => setOverlayReady(true), slideMs + 750);
       }
     },
     [spawn, record, play, reduce],
@@ -431,14 +575,11 @@ export default function Game2048() {
 
   const keepGoing = () => {
     game.current.keepPlaying = true;
+    game.current.reached = Math.max(game.current.reached, TARGET);
     setOverlayReady(false);
     setGamePhase("playing");
   };
   const playAgain = () => afterBreak(startGame);
-  const newGame = () => {
-    if (game.current.phase === "playing" && game.current.moveNo > 0) afterBreak(startGame);
-    else startGame();
-  };
 
   useEffect(() => {
     const keyMap: Record<string, Dir> = {
@@ -491,100 +632,184 @@ export default function Game2048() {
   const H = area.h;
   const fmt = (n: number) => n.toLocaleString(lang);
 
-  // One column: title, a score line with the new game button, the board, and a one-line hint.
-  // The top 56px stay clear on the right for the portal's mute and fullscreen buttons.
-  const HEAD = 56;
-  const SCORE_ROW = 44;
-  const FOOT = 34;
-  const boardSize = Math.max(200, Math.floor(Math.min(W - 24, H - HEAD - SCORE_ROW - FOOT - 16, 520)));
-  const pad = Math.round(boardSize * 0.025);
-  const gap = Math.round(boardSize * 0.025);
-  const cell = (boardSize - pad * 2 - gap * (SIZE - 1)) / SIZE;
-  const at = (i: number) => pad + i * (cell + gap);
-  const shownBest = best !== null ? Math.max(best, score) : score;
-  const ended = (phase === "won" || phase === "lost") && overlayReady;
-
-  return (
-    <div ref={rootRef} className="h-full w-full overflow-hidden" style={{ background: PAGE, color: INK, fontFamily: FONT }}>
-      {W > 0 && (
-        <div className="mx-auto flex h-full flex-col px-3" style={{ width: boardSize + 24 }}>
-          <div className="flex shrink-0 items-end" style={{ height: HEAD, paddingBottom: 4 }}>
-            <h1 className="text-[34px] font-bold leading-none tracking-tight">{m.title}</h1>
-          </div>
-          <div className="flex shrink-0 items-center justify-between gap-3 border-t" style={{ height: SCORE_ROW, borderColor: LINE }}>
-            <p className="text-sm tabular-nums" aria-live="polite">
-              <span style={{ color: INK_DIM }}>{m.score}</span> <b className="text-base">{fmt(score)}</b>
-              <span aria-hidden="true" className="inline-block w-12 pl-1.5 text-xs font-bold" style={{ color: INK_DIM }}>
-                {gain && !reduce && (
-                  <span key={gain.id} className="animate-fade-in">
-                    +{gain.amount}
-                  </span>
-                )}
-              </span>
-              <span style={{ color: INK_DIM }}>{m.best}</span> <b className="text-base">{fmt(shownBest)}</b>
+  if (phase === "idle") {
+    const logo = Math.max(48, Math.min(96, W * 0.17, H * 0.15));
+    return (
+      <div ref={rootRef} className="h-full w-full flex flex-col items-center justify-center px-4 py-6 text-center" style={{ background: PAGE, color: INK }}>
+        <div className="flex flex-col items-center" style={{ gap: Math.min(28, H * 0.045) }}>
+          <Logo size={logo} reduce={reduce} bob />
+          <p className="text-base max-w-xs" style={{ fontFamily: TILE_FONT, wordBreak: "keep-all" }}>
+            {m.howTo}
+          </p>
+          <Button onClick={startGame} big autoFocus>
+            {m.play}
+          </Button>
+          {best !== null && (
+            <p className="text-sm font-bold uppercase tracking-wide" style={{ fontFamily: TILE_FONT }}>
+              {m.best} <span className="tabular-nums">{fmt(best)}</span>
             </p>
-            <TextButton onClick={newGame} primary>
-              {m.newGame}
-            </TextButton>
-          </div>
-          <div
-            role="group"
-            aria-label={m.board}
-            className="relative shrink-0 select-none touch-none"
-            onPointerDown={onPointerDown}
-            onPointerUp={onPointerUp}
-            onPointerLeave={() => (drag.current = null)}
-            style={{ width: boardSize, height: boardSize, borderRadius: 4, background: BOARD }}
-          >
-            {Array.from({ length: SIZE * SIZE }).map((_, i) => (
-              <div
-                key={`cell-${i}`}
-                className="absolute"
-                style={{ left: at(i % SIZE), top: at(Math.floor(i / SIZE)), width: cell, height: cell, borderRadius: 3, background: CELL_EMPTY }}
-              />
-            ))}
-            {[...ghosts, ...tiles].map((t) => (
-              <BoardTile
-                key={t.id}
-                tile={t}
-                cell={cell}
-                x={at(t.col)}
-                y={at(t.row)}
-                reduce={reduce}
-                shownValue={!t.ghost && t.mergedAt === moveNo && settled < moveNo ? t.value / 2 : t.value}
-              />
-            ))}
-
-            {ended && (
-              <div
-                className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 text-center animate-fade-in"
-                style={{ background: "rgba(244, 243, 239, 0.74)", borderRadius: 4, padding: 16 }}
-              >
-                <h2 className="text-2xl font-bold">{phase === "won" ? m.wonTitle : m.lostTitle}</h2>
-                <p className="text-base tabular-nums">{m.finalScore(fmt(score))}</p>
-                {newBest && <p className="text-sm" style={{ color: INK_DIM }}>{m.newBest}</p>}
-                <div className="mt-1 flex gap-2">
-                  {phase === "won" ? (
-                    <>
-                      <TextButton onClick={keepGoing} primary autoFocus>
-                        {m.keepPlaying}
-                      </TextButton>
-                      <TextButton onClick={playAgain}>{m.newGame}</TextButton>
-                    </>
-                  ) : (
-                    <TextButton onClick={playAgain} primary autoFocus>
-                      {m.playAgain}
-                    </TextButton>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-          <p className="shrink-0 pt-2 text-xs leading-snug" style={{ color: INK_DIM, minHeight: FOOT }}>
-            {m.hint}
+          )}
+          <p className="text-sm opacity-80" style={{ fontFamily: TILE_FONT }}>
+            {m.keysHint}
+            <br />
+            {m.swipeHint}
           </p>
         </div>
+      </div>
+    );
+  }
+
+  // Layout: score and buttons beside the board on wide stages, above it on tall ones.
+  // The top 56px stay clear on the right for the portal's mute and fullscreen buttons.
+  const side = W >= 560 && W > H * 1.15;
+  const TOP = 56;
+  const panelW = side ? Math.max(190, Math.min(240, W * 0.28)) : 0;
+  const boardSize = Math.max(
+    200,
+    Math.floor(side ? Math.min(H - TOP - 16, W - panelW - 24 - 32, 640) : Math.min(W - 24, H - TOP - 52 - 40 - 36 - 28 - 12, 560)),
+  );
+  const pad = boardSize * 0.03;
+  const gap = boardSize * 0.03;
+  const cell = (boardSize - pad * 2 - gap * (SIZE - 1)) / SIZE;
+  const at = (i: number) => pad + i * (cell + gap);
+  const radius = Math.max(4, boardSize * 0.015);
+
+  const scoreBox = (
+    <ScoreBox label={m.score} extra={floats.map((f) => <FloatUp key={f.id} amount={f.amount} reduce={reduce} />)}>
+      {fmt(score)}
+    </ScoreBox>
+  );
+  const bestBox = <ScoreBox label={m.best}>{fmt(Math.max(best ?? 0, score))}</ScoreBox>;
+  const title = (size: number) => (
+    <h2 className="leading-none" style={{ fontFamily: TILE_FONT, fontWeight: 700, fontSize: size, color: INK }}>
+      2048
+    </h2>
+  );
+
+  const board = (
+    <div
+      ref={boardRef}
+      role="group"
+      aria-label={m.board}
+      className="relative select-none touch-none shrink-0"
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      onPointerLeave={() => (drag.current = null)}
+      style={{ width: boardSize, height: boardSize, borderRadius: radius * 1.5, background: BOARD }}
+    >
+      {Array.from({ length: SIZE * SIZE }).map((_, i) => (
+        <div
+          key={`cell-${i}`}
+          className="absolute"
+          style={{ left: at(i % SIZE), top: at(Math.floor(i / SIZE)), width: cell, height: cell, borderRadius: Math.max(3, cell * 0.05), background: CELL }}
+        />
+      ))}
+      {[...ghosts, ...tiles].map((t) => (
+        <BoardTile
+          key={t.id}
+          tile={t}
+          cell={cell}
+          x={at(t.col)}
+          y={at(t.row)}
+          reduce={reduce}
+          shownValue={!t.ghost && t.mergedAt === moveNo && settled < moveNo ? t.value / 2 : t.value}
+        />
+      ))}
+
+      {(phase === "won" || phase === "lost") && overlayReady && (
+        <div
+          className="absolute inset-0 z-40 flex flex-col items-center justify-center text-center animate-fade-in"
+          style={{
+            background: phase === "won" ? OVERLAY_WON : OVERLAY_LOST,
+            borderRadius: radius * 1.5,
+            gap: boardSize * 0.04,
+            padding: boardSize * 0.06,
+          }}
+        >
+          {phase === "won" && <Burst reduce={reduce} />}
+          <h2
+            className="leading-tight"
+            style={{ fontFamily: TILE_FONT, fontWeight: 700, fontSize: Math.max(30, boardSize * 0.12), color: phase === "won" ? BUTTON_TEXT : INK }}
+          >
+            {phase === "won" ? m.wonTitle : m.lostTitle}
+          </h2>
+          <p className="tabular-nums font-bold" style={{ fontFamily: TILE_FONT, fontSize: Math.max(16, boardSize * 0.05), color: phase === "won" ? BUTTON_TEXT : INK }}>
+            {m.score} {fmt(score)}
+            {newBest && <span className="block text-[0.8em]">{m.newBest}</span>}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {phase === "won" ? (
+              <>
+                <Button onClick={keepGoing} big autoFocus>
+                  {m.keepPlaying}
+                </Button>
+                <Button onClick={playAgain} big>
+                  {m.newGame}
+                </Button>
+              </>
+            ) : (
+              <Button onClick={playAgain} big autoFocus>
+                {m.playAgain}
+              </Button>
+            )}
+          </div>
+        </div>
       )}
+    </div>
+  );
+
+  if (side) {
+    return (
+      <div
+        ref={rootRef}
+        className="h-full w-full flex items-start justify-center gap-6 px-4 overflow-hidden"
+        style={{ background: PAGE, paddingTop: Math.max(TOP, (H - boardSize) / 2), paddingBottom: 16 }}
+      >
+        <div className="flex flex-col gap-3 shrink-0" style={{ width: panelW, minHeight: boardSize }}>
+          {title(Math.min(64, panelW / 3.4))}
+          <div className="flex w-full gap-2" style={{ height: 56 }}>
+            {scoreBox}
+            {bestBox}
+          </div>
+          <div style={{ height: 40 }}>
+            <Button onClick={startGame}>{m.newGame}</Button>
+          </div>
+          <div className="flex-1" />
+          <p className="text-sm" style={{ fontFamily: TILE_FONT, color: INK }}>
+            {m.howTo}
+            <br />
+            <span className="opacity-80">{m.keysHint}</span>
+          </p>
+        </div>
+        {board}
+      </div>
+    );
+  }
+
+  // Tall stages: the usual 2048 header, title on the left and score boxes on the right, then a line with the goal and New game.
+  return (
+    <div ref={rootRef} className="h-full w-full flex flex-col items-center justify-center overflow-hidden px-3 pb-3" style={{ background: PAGE, paddingTop: TOP }}>
+      <div className="flex flex-col gap-3" style={{ width: boardSize }}>
+        <div className="flex items-center justify-between gap-3">
+          {title(Math.min(56, boardSize * 0.15))}
+          <div className="flex gap-1.5" style={{ height: 52, width: Math.min(200, boardSize * 0.52) }}>
+            {scoreBox}
+            {bestBox}
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-3" style={{ minHeight: 40 }}>
+          <p className="text-sm leading-snug" style={{ color: INK, fontFamily: TILE_FONT, wordBreak: "keep-all" }}>
+            {m.howTo}
+          </p>
+          <div className="shrink-0" style={{ height: 40 }}>
+            <Button onClick={startGame}>{m.newGame}</Button>
+          </div>
+        </div>
+        {board}
+        <p className="text-xs text-center" style={{ minHeight: 16, color: INK, fontFamily: TILE_FONT }}>
+          {m.swipeHint}
+        </p>
+      </div>
     </div>
   );
 }

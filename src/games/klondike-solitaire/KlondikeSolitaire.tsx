@@ -28,32 +28,31 @@ const IS_RED: Record<Suit, boolean> = {
 const RANK_LABEL = ["", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
 
 /*
- * A plain green card table, white cards and blue backs, as in desktop solitaire games.
+ * Green card table, white cards, blue backs: the look most solitaire games share.
  * The table is drawn with fixed colors (like canvas constants) so it reads the same on the site and on portals.
  */
 const C = {
-  felt: "#156b3a",
-  bar: "#0e4a28",
-  barLine: "#0a3a1f",
-  court: "#d9a521",
-  courtDeep: "#7a5a10",
+  felt: "#16803f",
+  feltLight: "#1f9a4f",
+  feltDeep: "#0b5a2a",
+  /* Slot marks, icons and labels on the felt. */
+  brass: "#ffffff",
   ivory: "#ffffff",
-  ivoryEdge: "#c9c9c9",
-  red: "#c8102e",
-  ink: "#111111",
-  back: "#1f4e9c",
-  backLine: "#ffffff",
-  mark: "#ffe14d",
+  ivoryEdge: "#c9cdd3",
+  red: "#d0152b",
+  ink: "#16181d",
+  back: "#1f5bc4",
+  backDeep: "#163f8c",
+  glow: "#ffd23f",
+  panel: "rgba(8, 40, 22, 0.94)",
   slot: "rgba(0, 0, 0, 0.12)",
   slotLine: "rgba(255, 255, 255, 0.35)",
-  text: "#ffffff",
-  textDim: "rgba(255, 255, 255, 0.78)",
-  dialog: "#f0f0f0",
-  dialogLine: "#9a9a9a",
+  button: "#ffd23f",
 };
 const SERIF = "Georgia, 'Times New Roman', 'Noto Serif', serif";
-const UI_FONT = "'Segoe UI', Tahoma, Arial, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif";
-const FELT_BG = C.felt;
+const NOISE =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")";
+const FELT_BG = `${NOISE}, radial-gradient(ellipse 85% 75% at 50% 38%, ${C.feltLight} 0%, ${C.felt} 48%, ${C.feltDeep} 100%)`;
 
 const MOVE_MS = 280;
 const EASE = "cubic-bezier(0.2, 0.8, 0.25, 1)";
@@ -302,20 +301,18 @@ interface Layout {
 }
 
 function computeLayout(w: number, h: number, portal: boolean): Layout {
-  const actionsInHud = true;
-  // Top: a menu bar like desktop solitaire. In portals it is taller so the mute and fullscreen buttons fit on its right.
-  const hudH = portal ? 52 : 38;
-  // Bottom: a status bar with messages on the left and score, moves and time on the right.
-  const barH = 30;
+  const actionsInHud = w >= 700;
+  const hudH = portal ? 58 : 50;
+  const barH = actionsInHud ? 0 : 66;
   const pad = w < 500 ? 6 : 16;
   const availW = w - pad * 2;
-  const availH = h - hudH - barH - 14;
+  const availH = h - hudH - barH - 10;
   const cw = Math.max(30, Math.floor(Math.min(availW / 7.5, availH / (1.4 * 3.9), 150)));
   const ch = Math.round(cw * 1.4);
   const gap = Math.max(3, Math.min(Math.floor((availW - 7 * cw) / 6), Math.round(cw * 0.16)));
   const boardW = cw * 7 + gap * 6;
   const x0 = Math.round((w - boardW) / 2);
-  const topY = hudH + 8;
+  const topY = hudH + 2;
   const tabY = topY + ch + Math.round(ch * 0.13);
   return {
     w,
@@ -329,8 +326,8 @@ function computeLayout(w: number, h: number, portal: boolean): Layout {
     bottom: h - barH - 8,
     hudH,
     barH,
-    padR: portal ? 104 : pad,
-    padL: pad,
+    padR: portal ? 116 : pad,
+    padL: Math.max(pad, x0),
     actionsInHud,
     compact: cw < 72,
   };
@@ -476,10 +473,14 @@ function ArtDefs() {
             {SUIT_PATHS[s]}
           </symbol>
         ))}
-        <pattern id="kl-lattice" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <rect width="8" height="8" fill={C.back} />
-          <path d="M0 0H8M0 0V8" stroke={C.backLine} strokeOpacity="0.45" strokeWidth="1" />
+        <pattern id="kl-lattice" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="10" height="10" fill={C.back} />
+          <path d="M0 0H10M0 0V10" stroke="#ffffff" strokeOpacity="0.35" strokeWidth="1.2" />
         </pattern>
+        <linearGradient id="kl-face-sheen" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffffff" />
+          <stop offset="100%" stopColor={C.ivory} />
+        </linearGradient>
       </defs>
     </svg>
   );
@@ -510,45 +511,6 @@ const PIPS: Record<number, [number, number][]> = {
   10: [[33, 42], [67, 42], [50, 52], [33, 61], [67, 61], [33, 79], [67, 79], [50, 88], [33, 98], [67, 98]],
 };
 
-/** Court emblems drawn in a 40 x 30 box: a crown for kings, a tiara for queens, a plumed cap for jacks. */
-function Emblem({ rank, color }: { rank: number; color: string }) {
-  const stroke = { stroke: C.courtDeep, strokeWidth: 1.2, strokeLinejoin: "round" as const };
-  if (rank === 13) {
-    return (
-      <g>
-        <path d="M3 25 L5 7 L13 16 L20 3 L27 16 L35 7 L37 25 Z" fill={color} {...stroke} />
-        <rect x="2.5" y="23" width="35" height="5.5" rx="1.2" fill={C.court} {...stroke} />
-        <circle cx="5" cy="6" r="2.3" fill={C.court} />
-        <circle cx="20" cy="2.6" r="2.5" fill={C.court} />
-        <circle cx="35" cy="6" r="2.3" fill={C.court} />
-        <circle cx="12" cy="25.7" r="1.2" fill={color} />
-        <circle cx="20" cy="25.7" r="1.2" fill={color} />
-        <circle cx="28" cy="25.7" r="1.2" fill={color} />
-      </g>
-    );
-  }
-  if (rank === 12) {
-    return (
-      <g>
-        <path d="M4 25 C4 14 10 9 14 16 C15.5 6 24.5 6 26 16 C30 9 36 14 36 25 Z" fill={color} {...stroke} />
-        <rect x="3.5" y="23" width="33" height="5.5" rx="2.7" fill={C.court} {...stroke} />
-        <circle cx="20" cy="4.2" r="3" fill={C.court} />
-        <circle cx="10" cy="12" r="1.7" fill={C.court} />
-        <circle cx="30" cy="12" r="1.7" fill={C.court} />
-        <path d="M20 14 l2.5 4 -2.5 4 -2.5 -4Z" fill={C.court} />
-      </g>
-    );
-  }
-  return (
-    <g>
-      <path d="M23 13 C24 4 32 0 39 1.5 C33.5 4 30 8.5 28 14 Z" fill={C.court} {...stroke} />
-      <path d="M5 25 C5 16 11 12 20 12 C29 12 35 16 35 25 Z" fill={color} {...stroke} />
-      <rect x="3" y="23" width="34" height="5.5" rx="1.2" fill={C.court} {...stroke} />
-      <path d="M10 25.7 h20" stroke={color} strokeWidth="1.4" strokeDasharray="2 2" />
-    </g>
-  );
-}
-
 const CardFace = memo(function CardFace({ suit, rank, compact }: { suit: Suit; rank: number; compact: boolean }) {
   const color = IS_RED[suit] ? C.red : C.ink;
   const label = RANK_LABEL[rank];
@@ -556,7 +518,7 @@ const CardFace = memo(function CardFace({ suit, rank, compact }: { suit: Suit; r
   const tint = IS_RED[suit] ? "rgba(192,38,58,0.07)" : "rgba(26,33,48,0.06)";
   return (
     <svg viewBox="0 0 100 140" width="100%" height="100%" aria-hidden="true" style={{ display: "block" }}>
-      <rect x="0.8" y="0.8" width="98.4" height="138.4" rx="7" fill={C.ivory} stroke={C.ivoryEdge} strokeWidth="1.6" />
+      <rect x="0.8" y="0.8" width="98.4" height="138.4" rx="8" fill="url(#kl-face-sheen)" stroke={C.ivoryEdge} strokeWidth="1.6" />
       <g fill={color}>
         {compact ? (
           <>
@@ -565,9 +527,9 @@ const CardFace = memo(function CardFace({ suit, rank, compact }: { suit: Suit; r
             </text>
             <SuitUse suit={suit} x={78} y={20} size={30} />
             {isCourt ? (
-              <g transform="translate(18 64) scale(1.6)">
-                <Emblem rank={rank} color={color} />
-              </g>
+              <text x="50" y="118" textAnchor="middle" fontFamily={SERIF} fontWeight="700" fontSize="62">
+                {label}
+              </text>
             ) : (
               <SuitUse suit={suit} x={50} y={92} size={rank === 1 ? 64 : 54} />
             )}
@@ -584,24 +546,16 @@ const CardFace = memo(function CardFace({ suit, rank, compact }: { suit: Suit; r
               </text>
               <SuitUse suit={suit} x={83} y={16} size={19} />
             </g>
-            {rank === 1 && (
-              <>
-                <SuitUse suit={suit} x={50} y={70} size={40} />
-              </>
-            )}
+            {rank === 1 && <SuitUse suit={suit} x={50} y={70} size={40} />}
             {rank > 1 && rank <= 10 &&
               PIPS[rank].map(([x, y], i) => <SuitUse key={i} suit={suit} x={x} y={y} size={17} rot={y > 70} />)}
             {isCourt && (
               <>
-                <rect x="17" y="33" width="66" height="74" rx="1" fill={tint} stroke={color} strokeOpacity="0.6" strokeWidth="1" />
-                <g transform="translate(26 40) scale(1.2)">
-                  <Emblem rank={rank} color={color} />
-                </g>
-                <text x="50" y="98" textAnchor="middle" fontFamily={SERIF} fontWeight="700" fontSize="30" fontStyle="italic">
+                <rect x="17" y="33" width="66" height="74" rx="3" fill={tint} stroke={color} strokeOpacity="0.5" strokeWidth="1.2" />
+                <text x="50" y="84" textAnchor="middle" fontFamily={SERIF} fontWeight="700" fontSize="44">
                   {label}
                 </text>
-                <SuitUse suit={suit} x={29} y={88} size={10} />
-                <SuitUse suit={suit} x={71} y={88} size={10} />
+                <SuitUse suit={suit} x={50} y={95} size={13} />
               </>
             )}
           </>
@@ -614,9 +568,9 @@ const CardFace = memo(function CardFace({ suit, rank, compact }: { suit: Suit; r
 const CardBack = memo(function CardBack() {
   return (
     <svg viewBox="0 0 100 140" width="100%" height="100%" aria-hidden="true" style={{ display: "block" }}>
-      <rect x="0.8" y="0.8" width="98.4" height="138.4" rx="7" fill={C.ivory} stroke={C.ivoryEdge} strokeWidth="1.6" />
-      <rect x="7" y="7" width="86" height="126" rx="3" fill="url(#kl-lattice)" />
-      <rect x="7" y="7" width="86" height="126" rx="3" fill="none" stroke={C.back} strokeWidth="1.5" />
+      <rect x="0.8" y="0.8" width="98.4" height="138.4" rx="8" fill="#ffffff" stroke={C.ivoryEdge} strokeWidth="1.6" />
+      <rect x="7" y="7" width="86" height="126" rx="4" fill="url(#kl-lattice)" />
+      <rect x="7" y="7" width="86" height="126" rx="4" fill="none" stroke={C.backDeep} strokeWidth="1.5" />
     </svg>
   );
 });
@@ -627,6 +581,8 @@ type FlashKey =
   | "recycled" | "empty" | "sent" | "nothingHome" | "noUndo" | "undone" | "faceDown"
   | "kingOnly" | "badRun" | "wrongSuit" | "noFit" | "emptyColumn" | "nowhere";
 type Flash = { key: FlashKey; n?: number } | null;
+/* Rule errors are not spelled out on screen: the card returns to where it was, as in other solitaire games. Screen readers still hear them. */
+const SILENT = new Set<FlashKey>(["faceDown", "kingOnly", "badRun", "wrongSuit", "noFit", "emptyColumn", "nowhere", "sent", "undone"]);
 
 const messages = {
   en: {
@@ -650,14 +606,16 @@ const messages = {
       emptyColumn: () => "That column is empty.",
       nowhere: () => "That card has nowhere to go yet.",
     } as Record<FlashKey, (n: number) => string>,
+    title: "Klondike Solitaire",
+    play: "Play",
+    hint: "Move all cards to the four piles, Ace to King by suit. Double-tap a card to send it up.",
+    keys: "Keys: 1-7 columns, W waste, D draw, F send up, A collect, U undo, N new deal, Esc clears the selection.",
     cardsHome: "Cards home",
-    status: (score: number, moves: number, time: string) => `Score: ${score}   Moves: ${moves}   Time: ${time}`,
-    wonTitle: "You won",
-    won: "All four suits are complete.",
+    wonTitle: "You win!",
     lostTitle: "No moves left",
-    lost: "There are no legal moves on this deal. Take a move back or deal again.",
-    bestWin: (n: number) => `Best winning score: ${n}`,
-    newBestWin: "This is your best winning score.",
+    lost: "Undo a move or start a new deal.",
+    bestWin: (n: number) => `Best: ${n}`,
+    newBestWin: "New best!",
     recycle: "Recycle the pile",
     emptyPile: "Empty pile",
     foundation: (suit: string) => `${suit} foundation`,
@@ -666,7 +624,6 @@ const messages = {
     finish: "Finish",
     undo: "Undo",
     newDeal: "New deal",
-    close: "Close",
   },
   ko: {
     ...common.ko,
@@ -689,14 +646,16 @@ const messages = {
       emptyColumn: () => "빈 열입니다.",
       nowhere: () => "그 카드는 아직 놓을 곳이 없습니다.",
     } as Record<FlashKey, (n: number) => string>,
+    title: "클론다이크 솔리테어",
+    play: "시작",
+    hint: "모든 카드를 무늬별로 A부터 K까지 네 자리에 올리세요. 카드를 두 번 누르면 위로 올라갑니다.",
+    keys: "키: 1~7 열, W 버린 카드, D 넘기기, F 올리기, A 모두 올리기, U 되돌리기, N 새 판, Esc 선택 해제.",
     cardsHome: "올린 카드",
-    status: (score: number, moves: number, time: string) => `점수: ${score}   이동: ${moves}   시간: ${time}`,
-    wonTitle: "이겼습니다",
-    won: "네 무늬를 모두 올렸습니다.",
+    wonTitle: "승리!",
     lostTitle: "둘 곳이 없습니다",
-    lost: "이번 판에서는 더 움직일 수 있는 카드가 없습니다. 한 수 물리거나 새로 돌리세요.",
-    bestWin: (n: number) => `이긴 판 최고 점수: ${n}`,
-    newBestWin: "이긴 판 가운데 가장 높은 점수입니다.",
+    lost: "한 수 되돌리거나 새 판을 시작하세요.",
+    bestWin: (n: number) => `최고 기록: ${n}`,
+    newBestWin: "최고 기록!",
     recycle: "버린 카드 다시 쌓기",
     emptyPile: "빈 더미",
     foundation: (suit: string) => `${suit} 올리는 자리`,
@@ -705,41 +664,72 @@ const messages = {
     finish: "마무리",
     undo: "되돌리기",
     newDeal: "새 판",
-    close: "닫기",
   },
 };
 
 /* ── Small UI pieces ────────────────────────────────────────────────────── */
 
-/** A flat text button for the menu bar and the end-of-round dialog. */
-function MenuButton({ onClick, children, disabled }: { onClick: () => void; children: ReactNode; disabled?: boolean }) {
+function ActionIcon({ name }: { name: "undo" | "collect" | "deal" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
+      {name === "undo" && (
+        <>
+          <path d="M9 14 4 9l5-5" />
+          <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+        </>
+      )}
+      {name === "collect" && (
+        <>
+          <rect x="6" y="11" width="12" height="9" rx="1.5" />
+          <path d="M12 3v6M9 6l3-3 3 3" />
+        </>
+      )}
+      {name === "deal" && (
+        <>
+          <rect x="3" y="6" width="10" height="14" rx="1.5" />
+          <path d="M16 4.5l4 1.2-3.2 11" />
+          <path d="M13 3.5h3" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <div className="flex min-w-0 flex-col leading-none">
+      <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.75)" }}>
+        {label}
+      </span>
+      <span className="mt-1 text-lg font-bold tabular-nums" style={{ color: C.ivory }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function BrassButton({ onClick, children, big }: { onClick: () => void; children: ReactNode; big?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
-      className="h-8 whitespace-nowrap px-2.5 text-sm transition-colors hover:bg-white/15 disabled:opacity-45 disabled:hover:bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
-      style={{ borderRadius: 2, color: C.text, fontFamily: UI_FONT }}
+      className={`rounded-md font-bold transition-[filter,transform] duration-100 hover:brightness-105 active:translate-y-0.5 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/60 ${
+        big ? "px-12 py-3.5 text-xl" : "px-7 py-2.5 text-base"
+      }`}
+      style={{ background: C.button, color: C.ink, boxShadow: "0 4px 0 #b8941a" }}
     >
       {children}
     </button>
   );
 }
 
-function DialogButton({ onClick, children, primary }: { onClick: () => void; children: ReactNode; primary?: boolean }) {
+function GhostButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      autoFocus={primary}
-      className="h-8 min-w-[6rem] px-4 text-sm active:translate-y-px focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
-      style={{
-        borderRadius: 3,
-        fontFamily: UI_FONT,
-        color: primary ? "#ffffff" : C.ink,
-        background: primary ? C.bar : "#ffffff",
-        border: `1px solid ${primary ? C.bar : C.dialogLine}`,
-      }}
+      className="rounded-md border px-6 py-2.5 text-base font-semibold transition-colors duration-150 hover:bg-white/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40"
+      style={{ borderColor: C.slotLine, color: C.ivory }}
     >
       {children}
     </button>
@@ -867,11 +857,6 @@ export default function KlondikeSolitaire() {
     setDealStage(reduced ? 2 : 0);
     dealRef.current = reduced ? 2 : 0;
   }, [reduced]);
-
-  /* Desktop solitaire deals as soon as it opens, so there is no title screen. Wait for the first measure so the deal animates. */
-  useEffect(() => {
-    if (size.w > 0 && gameRef.current.phase === "idle") startGame();
-  }, [size.w, startGame]);
 
   /* Deal animation: stacked on the deck, then fly out one by one. */
   useEffect(() => {
@@ -1451,31 +1436,38 @@ export default function KlondikeSolitaire() {
     transform: `translate(${x}px, ${y}px)`,
     borderRadius: radius,
     background: C.slot,
-    boxShadow: `inset 0 0 0 1px ${C.slotLine}`,
+    boxShadow: `inset 0 0 0 1.5px ${C.slotLine}`,
   });
+
+  const actions = (
+    <>
+      <ActionButton icon="undo" label={m.undo} onClick={undo} disabled={!inRound || game.history.length === 0} inHud={L.actionsInHud} />
+      <ActionButton icon="collect" label={autoFinish ? m.finish : m.collect} onClick={autoCollect} disabled={!inRound} inHud={L.actionsInHud} glow={autoFinish} />
+      <ActionButton icon="deal" label={m.newDeal} onClick={startGame} disabled={phase !== "playing"} inHud={L.actionsInHud} />
+    </>
+  );
 
   return (
     <div
       ref={rootRef}
-      className="relative isolate h-full min-h-[360px] w-full select-none overflow-hidden"
-      style={{ background: FELT_BG, color: C.text, fontFamily: UI_FONT, WebkitTapHighlightColor: "transparent" }}
+      className="relative h-full min-h-[360px] w-full select-none overflow-hidden font-game"
+      style={{ background: FELT_BG, color: C.ivory, WebkitTapHighlightColor: "transparent" }}
     >
       <ArtDefs />
 
-      {ready && (
+      {ready && phase === "idle" && <Intro w={L.w} h={L.h} onPlay={startGame} />}
+
+      {ready && phase !== "idle" && (
         <>
-          {/* Menu bar */}
+          {/* HUD */}
           <div
-            className="absolute left-0 right-0 top-0 z-[3000] flex items-center gap-0.5 border-b"
-            style={{ height: L.hudH, paddingLeft: L.padL, paddingRight: L.padR, background: C.bar, borderColor: C.barLine }}
+            className="absolute left-0 right-0 top-0 z-[3000] flex items-center gap-5"
+            style={{ height: L.hudH, paddingLeft: L.padL, paddingRight: L.padR }}
           >
-            <MenuButton onClick={startGame}>{m.newDeal}</MenuButton>
-            <MenuButton onClick={undo} disabled={!inRound || game.history.length === 0}>
-              {m.undo}
-            </MenuButton>
-            <MenuButton onClick={autoCollect} disabled={!inRound}>
-              {autoFinish ? m.finish : m.collect}
-            </MenuButton>
+            <Stat label={m.score} value={score} />
+            <Stat label={m.moves} value={moves} />
+            <Stat label={m.time} value={formatTime(elapsed)} />
+            {L.actionsInHud && <div className="ml-auto flex items-center gap-2">{actions}</div>}
           </div>
 
           {/* Empty pile slots */}
@@ -1488,8 +1480,9 @@ export default function KlondikeSolitaire() {
               className="absolute left-0 top-0 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
               style={slotStyle(colX(L, 0), L.topY)}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke={C.slotLine} strokeWidth="2" style={{ width: L.cw * 0.4, height: L.cw * 0.4 }} aria-hidden="true">
-                <circle cx="12" cy="12" r="7" />
+              <svg viewBox="0 0 24 24" fill="none" stroke={C.brass} strokeWidth="1.75" strokeLinecap="round" style={{ width: L.cw * 0.42, height: L.cw * 0.42, opacity: 0.8 }} aria-hidden="true">
+                <path d="M3 12a9 9 0 0 1 15.5-6.2M21 12a9 9 0 0 1-15.5 6.2" />
+                <path d="M18 3v3h-3M6 21v-3h3" />
               </svg>
             </button>
             <div aria-hidden="true" className="absolute left-0 top-0" style={slotStyle(colX(L, 1), L.topY)} />
@@ -1502,9 +1495,9 @@ export default function KlondikeSolitaire() {
                 className="absolute left-0 top-0 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                 style={slotStyle(colX(L, 3 + i), L.topY)}
               >
-                <span style={{ fontFamily: SERIF, fontSize: L.cw * 0.36, color: C.slotLine, fontWeight: 700 }} aria-hidden="true">
-                  A
-                </span>
+                <svg viewBox="0 0 24 24" fill={C.brass} style={{ width: L.cw * 0.46, height: L.cw * 0.46, opacity: 0.35 }} aria-hidden="true">
+                  {SUIT_PATHS[s]}
+                </svg>
               </button>
             ))}
             {board.tableau.map((pile, col) => (
@@ -1517,7 +1510,7 @@ export default function KlondikeSolitaire() {
                 className="absolute left-0 top-0 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
                 style={slotStyle(colX(L, col), L.tabY)}
               >
-                <span style={{ fontFamily: SERIF, fontSize: L.cw * 0.36, color: C.slotLine, fontWeight: 700 }} aria-hidden="true">
+                <span style={{ fontFamily: SERIF, fontSize: L.cw * 0.42, color: C.brass, opacity: 0.3, fontWeight: 700 }} aria-hidden="true">
                   K
                 </span>
               </button>
@@ -1546,17 +1539,19 @@ export default function KlondikeSolitaire() {
                 y += drag.dy;
                 z = 5000 + p.z;
               } else if (flying.has(id)) z = 2000 + p.z;
+              if (selected) y -= Math.max(2, Math.round(L.ch * 0.03));
+              const lift = dragged ? " scale(1.05)" : "";
               const buried =
                 (loc?.zone === "stock" && card !== board.stock[board.stock.length - 1]) ||
                 (loc?.zone === "foundation" && !loc.top && phase !== "won") ||
                 (loc?.zone === "waste" && board.waste.indexOf(card) < board.waste.length - 3);
               const shadow = dragged
-                ? "2px 4px 6px rgba(0,0,0,0.35)"
+                ? "0 18px 30px rgba(0,0,0,0.45), 0 4px 8px rgba(0,0,0,0.3)"
                 : selected
-                  ? `0 0 0 2px ${C.mark}`
+                  ? `0 0 0 3px ${C.glow}, 0 6px 12px rgba(0,0,0,0.35)`
                   : buried && !flying.has(id)
                     ? "none"
-                    : "0 1px 1px rgba(0,0,0,0.35)";
+                    : "0 1px 1.5px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.18)";
               const noAnim = dragged || mode === "stacked" || reduced;
               const label = card.up || p.up ? m.card(RANK_LABEL[card.rank], m.suits[card.suit]) : loc?.zone === "stock" ? m.deck(board.stock.length) : m.faceDownCard;
               const interactive = inRound && !(loc?.zone === "waste" && !loc.top) && !(loc?.zone === "foundation" && !loc.top);
@@ -1577,8 +1572,10 @@ export default function KlondikeSolitaire() {
                     height: L.ch,
                     zIndex: z,
                     borderRadius: radius,
-                    transform: `translate3d(${x}px, ${y}px, 0) rotate(${p.rot}deg)`,
-                    transition: noAnim ? "none" : `transform ${moveMs}ms ${EASE} ${p.delay}ms`,
+                    transform: `translate3d(${x}px, ${y}px, 0) rotate(${p.rot}deg)${lift}`,
+                    transition: noAnim
+                      ? "none"
+                      : `transform ${moveMs}ms ${EASE} ${p.delay}ms, box-shadow 150ms ease`,
                     boxShadow: shadow,
                     touchAction: "none",
                     cursor: inRound ? (dragged ? "grabbing" : "pointer") : "default",
@@ -1587,30 +1584,30 @@ export default function KlondikeSolitaire() {
                   }}
                 >
                   <div className="h-full w-full" data-ring={phase === "won" ? ringIndex(card) : undefined}>
-                    <div
-                      className="relative h-full w-full"
-                      style={{
-                        transformStyle: "preserve-3d",
-                        transform: p.up ? "rotateY(0deg)" : "rotateY(180deg)",
-                        transition: noAnim && !dragged ? "none" : `transform ${reduced ? 0 : 300}ms ease ${p.flipDelay}ms`,
-                      }}
-                    >
-                      <div className="absolute inset-0" style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
-                        <CardFace suit={card.suit} rank={card.rank} compact={L.compact} />
-                      </div>
-                      <div
-                        className="absolute inset-0"
-                        style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-                      >
-                        <CardBack />
-                      </div>
+                  <div
+                    className="relative h-full w-full"
+                    style={{
+                      transformStyle: "preserve-3d",
+                      transform: p.up ? "rotateY(0deg)" : "rotateY(180deg)",
+                      transition: noAnim && !dragged ? "none" : `transform ${reduced ? 0 : 340}ms ease ${p.flipDelay}ms`,
+                    }}
+                  >
+                    <div className="absolute inset-0" style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}>
+                      <CardFace suit={card.suit} rank={card.rank} compact={L.compact} />
                     </div>
+                    <div
+                      className="absolute inset-0"
+                      style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
+                    >
+                      <CardBack />
+                    </div>
+                  </div>
                   </div>
                 </button>
               );
             })}
 
-            {/* Valid drop targets while dragging */}
+            {/* Valid drop targets */}
             {targets.map((t) => {
               const r = targetRect(t);
               const hot = !!drag?.hover && targetKey(drag.hover) === targetKey(t);
@@ -1625,70 +1622,84 @@ export default function KlondikeSolitaire() {
                     zIndex: 4000,
                     borderRadius: radius,
                     transform: `translate(${r.x}px, ${r.y}px)`,
-                    boxShadow: `inset 0 0 0 ${hot ? 3 : 2}px ${C.mark}`,
-                    background: hot ? "rgba(255, 225, 77, 0.18)" : "transparent",
+                    boxShadow: hot
+                      ? `0 0 0 3px ${C.glow}`
+                      : `0 0 0 2px rgba(255,210,63,0.7)`,
+                    background: hot ? "rgba(255,210,63,0.18)" : "transparent",
+                    transition: "box-shadow 120ms ease, background 120ms ease",
                   }}
                 />
               );
             })}
           </div>
 
-          {/* Status bar */}
+          {/* Bottom action bar on narrow screens */}
+          {!L.actionsInHud && (
+            <div
+              className="absolute bottom-0 left-0 right-0 z-[3000] flex items-stretch justify-center gap-2 px-3 pb-2 pt-1"
+              style={{ height: L.barH }}
+            >
+              {actions}
+            </div>
+          )}
+
+          {/* Toast */}
           <div
-            className="absolute bottom-0 left-0 right-0 z-[3000] flex items-center gap-3 border-t text-[13px]"
-            style={{ height: L.barH, paddingLeft: L.padL, paddingRight: L.padL, background: C.bar, borderColor: C.barLine }}
+            className="pointer-events-none absolute left-0 right-0 z-[6000] flex justify-center px-4"
+            style={{ bottom: L.barH + 14 }}
+            role="status"
+            aria-live="polite"
           >
-            <p className="min-w-0 flex-1 truncate" style={{ color: C.textDim }} role="status" aria-live="polite">
-              {flash ? m.flash[flash.key](flash.n ?? 0) : ""}
-            </p>
-            <p className="shrink-0 whitespace-pre tabular-nums">{m.status(score, moves, formatTime(elapsed))}</p>
+            {flash && SILENT.has(flash.key) && <span className="sr-only">{m.flash[flash.key](flash.n ?? 0)}</span>}
+            {flash && !SILENT.has(flash.key) && (
+              <div
+                key={`${flash.key}-${flash.n ?? 0}`}
+                className="max-w-md rounded-md px-4 py-2 text-center text-sm font-medium animate-slide-up"
+                style={{ background: "rgba(0,0,0,0.7)", color: C.ivory }}
+              >
+                {m.flash[flash.key](flash.n ?? 0)}
+              </div>
+            )}
           </div>
 
           {/* Round end */}
           {(phase === "won" || phase === "lost") && (
-            <div className="absolute inset-0 z-[7000] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 z-[7000] flex items-center justify-center p-4"
+              style={{ background: phase === "lost" ? "rgba(3,20,15,0.55)" : "transparent" }}
+            >
               <div
-                role="dialog"
-                aria-label={phase === "won" ? m.wonTitle : m.lostTitle}
-                className="w-full max-w-[20rem] animate-fade-in"
+                className="flex w-full max-w-[19rem] flex-col items-center gap-4 rounded-lg px-6 py-6 text-center animate-slide-up"
                 style={{
-                  background: C.dialog,
-                  color: C.ink,
-                  border: `1px solid ${C.dialogLine}`,
-                  borderRadius: 3,
-                  boxShadow: "2px 3px 10px rgba(0,0,0,0.35)",
+                  background: C.panel,
+                  boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
                   animationDelay: phase === "won" && !reduced ? "900ms" : undefined,
                   animationFillMode: "both",
                 }}
               >
-                <h2 className="px-4 py-2 text-sm font-bold" style={{ background: C.bar, color: "#ffffff", borderRadius: "2px 2px 0 0" }}>
+                <h2 className="text-4xl font-bold leading-none" style={{ color: C.ivory }}>
                   {phase === "won" ? m.wonTitle : m.lostTitle}
                 </h2>
-                <div className="flex flex-col gap-3 px-4 py-4 text-sm">
-                  <p>{phase === "won" ? m.won : m.lost}</p>
-                  <table className="w-full">
-                    <tbody>
-                      {[
-                        [m.score, String(score)],
-                        [m.moves, String(moves)],
-                        phase === "won" ? [m.time, formatTime(elapsed)] : [m.cardsHome, String(collected(board))],
-                      ].map(([k, v]) => (
-                        <tr key={k} className="border-b" style={{ borderColor: "#d4d4d4" }}>
-                          <th scope="row" className="py-1 text-left font-normal" style={{ color: "#555555" }}>
-                            {k}
-                          </th>
-                          <td className="py-1 text-right tabular-nums">{v}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {phase === "won" && (newBest || best !== null) && <p>{newBest ? m.newBestWin : m.bestWin(best ?? 0)}</p>}
-                  <div className="flex flex-wrap justify-end gap-2 pt-1">
-                    {phase === "lost" && <DialogButton onClick={undo}>{m.undo}</DialogButton>}
-                    <DialogButton onClick={() => afterBreak(startGame)} primary>
-                      {phase === "won" ? m.playAgain : m.newDeal}
-                    </DialogButton>
+                {phase === "lost" && (
+                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
+                    {m.lost}
+                  </p>
+                )}
+                <div className="grid w-full grid-cols-3 gap-2 rounded-md py-3" style={{ background: "rgba(255,255,255,0.06)" }}>
+                  <div className="flex justify-center"><Stat label={m.score} value={score} /></div>
+                  <div className="flex justify-center"><Stat label={m.moves} value={moves} /></div>
+                  <div className="flex justify-center">
+                    {phase === "won" ? <Stat label={m.time} value={formatTime(elapsed)} /> : <Stat label={m.cardsHome} value={collected(board)} />}
                   </div>
+                </div>
+                {phase === "won" && (newBest || best !== null) && (
+                  <p className="text-xs font-semibold" style={{ color: C.glow }}>
+                    {newBest ? m.newBestWin : m.bestWin(best ?? 0)}
+                  </p>
+                )}
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {phase === "lost" && <GhostButton onClick={undo}>{m.undo}</GhostButton>}
+                  <BrassButton onClick={() => afterBreak(startGame)}>{phase === "won" ? m.playAgain : m.newDeal}</BrassButton>
                 </div>
               </div>
             </div>
@@ -1708,4 +1719,115 @@ function cardById(board: Board, id: string): Card | undefined {
     for (const c of pile) if (c.id === id) return c;
   }
   return undefined;
+}
+
+function ActionButton({
+  icon,
+  label,
+  onClick,
+  disabled,
+  inHud,
+  glow,
+}: {
+  icon: "undo" | "collect" | "deal";
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  inHud: boolean;
+  glow?: boolean;
+}) {
+  const style: CSSProperties = glow
+    ? { background: C.button, color: C.ink }
+    : { background: "rgba(0,0,0,0.25)", color: C.ivory };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className={`flex items-center justify-center font-semibold transition-all duration-150 hover:brightness-125 active:scale-95 disabled:opacity-40 disabled:hover:brightness-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${
+        inHud ? "h-10 gap-2 rounded-md px-4 text-sm" : "max-w-[8.5rem] flex-1 flex-col gap-1 rounded-md text-xs"
+      }`}
+      style={style}
+    >
+      <ActionIcon name={icon} />
+      <span className="whitespace-nowrap">{label}</span>
+    </button>
+  );
+}
+
+/* ── Title screen ───────────────────────────────────────────────────────── */
+
+const INTRO_FAN: { suit: Suit; rank: number }[] = [
+  { suit: "clubs", rank: 11 },
+  { suit: "diamonds", rank: 12 },
+  { suit: "spades", rank: 1 },
+  { suit: "hearts", rank: 13 },
+];
+
+function Intro({ w, h, onPlay }: { w: number; h: number; onPlay: () => void }) {
+  const m = useMessages(messages);
+  const reduced = usePrefersReducedMotion();
+  const cw = Math.round(Math.max(58, Math.min(112, w * 0.17, h * 0.15)));
+  const ch = Math.round(cw * 1.4);
+  const fanRef = useRef<HTMLDivElement>(null);
+  const titleSize = Math.round(Math.max(30, Math.min(60, w * 0.08, h * 0.09)));
+
+  useEffect(() => {
+    const el = fanRef.current;
+    if (!el || reduced || typeof el.animate !== "function") return;
+    const kids = Array.from(el.children) as HTMLElement[];
+    const anims = kids.map((k, i) =>
+      k.animate(
+        [
+          { transform: "translate(0px, 40px) rotate(0deg)", opacity: 0 },
+          { transform: k.style.transform, opacity: 1 },
+        ],
+        { duration: 600, delay: 120 + i * 90, easing: "cubic-bezier(0.2, 0.8, 0.25, 1)", fill: "backwards" },
+      ),
+    );
+    return () => anims.forEach((a) => a.cancel());
+  }, [reduced]);
+
+  const n = INTRO_FAN.length + 1;
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-6 pb-4 pt-14 text-center animate-fade-in">
+      <div ref={fanRef} className="relative" style={{ width: cw * 2.6, height: ch * 1.12 }}>
+        {[...INTRO_FAN, null].map((c, i) => {
+          const a = (i - (n - 1) / 2) * 13;
+          const style: CSSProperties = {
+            width: cw,
+            height: ch,
+            left: cw * 0.8,
+            top: ch * 0.06,
+            transformOrigin: "50% 120%",
+            transform: `translate(${(i - (n - 1) / 2) * cw * 0.12}px, ${Math.abs(i - (n - 1) / 2) * 4}px) rotate(${a}deg)`,
+            borderRadius: Math.round(cw * 0.08),
+            boxShadow: "0 10px 24px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3)",
+          };
+          return (
+            <div key={i} className="absolute overflow-hidden" style={style}>
+              {c ? <CardFace suit={c.suit} rank={c.rank} compact={false} /> : <CardBack />}
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex flex-col items-center">
+        <h1 className="font-bold leading-tight" style={{ fontSize: titleSize, color: C.ivory, textShadow: "0 2px 0 rgba(0,0,0,0.25)" }}>
+          {m.title}
+        </h1>
+      </div>
+      <BrassButton onClick={onPlay} big>
+        {m.play}
+      </BrassButton>
+      <p className="max-w-sm text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.85)", wordBreak: "keep-all" }}>
+        {m.hint}
+      </p>
+      {w >= 600 && (
+        <p className="max-w-md text-xs" style={{ color: "rgba(255,255,255,0.6)", wordBreak: "keep-all" }}>
+          {m.keys}
+        </p>
+      )}
+    </div>
+  );
 }

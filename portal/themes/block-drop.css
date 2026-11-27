@@ -1,17 +1,17 @@
-/* Block Drop: a plain dark cabinet around a black playfield, like handheld and arcade block games. */
+/* Block Drop: dark gray cabinet around a black playfield. Matches the colors the game paints itself. */
 :root {
-  --game-bg:           24  24  24;
-  --game-surface:      38  38  38;
-  --game-surface-2:    56  56  56;
-  --game-border:       128 128 128;
-  --game-border-dim:   64  64  64;
-  --game-accent:       230 230 230;
-  --game-accent-light: 56  56  56;
-  --game-accent-dim:   255 255 255;
-  --game-on-accent:    24  24  24;
-  --game-secondary:    240 160 0;
-  --game-muted:        150 150 150;
-  --game-text:         236 236 236;
-  --game-text-dim:     180 180 180;
-  --portal-stage: rgb(24 24 24);
+  --game-bg:           23  25  29;
+  --game-surface:      46  49  56;
+  --game-surface-2:    58  61  69;
+  --game-border:       90  94  104;
+  --game-border-dim:   58  61  69;
+  --game-accent:       247 211 8;
+  --game-accent-light: 58  61  69;
+  --game-accent-dim:   255 230 90;
+  --game-on-accent:    42  35  0;
+  --game-secondary:    49  199 239;
+  --game-muted:        124 129 139;
+  --game-text:         255 255 255;
+  --game-text-dim:     169 173 182;
+  --portal-stage: linear-gradient(180deg, #23262c 0%, #17191d 100%);
 }

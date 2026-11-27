@@ -1,6 +1,6 @@
 ---
 title: "Snake"
-description: "The snake game from old mobile phones. Eat food to grow longer and keep clear of the walls and your own tail."
+description: "The classic snake game. Eat apples to grow longer and keep clear of the walls and your own tail."
 category: arcade
 icon: "snake"
 tags: [arcade, classic, snake, canvas, reflex]
@@ -13,7 +13,7 @@ playTime: 5
 localizations:
   ko:
     title: "스네이크"
-    description: "옛날 휴대폰에 있던 뱀 게임입니다. 먹이를 먹으면 길어지고, 벽이나 자기 꼬리에 부딪히면 끝납니다."
+    description: "고전 뱀 게임입니다. 사과를 먹으면 길어지고, 벽이나 자기 꼬리에 부딪히면 끝납니다."
 ---
 
 ## How it works
@@ -26,7 +26,7 @@ Each piece of food you eat adds one point and makes the snake one cell longer. T
 
 Every piece of food adds one point. As your score climbs, the snake moves faster, gradually at first and then noticeably. High scores require both quick reflexes and the ability to plan the next few moves while the snake is still in motion.
 
-Your best score for each level is saved in this browser, so it is still there next time.
+Your best score for each speed setting (Easy, Normal, Hard, Insane) is saved in this browser, so it is still there next time.
 
 ## How to get a high score
 

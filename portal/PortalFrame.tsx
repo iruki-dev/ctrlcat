@@ -33,10 +33,10 @@ function Controls({ rootRef }: { rootRef: React.RefObject<HTMLDivElement> }) {
   };
 
   const btn =
-    "w-9 h-9 flex items-center justify-center rounded-sm border border-game-border-dim bg-game-bg text-game-text-dim hover:text-game-text hover:bg-game-surface-2 transition-colors";
+    "w-10 h-10 flex items-center justify-center rounded-full bg-game-surface/70 text-game-text-dim hover:text-game-text hover:bg-game-surface-2 backdrop-blur transition-colors";
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2">
       <button type="button" onClick={toggleMute} aria-label={muted ? m.unmute : m.mute} title={muted ? m.unmute : m.mute} className={btn}>
         {muted ? (
           <Icon d={<><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></>} />
@@ -66,7 +66,7 @@ export default function PortalFrame({ children }: { children: ReactNode }) {
   return (
     <SoundProvider>
       <div ref={rootRef} className="portal-stage relative h-full w-full overflow-hidden text-game-text">
-        <div className="absolute right-2.5 top-2.5 z-30">
+        <div className="absolute right-3 top-3 z-30">
           <Controls rootRef={rootRef} />
         </div>
         <div className="portal-scroll h-full w-full overflow-y-auto overflow-x-hidden">{children}</div>
