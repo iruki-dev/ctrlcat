@@ -133,6 +133,7 @@ const grouped = categoryOrder.reduce<Record<string, CollectionEntry<"tools">[]>>
         {locales.map((l) => (
           <a
             href={switchLocalePath(url, l)}
+            data-locale={l}
             class:list={[
               "px-2 py-0.5 text-xs transition-colors",
               l === lang

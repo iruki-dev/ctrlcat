@@ -48,3 +48,32 @@ const defaultHref = new URL(localePath(basePath, defaultLocale), Astro.site);
     if (dark) document.documentElement.classList.add("dark");
   })();
 </script>
+<!--
+  Language: English pages move to the Korean version when the browser prefers Korean.
+  A language picked in a language switcher (links with data-locale) is remembered and wins.
+  Korean pages never send anyone back to English.
+-->
+<script is:inline>
+  (function () {
+    var KEY = "ctrlcat-lang";
+    var saved = null;
+    try {
+      saved = localStorage.getItem(KEY);
+    } catch (e) {}
+    var path = location.pathname;
+    var onKo = path === "/ko" || path.indexOf("/ko/") === 0;
+    var browser = ((navigator.languages && navigator.languages[0]) || navigator.language || "").toLowerCase();
+    var want = saved || (browser.indexOf("ko") === 0 ? "ko" : "en");
+    if (want === "ko" && !onKo) {
+      location.replace("/ko" + path + location.search + location.hash);
+      return;
+    }
+    document.addEventListener("click", function (e) {
+      var a = e.target && e.target.closest ? e.target.closest("a[data-locale]") : null;
+      if (!a) return;
+      try {
+        localStorage.setItem(KEY, a.getAttribute("data-locale"));
+      } catch (err) {}
+    });
+  })();
+</script>

@@ -1,20 +1,17 @@
-/* 2048 "Prism": a deep midnight stage so the spectrum tiles glow. */
+/* 2048: light page, stone-gray board. Matches the colors the game paints itself. */
 :root {
-  --game-bg:           11  16  36;
-  --game-surface:      22  30  62;
-  --game-surface-2:    36  46  90;
-  --game-border:       84  98  160;
-  --game-border-dim:   44  56  104;
-  --game-accent:       138 125 255;
-  --game-accent-light: 46  40  110;
-  --game-accent-dim:   180 170 255;
-  --game-on-accent:    16  12  48;
-  --game-secondary:    208 75  234;
-  --game-muted:        130 145 200;
-  --game-text:         240 244 255;
-  --game-text-dim:     190 202 240;
-  --portal-stage:
-    radial-gradient(60% 45% at 85% 100%, rgba(208, 75, 234, 0.18) 0%, rgba(208, 75, 234, 0) 70%),
-    radial-gradient(55% 45% at 10% 0%, rgba(31, 185, 166, 0.16) 0%, rgba(31, 185, 166, 0) 70%),
-    radial-gradient(120% 90% at 50% 0%, #1c2656 0%, #0b1024 65%);
+  --game-bg:           244 243 239;
+  --game-surface:      255 255 255;
+  --game-surface-2:    230 228 222;
+  --game-border:       143 138 128;
+  --game-border-dim:   214 211 203;
+  --game-accent:       43  42  39;
+  --game-accent-light: 230 228 222;
+  --game-accent-dim:   20  20  18;
+  --game-on-accent:    255 255 255;
+  --game-secondary:    207 62  47;
+  --game-muted:        107 104 98;
+  --game-text:         43  42  39;
+  --game-text-dim:     107 104 98;
+  --portal-stage: rgb(244 243 239);
 }

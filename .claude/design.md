@@ -164,6 +164,19 @@
 - 활성 네비: `rounded-[28px] bg-game-accent-light text-game-accent`
 - 필터: MD3 Filter Chips (`rounded-full`, selected: `border-2 border-game-accent bg-game-accent-light`)
 
+### 자기 화면을 직접 그리는 게임
+
+2048, Block Drop, Klondike Solitaire, Snake는 사이트 테마(violet MD3)를 쓰지 않고, 그 장르의 실제 게임처럼 보이도록 게임 파일 상단 상수로 자기 색을 둡니다 (canvas 상수와 같은 예외). 사이트와 포털 빌드에서 똑같이 보입니다.
+
+| 게임 | 기준으로 삼은 모습 | 점수 표시 |
+|---|---|---|
+| 2048 | 밝은 바탕, 돌 회색 판, 각진 평면 타일 | 판 위 한 줄 텍스트 (점수, 최고) |
+| Block Drop | 검은 우물과 회색 테두리, 빗면 블록 | 검은 상자 안 6자리 숫자 (점수, 최고, 레벨, 줄, 다음) |
+| Klondike Solitaire | 데스크톱 솔리테어의 녹색 테이블, 메뉴 막대 | 아래 상태 표시줄 (점수, 이동, 시간) |
+| Snake | 옛 휴대폰 LCD (올리브 바탕, 단색 점) | 왼쪽 위 4자리 숫자 |
+
+이 네 게임에는 제목 화면 장식(로고 타일, 눈썹 문구, 알약 버튼), 칭찬 팝업, 빛번짐을 넣지 않습니다. 2048과 Klondike는 열자마자 판이 나옵니다.
+
 ---
 
 ## 카드 디자인 패턴

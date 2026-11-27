@@ -1,17 +1,17 @@
-/* Block Drop, "Midnight Gem" look: a deep indigo night with gem-colored accents. */
+/* Block Drop: a plain dark cabinet around a black playfield, like handheld and arcade block games. */
 :root {
-  --game-bg:           6   7  26;
-  --game-surface:      18  21  58;
-  --game-surface-2:    38  43 104;
-  --game-border:       98 106 180;
-  --game-border-dim:   34  38  90;
-  --game-accent:       47 230 240;
-  --game-accent-light: 26  60 104;
-  --game-accent-dim:   140 242 248;
-  --game-on-accent:    8  12  38;
-  --game-secondary:    255 210  63;
-  --game-muted:        106 112 164;
-  --game-text:         244 242 255;
-  --game-text-dim:     158 164 210;
-  --portal-stage: radial-gradient(120% 70% at 50% -8%, #2c3290 0%, #151852 38%, #0a0b26 72%, #06071a 100%);
+  --game-bg:           24  24  24;
+  --game-surface:      38  38  38;
+  --game-surface-2:    56  56  56;
+  --game-border:       128 128 128;
+  --game-border-dim:   64  64  64;
+  --game-accent:       230 230 230;
+  --game-accent-light: 56  56  56;
+  --game-accent-dim:   255 255 255;
+  --game-on-accent:    24  24  24;
+  --game-secondary:    240 160 0;
+  --game-muted:        150 150 150;
+  --game-text:         236 236 236;
+  --game-text-dim:     180 180 180;
+  --portal-stage: rgb(24 24 24);
 }

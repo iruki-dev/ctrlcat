@@ -1,20 +1,17 @@
-/* Snake, "Night Garden": deep blue-green night stage, lime accent like the snake, coral like the berry. */
+/* Snake: an olive monochrome LCD, like the snake on old mobile phones. */
 :root {
-  --game-bg:           10  20  32;
-  --game-surface:      20  36  54;
-  --game-surface-2:    30  52  76;
-  --game-border:       66  96 124;
-  --game-border-dim:   34  54  76;
-  --game-accent:       196 242  64;
-  --game-accent-light: 40  66  30;
-  --game-accent-dim:   220 250 130;
-  --game-on-accent:    14  36  14;
-  --game-secondary:    255  84 124;
-  --game-muted:        130 152 172;
-  --game-text:         238 246 250;
-  --game-text-dim:     188 206 220;
-  --portal-stage:
-    radial-gradient(90% 60% at 50% 0%, rgba(120, 220, 120, 0.10) 0%, transparent 60%),
-    radial-gradient(120% 100% at 50% 100%, #07111b 0%, transparent 70%),
-    linear-gradient(180deg, #10263a 0%, #0a1724 100%);
+  --game-bg:           194 204 159;
+  --game-surface:      178 190 140;
+  --game-surface-2:    164 176 126;
+  --game-border:       38  48  28;
+  --game-border-dim:   150 162 114;
+  --game-accent:       38  48  28;
+  --game-accent-light: 178 190 140;
+  --game-accent-dim:   20  26  14;
+  --game-on-accent:    194 204 159;
+  --game-secondary:    38  48  28;
+  --game-muted:        84  96  64;
+  --game-text:         38  48  28;
+  --game-text-dim:     62  74  46;
+  --portal-stage: rgb(194 204 159);
 }
