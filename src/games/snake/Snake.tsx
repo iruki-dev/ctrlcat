@@ -850,7 +850,7 @@ export default function Snake() {
                 <p className="text-4xl font-bold text-center">
                   {uiStatus === "won" ? m.cleared : m.gameOver}
                 </p>
-                <div className="w-full rounded-xl px-6 py-4 flex items-center justify-around" style={{ background: C.stage }}>
+                <div className="w-full flex items-center justify-around">
                   <span className="flex flex-col items-center gap-1.5">
                     <span className="text-sm text-white/85">{m.score}</span>
                     <span className="text-4xl font-black tabular-nums leading-none">

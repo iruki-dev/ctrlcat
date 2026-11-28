@@ -643,10 +643,18 @@ export default function Game2048() {
         if (!dir) return;
         e.preventDefault();
         move(dir);
-      } else if (p === "lost" && e.key === "Enter" && overlayReady) {
-        if ((e.target as HTMLElement)?.tagName === "BUTTON") return;
-        e.preventDefault();
-        afterBreak(startGame);
+      } else if (e.key === "Enter" && (e.target as HTMLElement)?.tagName !== "BUTTON") {
+        /* Enter takes the main button of each screen; the buttons are not focused on open, so no focus ring is drawn around them. */
+        if (p === "idle") {
+          e.preventDefault();
+          startGame();
+        } else if (p === "lost" && overlayReady) {
+          e.preventDefault();
+          afterBreak(startGame);
+        } else if (p === "won" && overlayReady) {
+          e.preventDefault();
+          keepGoing();
+        }
       }
     };
     window.addEventListener("keydown", onKey);
@@ -684,7 +692,7 @@ export default function Game2048() {
           <p className="text-base max-w-xs" style={{ fontFamily: TILE_FONT, wordBreak: "keep-all" }}>
             {m.howTo}
           </p>
-          <Button onClick={startGame} big autoFocus>
+          <Button onClick={startGame} big>
             {m.play}
           </Button>
           {best !== null && (
@@ -783,7 +791,7 @@ export default function Game2048() {
           <div className="flex flex-wrap items-center justify-center gap-3">
             {phase === "won" ? (
               <>
-                <Button onClick={keepGoing} big autoFocus>
+                <Button onClick={keepGoing} big>
                   {m.keepPlaying}
                 </Button>
                 <Button onClick={playAgain} big>
@@ -791,7 +799,7 @@ export default function Game2048() {
                 </Button>
               </>
             ) : (
-              <Button onClick={playAgain} big autoFocus>
+              <Button onClick={playAgain} big>
                 {m.playAgain}
               </Button>
             )}

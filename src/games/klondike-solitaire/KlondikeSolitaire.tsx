@@ -1521,7 +1521,13 @@ export default function KlondikeSolitaire() {
       )}
     </>
   );
-  const status = (
+  /* A message (deck recycled, nothing can go home) takes the place of the score line for a moment, as plain text. */
+  const shownFlash = flash && !SILENT.has(flash.key) ? m.flash[flash.key](flash.n ?? 0) : null;
+  const status = shownFlash ? (
+    <div key={`${flash!.key}-${flash!.n ?? 0}`} className="truncate text-[15px] font-semibold animate-fade-in" style={{ color: C.ivory }} aria-hidden="true">
+      {shownFlash}
+    </div>
+  ) : (
     <div className="flex items-baseline gap-4 whitespace-nowrap text-[15px] tabular-nums" style={{ color: C.ivory }}>
       <span>
         {m.score}: <b>{score}</b>
@@ -1553,7 +1559,7 @@ export default function KlondikeSolitaire() {
             style={{ height: L.hudH, paddingLeft: L.padL, paddingRight: L.padR }}
           >
             {L.actionsInHud && <div className="flex items-center gap-1.5">{actions}</div>}
-            <div className={L.actionsInHud ? "ml-auto" : "mx-auto"}>{status}</div>
+            <div className={`min-w-0 ${L.actionsInHud ? "ml-auto" : "mx-auto"}`}>{status}</div>
           </div>
 
           {/* Empty pile slots */}
@@ -1729,23 +1735,9 @@ export default function KlondikeSolitaire() {
             </div>
           )}
 
-          {/* Toast */}
-          <div
-            className="pointer-events-none absolute left-0 right-0 z-[6000] flex justify-center px-4"
-            style={{ bottom: L.barH + 14 }}
-            role="status"
-            aria-live="polite"
-          >
-            {flash && SILENT.has(flash.key) && <span className="sr-only">{m.flash[flash.key](flash.n ?? 0)}</span>}
-            {flash && !SILENT.has(flash.key) && (
-              <div
-                key={`${flash.key}-${flash.n ?? 0}`}
-                className="max-w-md rounded-md px-4 py-2 text-center text-sm font-medium animate-slide-up"
-                style={{ background: "rgba(0,0,0,0.7)", color: C.ivory }}
-              >
-                {m.flash[flash.key](flash.n ?? 0)}
-              </div>
-            )}
+          {/* Screen reader copy of every message; the ones shown on screen appear in the toolbar. */}
+          <div className="sr-only" role="status" aria-live="polite">
+            {flash && m.flash[flash.key](flash.n ?? 0)}
           </div>
 
           {/* Round end */}
@@ -1771,7 +1763,7 @@ export default function KlondikeSolitaire() {
                     {m.lost}
                   </p>
                 )}
-                <div className="grid w-full grid-cols-3 gap-2 rounded-md py-3" style={{ background: "rgba(255,255,255,0.06)" }}>
+                <div className="grid w-full grid-cols-3 gap-2">
                   <div className="flex justify-center"><Stat label={m.score} value={score} /></div>
                   <div className="flex justify-center"><Stat label={m.moves} value={moves} /></div>
                   <div className="flex justify-center">
